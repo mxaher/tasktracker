@@ -1,0 +1,55 @@
+import { PrismaD1 } from "@prisma/adapter-d1";
+import { PrismaClient } from "@prisma/client";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+type GlobalPrisma = typeof globalThis & {
+  localPrisma?: PrismaClient;
+  cloudflarePrisma?: PrismaClient;
+};
+
+type D1Binding = ConstructorParameters<typeof PrismaD1>[0];
+
+const globalForPrisma = globalThis as GlobalPrisma;
+
+function getCloudflareD1Binding(): D1Binding | undefined {
+  try {
+    const context = getCloudflareContext();
+    return (context.env as { DB?: D1Binding }).DB;
+  } catch {
+    return undefined;
+  }
+}
+
+function createLocalPrismaClient() {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
+}
+
+function createCloudflarePrismaClient(database: D1Binding) {
+  const adapter = new PrismaD1(database);
+  return new PrismaClient({ adapter });
+}
+
+export function getDb() {
+  const cloudflareDb = getCloudflareD1Binding();
+
+  if (cloudflareDb) {
+    globalForPrisma.cloudflarePrisma ??= createCloudflarePrismaClient(cloudflareDb);
+    return globalForPrisma.cloudflarePrisma;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    globalForPrisma.localPrisma ??= createLocalPrismaClient();
+    return globalForPrisma.localPrisma;
+  }
+
+  globalForPrisma.localPrisma ??= createLocalPrismaClient();
+  return globalForPrisma.localPrisma;
+}
+
+export const db = new Proxy({} as PrismaClient, {
+  get(_target, property, receiver) {
+    return Reflect.get(getDb(), property, receiver);
+  },
+});
