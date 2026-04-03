@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "preview-chat-0daed9cf-daeb-40a4-98ed-ead68f62aeb8.space.z.ai",
   ],
+
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: 'asset/resource',
+    });
+    return config;
+  },
 };
 
 export default nextConfig;
