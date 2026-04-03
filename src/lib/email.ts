@@ -3,9 +3,6 @@ import { format, differenceInDays, isPast } from "date-fns";
 
 // Email configuration - using Resend API
 // For production, set RESEND_API_KEY environment variable
-const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@tasktracker.local";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@tasktracker.local";
 
 interface EmailPayload {
   to: string | string[];
@@ -16,6 +13,11 @@ interface EmailPayload {
 
 // Send email using Resend API
 async function sendEmailWithResend(payload: EmailPayload): Promise<{ success: boolean; error?: string }> {
+    // Read env vars lazily for Cloudflare Workers compatibility
+  const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+  const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@tasktracker.local";
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@tasktracker.local";
+
   if (!RESEND_API_KEY) {
     console.log("[Email] Resend API key not configured. Email would have been sent:");
     console.log(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
