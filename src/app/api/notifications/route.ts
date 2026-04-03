@@ -1,82 +1,346 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { EmailService } from "@/lib/email";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { format, isPast } from "date-fns";
 
-// POST /api/notifications/send-reminder - Send task reminder
+type D1Value = string | number | null;
+
+type NotificationRow = {
+  id: string;
+  taskId: string | null;
+  userId: string | null;
+  type: string;
+  channel: string;
+  subject: string;
+  message: string;
+  status: string;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  error: string | null;
+  createdAt: string;
+  task_title: string | null;
+  task_taskId: string | null;
+  user_name: string | null;
+  user_email: string | null;
+};
+
+type ReportTaskRow = {
+  title: string;
+  taskId: string | null;
+  dueDate: string | null;
+  priority: string;
+  completion: number | null;
+  department: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+};
+
+type SettingsRow = {
+  adminEmail: string;
+};
+
+function getDb() {
+  const context = getCloudflareContext();
+  const env = (context.env ?? {}) as {
+    DB?: {
+      prepare: (sql: string) => {
+        bind: (...params: D1Value[]) => {
+          all: <T>() => Promise<{ results?: T[] }>;
+          first: <T>() => Promise<T | null>;
+          run: () => Promise<unknown>;
+        };
+      };
+    };
+  };
+
+  if (!env.DB) {
+    throw new Error("Cloudflare D1 binding is not available.");
+  }
+
+  return env.DB;
+}
+
+async function d1All<T>(sql: string, ...params: D1Value[]) {
+  const result = await getDb().prepare(sql).bind(...params).all<T>();
+  return result.results ?? [];
+}
+
+async function d1First<T>(sql: string, ...params: D1Value[]) {
+  return getDb().prepare(sql).bind(...params).first<T>();
+}
+
+async function d1Run(sql: string, ...params: D1Value[]) {
+  return getDb().prepare(sql).bind(...params).run();
+}
+
+function createId() {
+  return crypto.randomUUID();
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+async function sendEmail(payload: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text: string;
+}) {
+  const resendApiKey = process.env.RESEND_API_KEY || "";
+  const fromEmail = process.env.FROM_EMAIL || "noreply@tasktracker.local";
+
+  if (!resendApiKey) {
+    console.log("[Email] Resend API key not configured. Email would have been sent:");
+    console.log(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
+    console.log(`  Subject: ${payload.subject}`);
+    return { success: true as const };
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: Array.isArray(payload.to) ? payload.to : [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    }),
+  });
+
+  if (!response.ok) {
+    let message = "Failed to send email";
+    try {
+      const error = await response.json();
+      message = error.message || message;
+    } catch {}
+    return { success: false as const, error: message };
+  }
+
+  return { success: true as const };
+}
+
+function buildInProgressReport(tasks: ReportTaskRow[], reportType: "daily" | "weekly") {
+  const subject = `In-Progress Tasks Report (${reportType}) - ${format(new Date(), "MMM d, yyyy")}`;
+  const highPriorityCount = tasks.filter(
+    (task) => task.priority === "critical" || task.priority === "high",
+  ).length;
+  const overdueCount = tasks.filter((task) => task.dueDate && isPast(new Date(task.dueDate))).length;
+
+  const rowsHtml = tasks
+    .map(
+      (task) => `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.taskId || "-"}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.title}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.department || "-"}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.owner_name || task.owner_email || "-"}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.dueDate ? format(new Date(task.dueDate), "MMM d, yyyy") : "-"}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.priority}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${Math.round((task.completion ?? 0) * 100)}%</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+      <h1>In-Progress Tasks Report</h1>
+      <p>${reportType === "daily" ? "Daily" : "Weekly"} summary for ${format(new Date(), "MMMM d, yyyy")}</p>
+      <p>Total in progress: <strong>${tasks.length}</strong></p>
+      <p>High priority: <strong>${highPriorityCount}</strong></p>
+      <p>Overdue: <strong>${overdueCount}</strong></p>
+      <table style="width:100%; border-collapse:collapse; margin-top:16px;">
+        <thead>
+          <tr style="background:#f3f4f6; text-align:left;">
+            <th style="padding:8px;">ID</th>
+            <th style="padding:8px;">Title</th>
+            <th style="padding:8px;">Department</th>
+            <th style="padding:8px;">Owner</th>
+            <th style="padding:8px;">Due Date</th>
+            <th style="padding:8px;">Priority</th>
+            <th style="padding:8px;">Progress</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+  `;
+
+  const text = [
+    `In-Progress Tasks Report (${reportType})`,
+    format(new Date(), "MMMM d, yyyy"),
+    "",
+    `Total in progress: ${tasks.length}`,
+    `High priority: ${highPriorityCount}`,
+    `Overdue: ${overdueCount}`,
+    "",
+    ...tasks.map(
+      (task) =>
+        `- ${task.title} | ${task.department || "-"} | ${task.owner_name || task.owner_email || "-"} | ${task.dueDate || "-"} | ${Math.round((task.completion ?? 0) * 100)}%`,
+    ),
+  ].join("\n");
+
+  return { subject, html, text };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { taskId, type } = body;
 
-    if (type === "reminder" && taskId) {
-      const result = await EmailService.sendTaskReminder(taskId);
-      return NextResponse.json(result);
+    if (type !== "in-progress-report") {
+      return NextResponse.json(
+        { error: "Only in-progress-report is currently supported in production." },
+        { status: 400 },
+      );
     }
 
-    if (type === "in-progress-report") {
-      const settings = await db.adminSettings.findFirst();
-      const adminEmail = settings?.adminEmail || process.env.ADMIN_EMAIL || "admin@example.com";
-      const reportType = body.reportType || "daily";
-      
-      const result = await EmailService.sendInProgressReport(adminEmail, reportType);
-      return NextResponse.json(result);
-    }
+    const settings = await d1First<SettingsRow>(
+      'SELECT "adminEmail" FROM "AdminSettings" ORDER BY "createdAt" ASC LIMIT 1',
+    );
+    const adminEmail = settings?.adminEmail || process.env.ADMIN_EMAIL || "admin@example.com";
+    const reportType = body.reportType === "weekly" ? "weekly" : "daily";
 
-    if (type === "assignment" && taskId) {
-      const result = await EmailService.sendTaskAssignmentNotification(taskId);
-      return NextResponse.json(result);
-    }
+    const tasks = await d1All<ReportTaskRow>(
+      `
+        SELECT
+          t.title,
+          t.taskId,
+          t.dueDate,
+          t.priority,
+          t.completion,
+          t.department,
+          owner.name AS owner_name,
+          owner.email AS owner_email
+        FROM "Task" t
+        LEFT JOIN "User" owner ON owner.id = t.ownerId
+        WHERE t.status = 'in_progress'
+        ORDER BY
+          CASE t.priority
+            WHEN 'critical' THEN 1
+            WHEN 'high' THEN 2
+            WHEN 'medium' THEN 3
+            ELSE 4
+          END,
+          t.dueDate ASC
+      `,
+    );
 
-    if (type === "overdue-all") {
-      const result = await EmailService.sendOverdueReminders();
-      return NextResponse.json(result);
-    }
+    const template = buildInProgressReport(tasks, reportType);
+    const result = await sendEmail({
+      to: adminEmail,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    });
 
-    if (type === "upcoming-all") {
-      const daysBefore = body.daysBefore || 3;
-      const result = await EmailService.sendUpcomingDueReminders(daysBefore);
-      return NextResponse.json(result);
-    }
+    await d1Run(
+      `
+        INSERT INTO "Notification" (
+          "id", "taskId", "userId", "type", "channel", "subject", "message",
+          "status", "scheduledAt", "sentAt", "error", "createdAt"
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      createId(),
+      taskId || null,
+      null,
+      "status_change",
+      "email",
+      template.subject,
+      template.text,
+      result.success ? "sent" : "failed",
+      null,
+      result.success ? nowIso() : null,
+      result.success ? null : result.error || "Unknown email error",
+      nowIso(),
+    );
 
-    return NextResponse.json({ error: "Invalid notification type" }, { status: 400 });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error sending notification:", error);
     return NextResponse.json(
-      { error: "Failed to send notification", message: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      {
+        error: "Failed to send notification",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }
 
-// GET /api/notifications - List notifications
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
     const status = searchParams.get("status");
-    
-    const where = status ? { status } : {};
-    
-    const notifications = await db.notification.findMany({
-      where,
-      include: {
-        task: {
-          select: { id: true, title: true, taskId: true },
-        },
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: limit,
+
+    const where = status ? 'WHERE n."status" = ?' : "";
+    const notifications = await d1All<NotificationRow>(
+      `
+        SELECT
+          n.id,
+          n.taskId,
+          n.userId,
+          n.type,
+          n.channel,
+          n.subject,
+          n.message,
+          n.status,
+          n.scheduledAt,
+          n.sentAt,
+          n.error,
+          n.createdAt,
+          t.title AS task_title,
+          t.taskId AS task_taskId,
+          u.name AS user_name,
+          u.email AS user_email
+        FROM "Notification" n
+        LEFT JOIN "Task" t ON t.id = n.taskId
+        LEFT JOIN "User" u ON u.id = n.userId
+        ${where}
+        ORDER BY n.createdAt DESC
+        LIMIT ?
+      `,
+      ...(status ? [status, limit] : [limit]),
+    );
+
+    return NextResponse.json({
+      notifications: notifications.map((notification) => ({
+        id: notification.id,
+        taskId: notification.taskId,
+        userId: notification.userId,
+        type: notification.type,
+        channel: notification.channel,
+        subject: notification.subject,
+        message: notification.message,
+        status: notification.status,
+        scheduledAt: notification.scheduledAt,
+        sentAt: notification.sentAt,
+        error: notification.error,
+        createdAt: notification.createdAt,
+        task: notification.task_title
+          ? {
+              id: notification.taskId,
+              title: notification.task_title,
+              taskId: notification.task_taskId,
+            }
+          : null,
+        user: notification.user_email
+          ? {
+              id: notification.userId,
+              name: notification.user_name,
+              email: notification.user_email,
+            }
+          : null,
+      })),
     });
-    
-    return NextResponse.json({ notifications });
   } catch (error) {
     console.error("Error fetching notifications:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch notifications" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch notifications" }, { status: 500 });
   }
 }

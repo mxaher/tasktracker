@@ -1,6 +1,19 @@
 import { PrismaD1 } from "@prisma/adapter-d1";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/edge";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+if (!("instantiateStreaming" in WebAssembly)) {
+  Object.assign(WebAssembly, {
+    async instantiateStreaming(
+      source: Promise<Response> | Response,
+      importObject?: WebAssembly.Imports,
+    ) {
+      const response = await source;
+      const bytes = await response.arrayBuffer();
+      return WebAssembly.instantiate(bytes, importObject);
+    },
+  });
+}
 
 type GlobalPrisma = typeof globalThis & {
   localPrisma?: PrismaClient;
@@ -44,6 +57,8 @@ function createCloudflarePrismaClient(database: D1Binding) {
 
 export function getDb() {
   const cloudflareDb = getCloudflareD1Binding();
+  const runningInCloudflare =
+    typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
 
   if (cloudflareDb) {
     // Running on Cloudflare Workers: use D1
@@ -51,6 +66,9 @@ export function getDb() {
     return globalForPrisma.cloudflarePrisma;
   }
 
+  if (runningInCloudflare) {
+    throw new Error("Cloudflare DB binding was not found in the request context.");
+  }
   // Local development: use SQLite via DATABASE_URL
   globalForPrisma.localPrisma ??= createLocalPrismaClient();
   return globalForPrisma.localPrisma;

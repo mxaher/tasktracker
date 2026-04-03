@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "../../../generated/prisma/edge";
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
 import * as XLSX from "xlsx";
+
+export const runtime = "edge";
 
 // Column mapping for Arabic/English columns
 const columnMapping: Record<string, string> = {

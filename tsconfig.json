@@ -36,6 +36,8 @@
     "prisma/**/*.ts",
     "next.config.ts",
     "open-next.config.ts",
+    "src/generated/**/*.ts",
+    "src/generated/**/*.js",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
