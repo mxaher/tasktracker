@@ -38,19 +38,28 @@ type SettingsRow = {
   adminEmail: string;
 };
 
-function getDb() {
-  const context = getCloudflareContext();
-  const env = (context.env ?? {}) as {
-    DB?: {
-      prepare: (sql: string) => {
-        bind: (...params: D1Value[]) => {
-          all: <T>() => Promise<{ results?: T[] }>;
-          first: <T>() => Promise<T | null>;
-          run: () => Promise<unknown>;
-        };
+type WorkerEnv = {
+  DB?: {
+    prepare: (sql: string) => {
+      bind: (...params: D1Value[]) => {
+        all: <T>() => Promise<{ results?: T[] }>;
+        first: <T>() => Promise<T | null>;
+        run: () => Promise<unknown>;
       };
     };
   };
+  RESEND_API_KEY?: string;
+  FROM_EMAIL?: string;
+  ADMIN_EMAIL?: string;
+};
+
+function getWorkerEnv() {
+  const context = getCloudflareContext();
+  return (context.env ?? {}) as WorkerEnv;
+}
+
+function getDb() {
+  const env = getWorkerEnv();
 
   if (!env.DB) {
     throw new Error("Cloudflare D1 binding is not available.");
@@ -86,14 +95,15 @@ async function sendEmail(payload: {
   html: string;
   text: string;
 }) {
-  const resendApiKey = process.env.RESEND_API_KEY || "";
-  const fromEmail = process.env.FROM_EMAIL || "noreply@tasktracker.local";
+  const env = getWorkerEnv();
+  const resendApiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY || "";
+  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@tasktracker.local";
 
   if (!resendApiKey) {
-    console.log("[Email] Resend API key not configured. Email would have been sent:");
-    console.log(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
-    console.log(`  Subject: ${payload.subject}`);
-    return { success: true as const };
+    return {
+      success: false as const,
+      error: "RESEND_API_KEY is not configured in the Worker runtime.",
+    };
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -202,7 +212,8 @@ export async function POST(request: NextRequest) {
     const settings = await d1First<SettingsRow>(
       'SELECT "adminEmail" FROM "AdminSettings" ORDER BY "createdAt" ASC LIMIT 1',
     );
-    const adminEmail = settings?.adminEmail || process.env.ADMIN_EMAIL || "admin@example.com";
+    const env = getWorkerEnv();
+    const adminEmail = settings?.adminEmail || env.ADMIN_EMAIL || process.env.ADMIN_EMAIL || "admin@example.com";
     const reportType = body.reportType === "weekly" ? "weekly" : "daily";
 
     const tasks = await d1All<ReportTaskRow>(
