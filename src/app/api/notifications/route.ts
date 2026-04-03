@@ -121,16 +121,20 @@ async function sendEmail(payload: {
     }),
   });
 
+  let responseBody: { id?: string; message?: string; name?: string } | null = null;
+  try {
+    responseBody = await response.json();
+  } catch {}
+
   if (!response.ok) {
-    let message = "Failed to send email";
-    try {
-      const error = await response.json();
-      message = error.message || message;
-    } catch {}
+    const message = responseBody?.message || responseBody?.name || "Failed to send email";
     return { success: false as const, error: message };
   }
 
-  return { success: true as const };
+  return {
+    success: true as const,
+    resendId: responseBody?.id || null,
+  };
 }
 
 function buildInProgressReport(tasks: ReportTaskRow[], reportType: "daily" | "weekly") {
@@ -242,12 +246,34 @@ export async function POST(request: NextRequest) {
     );
 
     const template = buildInProgressReport(tasks, reportType);
+    const runtimeEnv = getWorkerEnv();
+    const resolvedFromEmail =
+      runtimeEnv.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@tasktracker.local";
+    const hasResendApiKey = Boolean(
+      runtimeEnv.RESEND_API_KEY || process.env.RESEND_API_KEY,
+    );
+
     const result = await sendEmail({
       to: adminEmail,
       subject: template.subject,
       html: template.html,
       text: template.text,
     });
+
+    if (!result.success) {
+      console.error("[Notifications] Email send failed", {
+        error: result.error,
+        hasResendApiKey,
+        fromEmail: resolvedFromEmail,
+        adminEmail,
+      });
+    } else {
+      console.info("[Notifications] Email sent", {
+        resendId: result.resendId,
+        fromEmail: resolvedFromEmail,
+        adminEmail,
+      });
+    }
 
     await d1Run(
       `
@@ -271,7 +297,17 @@ export async function POST(request: NextRequest) {
       nowIso(),
     );
 
-    return NextResponse.json(result);
+    return NextResponse.json(
+      {
+        ...result,
+        debug: {
+          hasResendApiKey,
+          fromEmail: resolvedFromEmail,
+          adminEmail,
+        },
+      },
+      { status: result.success ? 200 : 500 },
+    );
   } catch (error) {
     console.error("Error sending notification:", error);
     return NextResponse.json(
