@@ -35,15 +35,12 @@ export function getDb() {
   const cloudflareDb = getCloudflareD1Binding();
 
   if (cloudflareDb) {
+    // Running on Cloudflare Workers: use D1
     globalForPrisma.cloudflarePrisma ??= createCloudflarePrismaClient(cloudflareDb);
     return globalForPrisma.cloudflarePrisma;
   }
 
-  if (process.env.NODE_ENV === "production") {
-    globalForPrisma.localPrisma ??= createLocalPrismaClient();
-    return globalForPrisma.localPrisma;
-  }
-
+  // Local development: use SQLite via DATABASE_URL
   globalForPrisma.localPrisma ??= createLocalPrismaClient();
   return globalForPrisma.localPrisma;
 }
