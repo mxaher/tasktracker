@@ -13,11 +13,22 @@ const globalForPrisma = globalThis as GlobalPrisma;
 
 function getCloudflareD1Binding(): D1Binding | undefined {
   try {
+    // Try method 1: getCloudflareContext
     const context = getCloudflareContext();
-    return (context.env as { DB?: D1Binding }).DB;
-  } catch {
-    return undefined;
-  }
+    const binding = (context.env as { DB?: D1Binding }).DB;
+    if (binding) return binding;
+  } catch {}
+  
+  try {
+    // Try method 2: globalThis.process.env (OpenNext Cloudflare pattern)
+    const globalWithEnv = globalThis as typeof globalThis & { 
+      process?: { env?: { DB?: D1Binding } } 
+    };
+    const binding = globalWithEnv.process?.env?.DB as D1Binding | undefined;
+    if (binding) return binding;
+  } catch {}
+
+  return undefined;
 }
 
 function createLocalPrismaClient() {
@@ -46,7 +57,7 @@ export function getDb() {
 }
 
 export const db = new Proxy({} as PrismaClient, {
-  get(_target, property, receiver) {
+  get(target, property, receiver) {
     return Reflect.get(getDb(), property, receiver);
   },
 });
