@@ -1416,7 +1416,7 @@ export default function TaskTrackerApp() {
             <Input
               id="adminEmail"
               type="email"
-              placeholder="admin@example.com"
+              placeholder="moh_zaher@msn.com"
               value={settings.adminEmail}
               onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
             />

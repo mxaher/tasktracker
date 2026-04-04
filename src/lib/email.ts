@@ -514,7 +514,7 @@ export class EmailService {
     }
 
     const settings = await db.adminSettings.findFirst();
-    const adminEmail = settings?.adminEmail || process.env.ADMIN_EMAIL || "admin@example.com";
+    const adminEmail = settings?.adminEmail || process.env.ADMIN_EMAIL || "moh_zaher@msn.com";
 
     let sent = 0;
     let failed = 0;
@@ -635,7 +635,7 @@ export class EmailService {
       return { sent: 0, failed: 0 };
     }
 
-    const adminEmail = settings.adminEmail || process.env.ADMIN_EMAIL || "admin@example.com";
+    const adminEmail = settings.adminEmail || process.env.ADMIN_EMAIL || "moh_zaher@msn.com";
     
     // Get all active tasks
     const tasks = await db.task.findMany({

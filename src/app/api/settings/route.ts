@@ -107,7 +107,7 @@ async function ensureSettingsRow() {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     id,
-    process.env.ADMIN_EMAIL || "admin@example.com",
+    process.env.ADMIN_EMAIL || "moh_zaher@msn.com",
     0,
     "09:00",
     0,
