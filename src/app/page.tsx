@@ -664,24 +664,14 @@ export default function TaskTrackerApp() {
               </div>
               <CardTitle className="text-base line-clamp-2">{task.title}</CardTitle>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openTaskModal(task); }}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={(e) => { e.stopPropagation(); setTaskToDelete(task); setIsDeleteDialogOpen(true); }}
-                  className="text-red-600"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => { e.stopPropagation(); setTaskToDelete(task); setIsDeleteDialogOpen(true); }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -793,6 +783,17 @@ export default function TaskTrackerApp() {
       }
     };
 
+    const [quickUpdate, setQuickUpdate] = useState("");
+
+    const handleAddUpdate = () => {
+      if (!quickUpdate.trim()) return;
+      const timestamp = format(new Date(), "yyyy-MM-dd HH:mm");
+      const entry = `[${timestamp}] ${quickUpdate.trim()}`;
+      const existing = localTask.notes?.trim();
+      setLocalTask({ ...localTask, notes: existing ? `${entry}\n${existing}` : entry });
+      setQuickUpdate("");
+    };
+
     return (
       <Dialog open={isTaskModalOpen} onOpenChange={(open) => {
         setIsTaskModalOpen(open);
@@ -801,225 +802,266 @@ export default function TaskTrackerApp() {
           setEditingTask({});
         }
       }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+          {/* Header */}
+          <DialogHeader className="px-6 pt-5 pb-4 border-b flex-shrink-0">
             <DialogTitle>{selectedTask ? "تعديل المهمة" : "إنشاء مهمة جديدة"}</DialogTitle>
             <DialogDescription>
-              {selectedTask ? "تحديث ��فاصيل المهمة والتقدم" : "إضافة مهمة جديدة إلى المتتبع"}
+              {selectedTask ? "تحديث تفاصيل المهمة والتقدم" : "إضافة مهمة جديدة إلى المتتبع"}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">العنوان *</Label>
-              <Input
-                id="title"
-                value={localTask.title || ""}
-                onChange={(e) => setLocalTask({ ...localTask, title: e.target.value })}
-                placeholder="أدخل عنوان المهمة"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="description">الوصف</Label>
-              <Textarea
-                id="description"
-                value={localTask.description || ""}
-                onChange={(e) => setLocalTask({ ...localTask, description: e.target.value })}
-                placeholder="أدخل وصف المهمة"
-                rows={3}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+
+          {/* Body: two panels */}
+          <div className="flex flex-1 overflow-hidden min-h-0">
+
+            {/* Left panel — task details */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="department">القسم</Label>
+                <Label htmlFor="title">العنوان *</Label>
                 <Input
-                  id="department"
-                  value={localTask.department || ""}
-                  onChange={(e) => setLocalTask({ ...localTask, department: e.target.value })}
-                  placeholder="أدخل القسم"
+                  id="title"
+                  value={localTask.title || ""}
+                  onChange={(e) => setLocalTask({ ...localTask, title: e.target.value })}
+                  placeholder="أدخل عنوان المهمة"
                 />
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="strategicPillar">الركيزة الاستراتيجية</Label>
+                <Label htmlFor="description">الوصف</Label>
+                <Textarea
+                  id="description"
+                  value={localTask.description || ""}
+                  onChange={(e) => setLocalTask({ ...localTask, description: e.target.value })}
+                  placeholder="أدخل وصف المهمة"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="department">القسم</Label>
+                  <Input
+                    id="department"
+                    value={localTask.department || ""}
+                    onChange={(e) => setLocalTask({ ...localTask, department: e.target.value })}
+                    placeholder="أدخل القسم"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="strategicPillar">الركيزة الاستراتيجية</Label>
+                  <Input
+                    id="strategicPillar"
+                    value={localTask.strategicPillar || ""}
+                    onChange={(e) => setLocalTask({ ...localTask, strategicPillar: e.target.value })}
+                    placeholder="أدخل الركيزة الاستراتيجية"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="owner">المالك</Label>
+                  <Select
+                    value={localTask.ownerId || "none"}
+                    onValueChange={(value) => setLocalTask({ ...localTask, ownerId: value === "none" ? null : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر المالك" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">لا يوجد مالك</SelectItem>
+                      {users.map(user => (
+                        <SelectItem key={user.id} value={user.id}>{user.name || user.email}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="assignee">المُكلَّف</Label>
+                  <Select
+                    value={localTask.assigneeId || "none"}
+                    onValueChange={(value) => setLocalTask({ ...localTask, assigneeId: value === "none" ? null : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر المُكلَّف" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">لا يوجد مُكلَّف</SelectItem>
+                      {users.map(user => (
+                        <SelectItem key={user.id} value={user.id}>{user.name || user.email}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="startDate">تاريخ البدء</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={localTask.startDate ? format(new Date(localTask.startDate), "yyyy-MM-dd") : ""}
+                    onChange={(e) => setLocalTask({ ...localTask, startDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="dueDate">تاريخ الاستحقاق</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={localTask.dueDate ? format(new Date(localTask.dueDate), "yyyy-MM-dd") : ""}
+                    onChange={(e) => setLocalTask({ ...localTask, dueDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="sourceMonth">شهر المصدر</Label>
                 <Input
-                  id="strategicPillar"
-                  value={localTask.strategicPillar || ""}
-                  onChange={(e) => setLocalTask({ ...localTask, strategicPillar: e.target.value })}
-                  placeholder="أدخل الركيزة الاستراتيجية"
+                  id="sourceMonth"
+                  value={localTask.sourceMonth || ""}
+                  onChange={(e) => setLocalTask({ ...localTask, sourceMonth: e.target.value })}
+                  placeholder="مثال: يناير 2025"
                 />
               </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+
+            {/* Divider */}
+            <div className="w-px bg-border flex-shrink-0" />
+
+            {/* Right panel — status, progress, updates */}
+            <div className="w-80 flex-shrink-0 overflow-y-auto px-5 py-4 space-y-5 bg-muted/20">
+
+              {/* Status & Priority */}
+              <div className="grid gap-3">
+                <div className="grid gap-2">
+                  <Label>الحالة</Label>
+                  <Select
+                    value={localTask.status || "not_started"}
+                    onValueChange={(value) => setLocalTask({
+                      ...localTask,
+                      status: value,
+                      completion: value === "completed" ? 1 : localTask.completion
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر الحالة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="not_started">لم يبدأ</SelectItem>
+                      <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
+                      <SelectItem value="delayed">متأخر</SelectItem>
+                      <SelectItem value="completed">مكتمل</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>الأولوية</Label>
+                  <Select
+                    value={localTask.priority || "medium"}
+                    onValueChange={(value) => setLocalTask({ ...localTask, priority: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر الأولوية" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">منخفض</SelectItem>
+                      <SelectItem value="medium">متوسط</SelectItem>
+                      <SelectItem value="high">عالي</SelectItem>
+                      <SelectItem value="critical">حرج</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <Label>نسبة الإنجاز</Label>
+                    <span className="text-sm font-semibold text-primary">{Math.round((localTask.completion || 0) * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={Math.round((localTask.completion || 0) * 100)}
+                    onChange={(e) => setLocalTask({
+                      ...localTask,
+                      completion: parseInt(e.target.value) / 100
+                    })}
+                    className="w-full accent-primary"
+                  />
+                  <Progress value={Math.round((localTask.completion || 0) * 100)} className="h-2" />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Quick Update */}
               <div className="grid gap-2">
-                <Label htmlFor="owner">المالك</Label>
-                <Select
-                  value={localTask.ownerId || "none"}
-                  onValueChange={(value) => setLocalTask({ ...localTask, ownerId: value === "none" ? null : value })}
+                <Label className="text-sm font-semibold">إضافة تحديث</Label>
+                <Textarea
+                  value={quickUpdate}
+                  onChange={(e) => setQuickUpdate(e.target.value)}
+                  placeholder="اكتب تحديثاً سريعاً..."
+                  rows={3}
+                  onKeyDown={(e) => { if (e.key === "Enter" && e.ctrlKey) handleAddUpdate(); }}
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleAddUpdate}
+                  disabled={!quickUpdate.trim()}
+                  className="w-full"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر المالك" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">لا يوجد مالك</SelectItem>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Send className="h-3.5 w-3.5 me-2" /> إضافة التحديث
+                </Button>
               </div>
+
+              <Separator />
+
+              {/* Notes log */}
               <div className="grid gap-2">
-                <Label htmlFor="assignee">المُكلَّف</Label>
-                <Select
-                  value={localTask.assigneeId || "none"}
-                  onValueChange={(value) => setLocalTask({ ...localTask, assigneeId: value === "none" ? null : value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر المُكلَّف" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">لا يوجد مُكلَّف</SelectItem>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="priority">الأولوية</Label>
-                <Select
-                  value={localTask.priority || "medium"}
-                  onValueChange={(value) => setLocalTask({ ...localTask, priority: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الأولوية" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">منخفض</SelectItem>
-                    <SelectItem value="medium">متوسط</SelectItem>
-                    <SelectItem value="high">عالي</SelectItem>
-                    <SelectItem value="critical">حرج</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">الحالة</Label>
-                <Select
-                  value={localTask.status || "not_started"}
-                  onValueChange={(value) => setLocalTask({
-                    ...localTask,
-                    status: value,
-                    completion: value === "completed" ? 1 : localTask.completion
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الحالة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="not_started">لم يبدأ</SelectItem>
-                    <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
-                    <SelectItem value="delayed">متأخر</SelectItem>
-                    <SelectItem value="completed">مكتمل</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="completion">نسبة الإنجاز %</Label>
-                <Input
-                  id="completion"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={Math.round((localTask.completion || 0) * 100)}
-                  onChange={(e) => setLocalTask({ 
-                    ...localTask, 
-                    completion: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) / 100 
-                  })}
+                <Label>سجل الملاحظات</Label>
+                <Textarea
+                  value={localTask.notes || ""}
+                  onChange={(e) => setLocalTask({ ...localTask, notes: e.target.value })}
+                  placeholder="لا توجد ملاحظات بعد"
+                  rows={5}
+                  className="text-xs"
                 />
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+
+              {/* Next Step */}
               <div className="grid gap-2">
-                <Label htmlFor="startDate">تاريخ البدء</Label>
+                <Label>الخطوة التالية</Label>
                 <Input
-                  id="startDate"
-                  type="date"
-                  value={localTask.startDate ? format(new Date(localTask.startDate), "yyyy-MM-dd") : ""}
-                  onChange={(e) => setLocalTask({ ...localTask, startDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                  value={localTask.nextStep || ""}
+                  onChange={(e) => setLocalTask({ ...localTask, nextStep: e.target.value })}
+                  placeholder="ما الخطوة التالية؟"
                 />
               </div>
+
+              {/* CEO Notes */}
               <div className="grid gap-2">
-                <Label htmlFor="dueDate">تاريخ الاستحقاق</Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={localTask.dueDate ? format(new Date(localTask.dueDate), "yyyy-MM-dd") : ""}
-                  onChange={(e) => setLocalTask({ ...localTask, dueDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                <Label>ملاحظات الرئيس التنفيذي</Label>
+                <Textarea
+                  value={localTask.ceoNotes || ""}
+                  onChange={(e) => setLocalTask({ ...localTask, ceoNotes: e.target.value })}
+                  placeholder="تعليقات الرئيس التنفيذي"
+                  rows={2}
                 />
               </div>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="notes">ملاحظات</Label>
-              <Textarea
-                id="notes"
-                value={localTask.notes || ""}
-                onChange={(e) => setLocalTask({ ...localTask, notes: e.target.value })}
-                placeholder="أضف ملاحظات"
-                rows={2}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="nextStep">الخطوة التالية</Label>
-              <Input
-                id="nextStep"
-                value={localTask.nextStep || ""}
-                onChange={(e) => setLocalTask({ ...localTask, nextStep: e.target.value })}
-                placeholder="ما الخطوة التالية؟"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="ceoNotes">ملاحظات الرئيس التنفيذي</Label>
-              <Textarea
-                id="ceoNotes"
-                value={localTask.ceoNotes || ""}
-                onChange={(e) => setLocalTask({ ...localTask, ceoNotes: e.target.value })}
-                placeholder="تعليقات الرئيس التنفيذي"
-                rows={2}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="sourceMonth">شهر المصدر</Label>
-              <Input
-                id="sourceMonth"
-                value={localTask.sourceMonth || ""}
-                onChange={(e) => setLocalTask({ ...localTask, sourceMonth: e.target.value })}
-                placeholder="مثال: يناير 2025"
-              />
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsTaskModalOpen(false)}>
-              إلغاء
-            </Button>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-2 px-6 py-4 border-t flex-shrink-0">
+            <Button variant="outline" onClick={() => setIsTaskModalOpen(false)}>إلغاء</Button>
             <Button onClick={handleSubmit}>
               {selectedTask ? "تحديث المهمة" : "إنشاء المهمة"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -1494,18 +1536,14 @@ export default function TaskTrackerApp() {
                           >
                             <BarChart3 className="h-3 w-3 ml-1" /> التقدم
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { setTaskToDelete(task); setIsDeleteDialogOpen(true); }} className="text-red-600">
-                                <Trash2 className="ml-2 h-4 w-4" /> حذف
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => { setTaskToDelete(task); setIsDeleteDialogOpen(true); }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
