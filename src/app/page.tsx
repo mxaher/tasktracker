@@ -78,17 +78,17 @@ interface User {
 
 // Status configurations
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: typeof CheckCircle2 }> = {
-  not_started: { label: "Not Started", color: "text-slate-600", bgColor: "bg-slate-100", icon: Clock },
-  in_progress: { label: "In Progress", color: "text-amber-600", bgColor: "bg-amber-100", icon: TrendingUp },
-  delayed: { label: "Delayed", color: "text-red-600", bgColor: "bg-red-100", icon: AlertTriangle },
-  completed: { label: "Completed", color: "text-emerald-600", bgColor: "bg-emerald-100", icon: CheckCircle2 },
+  not_started: { label: "لم يبدأ", color: "text-slate-600", bgColor: "bg-slate-100", icon: Clock },
+  in_progress: { label: "قيد التنفيذ", color: "text-amber-600", bgColor: "bg-amber-100", icon: TrendingUp },
+  delayed: { label: "متأخر", color: "text-red-600", bgColor: "bg-red-100", icon: AlertTriangle },
+  completed: { label: "مكتمل", color: "text-emerald-600", bgColor: "bg-emerald-100", icon: CheckCircle2 },
 };
 
 const priorityConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  low: { label: "Low", color: "text-slate-600", bgColor: "bg-slate-100" },
-  medium: { label: "Medium", color: "text-amber-600", bgColor: "bg-amber-100" },
-  high: { label: "High", color: "text-orange-600", bgColor: "bg-orange-100" },
-  critical: { label: "Critical", color: "text-red-600", bgColor: "bg-red-100" },
+  low: { label: "منخفض", color: "text-slate-600", bgColor: "bg-slate-100" },
+  medium: { label: "متوسط", color: "text-amber-600", bgColor: "bg-amber-100" },
+  high: { label: "عالي", color: "text-orange-600", bgColor: "bg-orange-100" },
+  critical: { label: "حرج", color: "text-red-600", bgColor: "bg-red-100" },
 };
 
 export default function TaskTrackerApp() {
@@ -632,8 +632,8 @@ export default function TaskTrackerApp() {
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
         {trend !== undefined && (
           <div className={`flex items-center text-xs mt-2 ${trend >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-            {trend >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <AlertTriangle className="h-3 w-3 mr-1" />}
-            {Math.abs(trend)}% from last month
+            {trend >= 0 ? <TrendingUp className="h-3 w-3 ml-1" /> : <AlertTriangle className="h-3 w-3 ml-1" />}
+            {Math.abs(trend)}% مقارنة بالشهر الماضي
           </div>
         )}
       </CardContent>
@@ -783,7 +783,7 @@ export default function TaskTrackerApp() {
 
     const handleSubmit = () => {
       if (!localTask.title?.trim()) {
-        toast.error("Title is required");
+        toast.error("العنوان مطلوب");
         return;
       }
       if (selectedTask) {
@@ -803,67 +803,67 @@ export default function TaskTrackerApp() {
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedTask ? "Edit Task" : "Create New Task"}</DialogTitle>
+            <DialogTitle>{selectedTask ? "تعديل المهمة" : "إنشاء مهمة جديدة"}</DialogTitle>
             <DialogDescription>
-              {selectedTask ? "Update task details and progress" : "Add a new task to your tracker"}
+              {selectedTask ? "تحديث ��فاصيل المهمة والتقدم" : "إضافة مهمة جديدة إلى المتتبع"}
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">العنوان *</Label>
               <Input
                 id="title"
                 value={localTask.title || ""}
                 onChange={(e) => setLocalTask({ ...localTask, title: e.target.value })}
-                placeholder="Enter task title"
+                placeholder="أدخل عنوان المهمة"
               />
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">الوصف</Label>
               <Textarea
                 id="description"
                 value={localTask.description || ""}
                 onChange={(e) => setLocalTask({ ...localTask, description: e.target.value })}
-                placeholder="Enter task description"
+                placeholder="أدخل وصف المهمة"
                 rows={3}
               />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="department">Department</Label>
+                <Label htmlFor="department">القسم</Label>
                 <Input
                   id="department"
                   value={localTask.department || ""}
                   onChange={(e) => setLocalTask({ ...localTask, department: e.target.value })}
-                  placeholder="Enter department"
+                  placeholder="أدخل القسم"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="strategicPillar">Strategic Pillar</Label>
+                <Label htmlFor="strategicPillar">الركيزة الاستراتيجية</Label>
                 <Input
                   id="strategicPillar"
                   value={localTask.strategicPillar || ""}
                   onChange={(e) => setLocalTask({ ...localTask, strategicPillar: e.target.value })}
-                  placeholder="Enter strategic pillar"
+                  placeholder="أدخل الركيزة الاستراتيجية"
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="owner">Owner</Label>
+                <Label htmlFor="owner">المالك</Label>
                 <Select
                   value={localTask.ownerId || "none"}
                   onValueChange={(value) => setLocalTask({ ...localTask, ownerId: value === "none" ? null : value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select owner" />
+                    <SelectValue placeholder="اختر المالك" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No owner assigned</SelectItem>
+                    <SelectItem value="none">لا يوجد مالك</SelectItem>
                     {users.map(user => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name || user.email}
@@ -873,16 +873,16 @@ export default function TaskTrackerApp() {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="assignee">Assignee</Label>
+                <Label htmlFor="assignee">المُكلَّف</Label>
                 <Select
                   value={localTask.assigneeId || "none"}
                   onValueChange={(value) => setLocalTask({ ...localTask, assigneeId: value === "none" ? null : value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select assignee" />
+                    <SelectValue placeholder="اختر المُكلَّف" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No assignee</SelectItem>
+                    <SelectItem value="none">لا يوجد مُكلَّف</SelectItem>
                     {users.map(user => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name || user.email}
@@ -895,45 +895,45 @@ export default function TaskTrackerApp() {
             
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority">الأولوية</Label>
                 <Select
                   value={localTask.priority || "medium"}
                   onValueChange={(value) => setLocalTask({ ...localTask, priority: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
+                    <SelectValue placeholder="اختر الأولوية" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="low">منخفض</SelectItem>
+                    <SelectItem value="medium">متوسط</SelectItem>
+                    <SelectItem value="high">عالي</SelectItem>
+                    <SelectItem value="critical">حرج</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">الحالة</Label>
                 <Select
                   value={localTask.status || "not_started"}
-                  onValueChange={(value) => setLocalTask({ 
-                    ...localTask, 
+                  onValueChange={(value) => setLocalTask({
+                    ...localTask,
                     status: value,
                     completion: value === "completed" ? 1 : localTask.completion
                   })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="اختر الحالة" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="not_started">Not Started</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="delayed">Delayed</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="not_started">لم يبدأ</SelectItem>
+                    <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
+                    <SelectItem value="delayed">متأخر</SelectItem>
+                    <SelectItem value="completed">مكتمل</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="completion">Completion %</Label>
+                <Label htmlFor="completion">نسبة الإنجاز %</Label>
                 <Input
                   id="completion"
                   type="number"
@@ -950,7 +950,7 @@ export default function TaskTrackerApp() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="startDate">Start Date</Label>
+                <Label htmlFor="startDate">تاريخ البدء</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -959,7 +959,7 @@ export default function TaskTrackerApp() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="dueDate">Due Date</Label>
+                <Label htmlFor="dueDate">تاريخ الاستحقاق</Label>
                 <Input
                   id="dueDate"
                   type="date"
@@ -970,54 +970,54 @@ export default function TaskTrackerApp() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">ملاحظات</Label>
               <Textarea
                 id="notes"
                 value={localTask.notes || ""}
                 onChange={(e) => setLocalTask({ ...localTask, notes: e.target.value })}
-                placeholder="Add notes"
+                placeholder="أضف ملاحظات"
                 rows={2}
               />
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="nextStep">Next Step</Label>
+              <Label htmlFor="nextStep">الخطوة التالية</Label>
               <Input
                 id="nextStep"
                 value={localTask.nextStep || ""}
                 onChange={(e) => setLocalTask({ ...localTask, nextStep: e.target.value })}
-                placeholder="What's the next step?"
+                placeholder="ما الخطوة التالية؟"
               />
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="ceoNotes">CEO Notes</Label>
+              <Label htmlFor="ceoNotes">ملاحظات الرئيس التنفيذي</Label>
               <Textarea
                 id="ceoNotes"
                 value={localTask.ceoNotes || ""}
                 onChange={(e) => setLocalTask({ ...localTask, ceoNotes: e.target.value })}
-                placeholder="CEO comments"
+                placeholder="تعليقات الرئيس التنفيذي"
                 rows={2}
               />
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="sourceMonth">Source Month</Label>
+              <Label htmlFor="sourceMonth">شهر المصدر</Label>
               <Input
                 id="sourceMonth"
                 value={localTask.sourceMonth || ""}
                 onChange={(e) => setLocalTask({ ...localTask, sourceMonth: e.target.value })}
-                placeholder="e.g., January 2025"
+                placeholder="مثال: يناير 2025"
               />
             </div>
           </div>
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsTaskModalOpen(false)}>
-              Cancel
+              إلغاء
             </Button>
             <Button onClick={handleSubmit}>
-              {selectedTask ? "Update Task" : "Create Task"}
+              {selectedTask ? "تحديث المهمة" : "إنشاء المهمة"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1029,15 +1029,15 @@ export default function TaskTrackerApp() {
     <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Upload Tasks</DialogTitle>
+          <DialogTitle>رفع المهام</DialogTitle>
           <DialogDescription>
-            Upload an Excel or CSV file with your task data
+            ارفع ملف Excel أو CSV يحتوي على بيانات المهام
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="file">File</Label>
+            <Label htmlFor="file">الملف</Label>
             <Input
               id="file"
               type="file"
@@ -1045,34 +1045,34 @@ export default function TaskTrackerApp() {
               onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
             />
           </div>
-          
+
           {uploadProgress > 0 && (
             <div className="space-y-2">
               <Progress value={uploadProgress} />
               <p className="text-sm text-muted-foreground text-center">
-                {uploadProgress < 100 ? "Processing..." : "Complete!"}
+                {uploadProgress < 100 ? "جار المعالجة..." : "اكتمل!"}
               </p>
             </div>
           )}
-          
+
           <div className="text-sm text-muted-foreground">
-            <p className="font-medium mb-2">Supported columns:</p>
+            <p className="font-medium mb-2">الأعمدة المدعومة:</p>
             <ul className="list-disc list-inside space-y-1 text-xs">
-              <li>Task ID, Title, Description</li>
-              <li>Owner, Department, Priority</li>
-              <li>Status, Start Date, Due Date</li>
-              <li>Completion %, Notes, Source Month</li>
+              <li>رقم المهمة، العنوان، الوصف</li>
+              <li>المالك، القسم، الأولوية</li>
+              <li>الحالة، تاريخ البدء، تاريخ الاستحقاق</li>
+              <li>نسبة الإنجاز، الملاحظات، شهر المصدر</li>
             </ul>
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsUploadModalOpen(false)}>
-            Cancel
+            إلغاء
           </Button>
           <Button onClick={handleUpload} disabled={!uploadFile || uploadProgress > 0}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload
+            <Upload className="ml-2 h-4 w-4" />
+            رفع
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1088,29 +1088,29 @@ export default function TaskTrackerApp() {
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KPICard
-            title="Total Tasks"
+            title="إجمالي المهام"
             value={stats.totalTasks}
             icon={List}
-            subtitle="All tasks in system"
+            subtitle="جميع المهام في النظام"
           />
           <KPICard
-            title="Completion Rate"
+            title="معدل الإنجاز"
             value={`${Math.round(stats.completionRate)}%`}
             icon={CheckCircle2}
-            subtitle={`${stats.completedTasks} completed`}
+            subtitle={`${stats.completedTasks} مكتملة`}
             trend={5}
           />
           <KPICard
-            title="In Progress"
+            title="قيد التنفيذ"
             value={stats.inProgressTasks}
             icon={TrendingUp}
-            subtitle="Active tasks"
+            subtitle="المهام النشطة"
           />
           <KPICard
-            title="Delayed"
+            title="متأخرة"
             value={stats.delayedTasks}
             icon={AlertTriangle}
-            subtitle="Need attention"
+            subtitle="تحتاج اهتماماً"
             color="destructive"
           />
         </div>
@@ -1120,7 +1120,7 @@ export default function TaskTrackerApp() {
           {/* Status Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Status Distribution</CardTitle>
+              <CardTitle className="text-base">توزيع الحالات</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -1150,7 +1150,7 @@ export default function TaskTrackerApp() {
           {/* Priority Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Priority Distribution</CardTitle>
+              <CardTitle className="text-base">توزيع الأولويات</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -1181,7 +1181,7 @@ export default function TaskTrackerApp() {
         {/* Department Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Tasks by Department</CardTitle>
+            <CardTitle className="text-base">المهام حسب القسم</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
@@ -1207,12 +1207,12 @@ export default function TaskTrackerApp() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2 text-red-700">
                 <AlertTriangle className="h-4 w-4" />
-                Overdue Tasks
+                المهام المتأخرة
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-red-700">{stats.overdueTasks}</p>
-              <p className="text-sm text-red-600 mt-1">Tasks past due date</p>
+              <p className="text-sm text-red-600 mt-1">مهام تجاوزت تاريخ الاستحقاق</p>
             </CardContent>
           </Card>
 
@@ -1220,12 +1220,12 @@ export default function TaskTrackerApp() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2 text-amber-700">
                 <Clock className="h-4 w-4" />
-                Due Soon
+                تستحق قريباً
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-amber-700">{stats.dueSoonTasks}</p>
-              <p className="text-sm text-amber-600 mt-1">Due within 7 days</p>
+              <p className="text-sm text-amber-600 mt-1">تستحق خلال 7 أيام</p>
             </CardContent>
           </Card>
         </div>
@@ -1240,45 +1240,45 @@ export default function TaskTrackerApp() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-1 gap-2">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search tasks..."
+              placeholder="البحث في المهام..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pr-9"
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="الحالة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="not_started">Not Started</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="delayed">Delayed</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="all">كل الحالات</SelectItem>
+              <SelectItem value="not_started">لم يبدأ</SelectItem>
+              <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
+              <SelectItem value="delayed">متأخر</SelectItem>
+              <SelectItem value="completed">مكتمل</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterPriority} onValueChange={setFilterPriority}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Priority" />
+              <SelectValue placeholder="الأولوية" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="all">كل الأولويات</SelectItem>
+              <SelectItem value="critical">حرج</SelectItem>
+              <SelectItem value="high">عالي</SelectItem>
+              <SelectItem value="medium">متوسط</SelectItem>
+              <SelectItem value="low">منخفض</SelectItem>
             </SelectContent>
           </Select>
           {departments.length > 0 && (
             <Select value={filterDepartment} onValueChange={setFilterDepartment}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Department" />
+                <SelectValue placeholder="القسم" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
+                <SelectItem value="all">كل الأقسام</SelectItem>
                 {departments.map(dept => (
                   <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                 ))}
@@ -1303,15 +1303,15 @@ export default function TaskTrackerApp() {
             <Grid3X3 className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-1" />
-            Export
+            <Download className="h-4 w-4 ml-1" />
+            تصدير
           </Button>
         </div>
       </div>
 
       {/* Results count */}
       <div className="text-sm text-muted-foreground">
-        Showing {filteredTasks.length} of {tasks.length} tasks
+        عرض {filteredTasks.length} من {tasks.length} مهمة
       </div>
 
       {/* Task views */}
@@ -1323,10 +1323,10 @@ export default function TaskTrackerApp() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64 text-muted-foreground">
             <List className="h-12 w-12 mb-4" />
-            <p>No tasks found</p>
+            <p>لا توجد مهام</p>
             <Button className="mt-4" onClick={() => openTaskModal()}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create your first task
+              <Plus className="ml-2 h-4 w-4" />
+              أنشئ مهمتك الأولى
             </Button>
           </CardContent>
         </Card>
@@ -1342,14 +1342,14 @@ export default function TaskTrackerApp() {
             <Table className="w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[60px]">ID</TableHead>
-                  <TableHead className="min-w-[200px]">Title</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Progress</TableHead>
-                  <TableHead>Due Date</TableHead>
+                  <TableHead className="w-[60px]">الرقم</TableHead>
+                  <TableHead className="min-w-[200px]">العنوان</TableHead>
+                  <TableHead>القسم</TableHead>
+                  <TableHead>المالك</TableHead>
+                  <TableHead>الأولوية</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead className="w-[100px]">التقدم</TableHead>
+                  <TableHead>تاريخ الاستحقاق</TableHead>
                   <TableHead className="w-[200px]">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1486,16 +1486,16 @@ export default function TaskTrackerApp() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Notification Settings</h1>
-          <p className="text-muted-foreground">Configure email notifications and reports</p>
+          <h1 className="text-2xl font-bold">إعدادات الإشعارات</h1>
+          <p className="text-muted-foreground">إعداد إشعارات البريد والتقارير</p>
         </div>
         <Button onClick={handleSaveSettings} disabled={savingSettings}>
           {savingSettings ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            <RefreshCw className="h-4 w-4 ml-2 animate-spin" />
           ) : (
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-4 w-4 ml-2" />
           )}
-          Save Settings
+          حفظ الإعدادات
         </Button>
       </div>
 
@@ -1504,15 +1504,15 @@ export default function TaskTrackerApp() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Admin Email Configuration
+            إعداد البريد الإلكتروني للمسؤول
           </CardTitle>
           <CardDescription>
-            Set the email address that will receive reports and notifications
+            حدد عنوان البريد الإلكتروني الذي سيستقبل التقارير والإشعارات
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="adminEmail">Admin Email Address</Label>
+            <Label htmlFor="adminEmail">بريد المسؤول الإلكتروني</Label>
             <Input
               id="adminEmail"
               type="email"
@@ -1521,20 +1521,20 @@ export default function TaskTrackerApp() {
               onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
             />
             <p className="text-xs text-muted-foreground">
-              This email will receive in-progress task reports and summaries
+              سيستقبل هذا البريد تقارير المهام قيد التنفيذ والملخصات
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={handleSendTestEmail} 
+          <Button
+            variant="outline"
+            onClick={handleSendTestEmail}
             disabled={sendingTest || !settings.adminEmail}
           >
             {sendingTest ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="h-4 w-4 ml-2 animate-spin" />
             ) : (
-              <Mail className="h-4 w-4 mr-2" />
+              <Mail className="h-4 w-4 ml-2" />
             )}
-            Send Test Email
+            إرسال بريد تجريبي
           </Button>
         </CardContent>
       </Card>
@@ -1544,17 +1544,16 @@ export default function TaskTrackerApp() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Scheduled Reminders
+            التذكيرات المجدولة
           </CardTitle>
           <CardDescription>
-            Schedule email reminders on specific dates
+            جدولة تذكيرات بريد إلكتروني في تواريخ محددة
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Existing reminders list */}
           {scheduledReminders.length > 0 && (
             <div className="space-y-2">
-              <Label>Upcoming Reminders</Label>
+              <Label>التذكيرات القادمة</Label>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {scheduledReminders.map((reminder) => (
                   <div key={reminder.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
@@ -1562,12 +1561,12 @@ export default function TaskTrackerApp() {
                       <p className="font-medium text-sm">{reminder.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(reminder.reminderDate), "MMMM d, yyyy")} at {reminder.reminderTime}
-                        {reminder.isSent && <span className="ml-2 text-emerald-600">(Sent)</span>}
+                        {reminder.isSent && <span className="mr-2 text-emerald-600">(أُرسل)</span>}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={reminder.isSent ? "secondary" : "default"}>
-                        {reminder.isSent ? "Sent" : "Pending"}
+                        {reminder.isSent ? "أُرسل" : "قيد الانتظار"}
                       </Badge>
                       {!reminder.isSent && (
                         <Button
@@ -1589,19 +1588,19 @@ export default function TaskTrackerApp() {
           {showReminderForm ? (
             <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
               <div className="grid gap-2">
-                <Label htmlFor="reminderTitle">Reminder Title *</Label>
+                <Label htmlFor="reminderTitle">عنوان التذكير *</Label>
                 <Input
                   id="reminderTitle"
-                  placeholder="e.g., Monthly Task Review"
+                  placeholder="مثال: مراجعة المهام الشهرية"
                   value={newReminder.title}
                   onChange={(e) => setNewReminder({ ...newReminder, title: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="reminderDesc">Description (Optional)</Label>
+                <Label htmlFor="reminderDesc">الوصف (اختياري)</Label>
                 <Textarea
                   id="reminderDesc"
-                  placeholder="Additional notes for this reminder..."
+                  placeholder="ملاحظات إضافية لهذا التذكير..."
                   value={newReminder.description}
                   onChange={(e) => setNewReminder({ ...newReminder, description: e.target.value })}
                   rows={2}
@@ -1609,7 +1608,7 @@ export default function TaskTrackerApp() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="reminderDate">Date *</Label>
+                  <Label htmlFor="reminderDate">التاريخ *</Label>
                   <Input
                     id="reminderDate"
                     type="date"
@@ -1619,7 +1618,7 @@ export default function TaskTrackerApp() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="reminderTime">Time</Label>
+                  <Label htmlFor="reminderTime">الوقت</Label>
                   <Input
                     id="reminderTime"
                     type="time"
@@ -1637,7 +1636,7 @@ export default function TaskTrackerApp() {
                     onChange={(e) => setNewReminder({ ...newReminder, sendToAdmin: e.target.checked })}
                     className="rounded"
                   />
-                  <Label htmlFor="sendToAdmin" className="text-sm">Send to Admin</Label>
+                  <Label htmlFor="sendToAdmin" className="text-sm">إرسال للمسؤول</Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -1647,29 +1646,29 @@ export default function TaskTrackerApp() {
                     onChange={(e) => setNewReminder({ ...newReminder, sendToOwners: e.target.checked })}
                     className="rounded"
                   />
-                  <Label htmlFor="sendToOwners" className="text-sm">Send to Task Owners</Label>
+                  <Label htmlFor="sendToOwners" className="text-sm">إرسال لأصحاب المهام</Label>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleCreateReminder}>Schedule Reminder</Button>
-                <Button variant="outline" onClick={() => setShowReminderForm(false)}>Cancel</Button>
+                <Button onClick={handleCreateReminder}>جدولة التذكير</Button>
+                <Button variant="outline" onClick={() => setShowReminderForm(false)}>إلغاء</Button>
               </div>
             </div>
           ) : (
             <Button variant="outline" onClick={() => setShowReminderForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Schedule New Reminder
+              <Plus className="h-4 w-4 ml-2" />
+              جدولة تذكير جديد
             </Button>
           )}
 
           {/* Manual cron trigger */}
           <div className="pt-4 border-t">
             <Button variant="outline" onClick={handleTriggerCron}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Process Scheduled Reminders Now
+              <RefreshCw className="h-4 w-4 ml-2" />
+              معالجة التذكيرات المجدولة الآن
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
-              This will process all pending reminders that are due
+              سيعالج هذا جميع التذكيرات المعلقة المستحقة
             </p>
           </div>
         </CardContent>
@@ -1680,28 +1679,28 @@ export default function TaskTrackerApp() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Custom Reminder Dates
+            تواريخ التذكير المخصصة
           </CardTitle>
           <CardDescription>
-            Set specific dates to receive task summary emails
+            حدد تواريخ محددة لاستقبال ملخصات المهام بالبريد
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="customDates">Reminder Dates (YYYY-MM-DD, comma-separated)</Label>
+            <Label htmlFor="customDates">تواريخ التذكير (YYYY-MM-DD، مفصولة بفواصل)</Label>
             <Textarea
               id="customDates"
-              placeholder="e.g., 2024-01-15, 2024-02-01, 2024-03-01"
+              placeholder="مثال: 2024-01-15, 2024-02-01, 2024-03-01"
               value={settings.customReminderDates}
               onChange={(e) => setSettings({ ...settings, customReminderDates: e.target.value })}
               rows={2}
             />
             <p className="text-xs text-muted-foreground">
-              On these dates, you will receive an email summary of all active tasks
+              في هذه التواريخ ستستقبل ملخصاً بريدياً لجميع المهام النشطة
             </p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="reminderDaysBefore">Days Before Due Date for Auto Reminders</Label>
+            <Label htmlFor="reminderDaysBefore">أيام قبل تاريخ الاستحقاق للتذكيرات التلقائية</Label>
             <Input
               id="reminderDaysBefore"
               type="number"
@@ -1711,7 +1710,7 @@ export default function TaskTrackerApp() {
               onChange={(e) => setSettings({ ...settings, reminderDaysBefore: parseInt(e.target.value) || 3 })}
             />
             <p className="text-xs text-muted-foreground">
-              Task owners will receive reminders this many days before their task is due
+              سيتلقى أصحاب المهام تذكيرات قبل هذا العدد من الأيام من تاريخ الاستحقاق
             </p>
           </div>
         </CardContent>
@@ -1722,18 +1721,18 @@ export default function TaskTrackerApp() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            In-Progress Tasks Report
+            تقرير المهام قيد التنفيذ
           </CardTitle>
           <CardDescription>
-            Receive regular reports of all tasks currently in progress
+            استقبل تقارير دورية لجميع المهام قيد التنفيذ
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Enable In-Progress Reports</Label>
+              <Label>تفعيل تقارير المهام قيد التنفيذ</Label>
               <p className="text-xs text-muted-foreground">
-                Receive reports about tasks that are currently being worked on
+                استقبل تقارير عن المهام التي يجري العمل عليها
               </p>
             </div>
             <Switch
@@ -1747,26 +1746,26 @@ export default function TaskTrackerApp() {
           {settings.inProgressReportEnabled && (
             <div className="grid gap-4 pt-4 border-t">
               <div className="grid gap-2">
-                <Label>Report Frequency</Label>
+                <Label>تكرار التقرير</Label>
                 <Select
                   value={settings.inProgressReportFrequency}
-                  onValueChange={(value) => 
+                  onValueChange={(value) =>
                     setSettings({ ...settings, inProgressReportFrequency: value })
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
+                    <SelectValue placeholder="اختر التكرار" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="daily">يومي</SelectItem>
+                    <SelectItem value="weekly">أسبوعي</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               {settings.inProgressReportFrequency === "daily" && (
                 <div className="grid gap-2">
-                  <Label htmlFor="dailyTime">Daily Report Time</Label>
+                  <Label htmlFor="dailyTime">وقت التقرير اليومي</Label>
                   <Input
                     id="dailyTime"
                     type="time"
@@ -1779,29 +1778,29 @@ export default function TaskTrackerApp() {
               {settings.inProgressReportFrequency === "weekly" && (
                 <>
                   <div className="grid gap-2">
-                    <Label>Report Day</Label>
+                    <Label>يوم التقرير</Label>
                     <Select
                       value={String(settings.weeklyReportDay)}
-                      onValueChange={(value) => 
+                      onValueChange={(value) =>
                         setSettings({ ...settings, weeklyReportDay: parseInt(value) })
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select day" />
+                        <SelectValue placeholder="اختر اليوم" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="0">Sunday</SelectItem>
-                        <SelectItem value="1">Monday</SelectItem>
-                        <SelectItem value="2">Tuesday</SelectItem>
-                        <SelectItem value="3">Wednesday</SelectItem>
-                        <SelectItem value="4">Thursday</SelectItem>
-                        <SelectItem value="5">Friday</SelectItem>
-                        <SelectItem value="6">Saturday</SelectItem>
+                        <SelectItem value="0">الأحد</SelectItem>
+                        <SelectItem value="1">الاثنين</SelectItem>
+                        <SelectItem value="2">الثلاثاء</SelectItem>
+                        <SelectItem value="3">الأربعاء</SelectItem>
+                        <SelectItem value="4">الخميس</SelectItem>
+                        <SelectItem value="5">الجمعة</SelectItem>
+                        <SelectItem value="6">السبت</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="weeklyTime">Report Time</Label>
+                    <Label htmlFor="weeklyTime">وقت التقرير</Label>
                     <Input
                       id="weeklyTime"
                       type="time"
@@ -1821,18 +1820,18 @@ export default function TaskTrackerApp() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Task Reminders
+            تذكيرات المهام
           </CardTitle>
           <CardDescription>
-            Configure automatic reminders for task owners
+            إعداد التذكيرات التلقائية لأصحاب المهام
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Enable Task Reminders</Label>
+              <Label>تفعيل تذكيرات المهام</Label>
               <p className="text-xs text-muted-foreground">
-                Send email reminders to task owners before due dates
+                إرسال تذكيرات بريدية لأصحاب المهام قبل تواريخ الاستحقاق
               </p>
             </div>
             <Switch
@@ -1845,9 +1844,9 @@ export default function TaskTrackerApp() {
           
           <div className="flex items-center justify-between pt-4 border-t">
             <div className="space-y-0.5">
-              <Label>Overdue Reminders</Label>
+              <Label>تذكيرات التأخر</Label>
               <p className="text-xs text-muted-foreground">
-                Send reminders for tasks that are past their due date
+                إرسال تذكيرات للمهام التي تجاوزت تاريخ الاستحقاق
               </p>
             </div>
             <Switch
@@ -1860,8 +1859,8 @@ export default function TaskTrackerApp() {
           
           <div className="pt-4 border-t">
             <Button variant="outline" onClick={handleSendTaskReminders}>
-              <Send className="h-4 w-4 mr-2" />
-              Send Overdue Reminders Now
+              <Send className="h-4 w-4 ml-2" />
+              إرسال تذكيرات التأخر الآن
             </Button>
           </div>
         </CardContent>
@@ -1872,12 +1871,12 @@ export default function TaskTrackerApp() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2 text-amber-700">
             <AlertTriangle className="h-4 w-4" />
-            Email Configuration Required
+            إعداد البريد الإلكتروني مطلوب
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-amber-700 mb-3">
-            To enable email notifications, add these variables to your <code className="bg-amber-100 px-1 rounded">.env</code> file:
+            لتفعيل إشعارات البريد، أضف هذه المتغيرات لملف <code className="bg-amber-100 px-1 rounded">.env</code>:
           </p>
           <div className="bg-amber-100/50 p-3 rounded-lg space-y-2 font-mono text-sm">
             <p><span className="text-amber-800">RESEND_API_KEY=</span><span className="text-amber-600">re_xxxxxxxxxxxx</span></p>
@@ -1885,16 +1884,16 @@ export default function TaskTrackerApp() {
             <p><span className="text-amber-800">ADMIN_EMAIL=</span><span className="text-amber-600">admin@yourdomain.com</span></p>
           </div>
           <div className="mt-4 p-3 bg-white/50 rounded-lg">
-            <p className="text-sm font-medium text-amber-800 mb-1">How to get a Resend API Key:</p>
+            <p className="text-sm font-medium text-amber-800 mb-1">كيفية الحصول على مفتاح Resend API:</p>
             <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside">
-              <li>Go to <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a> and create a free account</li>
-              <li>Navigate to API Keys in your dashboard</li>
-              <li>Create a new API key and copy it</li>
-              <li>Add it to your .env file as RESEND_API_KEY</li>
+              <li>اذهب إلى <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a> وأنشئ حساباً مجانياً</li>
+              <li>انتقل إلى API Keys في لوحة التحكم</li>
+              <li>أنشئ مفتاح API جديداً وانسخه</li>
+              <li>أضفه إلى ملف .env بإسم RESEND_API_KEY</li>
             </ol>
           </div>
           <p className="text-xs text-amber-600 mt-4">
-            Without these settings, emails will be logged to console instead of being sent.
+            بدون هذه الإعدادات، سيتم تسجيل الرسائل في وحدة التحكم بدلاً من إرسالها.
           </p>
         </CardContent>
       </Card>
@@ -1906,46 +1905,46 @@ export default function TaskTrackerApp() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="w-full px-4 md:px-6 lg:px-8 flex h-14 items-center">
-          <div className="flex items-center gap-2 mr-6">
+          <div className="flex items-center gap-2 ml-6">
             <BarChart3 className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">TaskTracker</span>
+            <span className="font-bold text-xl">متتبع المهام</span>
           </div>
-          
+
           <nav className="flex items-center gap-1 flex-1">
             <Button
               variant={activeTab === "dashboard" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("dashboard")}
             >
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Dashboard
+              <LayoutDashboard className="h-4 w-4 ml-2" />
+              لوحة التحكم
             </Button>
             <Button
               variant={activeTab === "tasks" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("tasks")}
             >
-              <List className="h-4 w-4 mr-2" />
-              Tasks
+              <List className="h-4 w-4 ml-2" />
+              المهام
             </Button>
             <Button
               variant={activeTab === "settings" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("settings")}
             >
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
+              <Settings className="h-4 w-4 ml-2" />
+              الإعدادات
             </Button>
           </nav>
-          
+
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsUploadModalOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Import
+              <Upload className="h-4 w-4 ml-2" />
+              استيراد
             </Button>
             <Button size="sm" onClick={() => openTaskModal()}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Task
+              <Plus className="h-4 w-4 ml-2" />
+              مهمة جديدة
             </Button>
           </div>
         </div>
