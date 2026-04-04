@@ -30,9 +30,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={tajawal.variable}>
       <body
-        className={`${tajawal.variable} antialiased bg-background text-foreground w-full min-h-screen`}
+        className="antialiased bg-background text-foreground w-full min-h-screen"
       >
         {children}
         <Toaster />
