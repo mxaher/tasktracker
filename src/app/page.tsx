@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { 
@@ -101,7 +101,7 @@ export default function TaskTrackerApp() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [filterDepartment, setFilterDepartment] = useState<string>("all");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -280,8 +280,8 @@ export default function TaskTrackerApp() {
     }
 
     // Filters
-    if (filterStatus !== "all") {
-      result = result.filter(task => task.status === filterStatus);
+    if (filterStatuses.length > 0) {
+      result = result.filter(task => filterStatuses.includes(task.status));
     }
     if (filterPriority !== "all") {
       result = result.filter(task => task.priority === filterPriority);
@@ -327,7 +327,7 @@ export default function TaskTrackerApp() {
     });
 
     return result;
-  }, [tasks, searchQuery, filterStatus, filterPriority, filterDepartment, sortBy, sortOrder]);
+  }, [tasks, searchQuery, filterStatuses, filterPriority, filterDepartment, sortBy, sortOrder]);
 
   // Task operations
   const handleCreateTask = async (taskData: Partial<Task>) => {
@@ -1248,18 +1248,56 @@ export default function TaskTrackerApp() {
               className="pr-9"
             />
           </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="الحالة" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">كل الحالات</SelectItem>
-              <SelectItem value="not_started">لم يبدأ</SelectItem>
-              <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
-              <SelectItem value="delayed">متأخر</SelectItem>
-              <SelectItem value="completed">مكتمل</SelectItem>
-            </SelectContent>
-          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 h-9">
+                <Filter className="size-4" />
+                {filterStatuses.length === 0 ? "كل الحالات" : `${filterStatuses.length} حالات`}
+                <ChevronDown className="size-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>تصفية حسب الحالة</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {(["not_started", "in_progress", "delayed", "completed"] as const).map(status => (
+                <DropdownMenuCheckboxItem
+                  key={status}
+                  checked={filterStatuses.includes(status)}
+                  onCheckedChange={(checked) => {
+                    setFilterStatuses(prev =>
+                      checked ? [...prev, status] : prev.filter(s => s !== status)
+                    );
+                  }}
+                >
+                  <span className={`inline-block size-2 rounded-full me-2 ${statusConfig[status]?.color?.replace("text-", "bg-").split(" ")[0] ?? ""}`} />
+                  {statusConfig[status]?.label ?? status}
+                </DropdownMenuCheckboxItem>
+              ))}
+              {filterStatuses.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setFilterStatuses([])}>
+                    مسح التصفية
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {filterStatuses.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {filterStatuses.map(status => (
+                <Badge
+                  key={status}
+                  variant="secondary"
+                  className="gap-1 cursor-pointer hover:opacity-80"
+                  onClick={() => setFilterStatuses(prev => prev.filter(s => s !== status))}
+                >
+                  {statusConfig[status]?.label ?? status}
+                  <span className="text-xs leading-none">×</span>
+                </Badge>
+              ))}
+            </div>
+          )}
           <Select value={filterPriority} onValueChange={setFilterPriority}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="الأولوية" />

@@ -47,6 +47,32 @@ html, body, * {
   font-family: var(--font-tajawal), 'Tajawal', sans-serif !important;
 }
 
+/* ── RTL global baseline ────────────────────────────────── */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+  direction: rtl;
+}
+/* Tables: force RTL column order */
+[dir="rtl"] table {
+  direction: rtl;
+}
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: right;
+}
+/* Placeholder alignment */
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
+  direction: rtl;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
