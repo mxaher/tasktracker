@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       'SELECT "adminEmail" FROM "AdminSettings" ORDER BY "createdAt" ASC LIMIT 1',
     );
     const env = getWorkerEnv();
-    const adminEmail = settings?.adminEmail || env.ADMIN_EMAIL || process.env.ADMIN_EMAIL || "moh_zaher@msn.com";
+    const adminEmail = settings?.adminEmail || env.ADMIN_EMAIL || process.env.ADMIN_EMAIL || "tasks@wealix.app";
     const reportType = body.reportType === "weekly" ? "weekly" : "daily";
 
     const tasks = await d1All<ReportTaskRow>(

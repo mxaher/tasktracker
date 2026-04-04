@@ -21,7 +21,7 @@
   "vars": {
     "NEXT_TELEMETRY_DISABLED": "1",
     "FROM_EMAIL": "noreply@wealix.app",
-    "ADMIN_EMAIL": "moh_zaher@msn.com"
+    "ADMIN_EMAIL": "tasks@wealix.app"
   },
   "d1_databases": [
     {

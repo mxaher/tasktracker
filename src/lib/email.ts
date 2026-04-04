@@ -16,7 +16,7 @@ async function sendEmailWithResend(payload: EmailPayload): Promise<{ success: bo
     // Read env vars lazily for Cloudflare Workers compatibility
   const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
   const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@wealix.app";
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "moh_zaher@msn.com";
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "tasks@wealix.app";
 
   if (!RESEND_API_KEY) {
     console.error("[Email] RESEND_API_KEY is not configured. Cannot send email.");
