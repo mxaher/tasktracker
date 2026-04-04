@@ -15,14 +15,14 @@ interface EmailPayload {
 async function sendEmailWithResend(payload: EmailPayload): Promise<{ success: boolean; error?: string }> {
     // Read env vars lazily for Cloudflare Workers compatibility
   const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-  const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@tasktracker.local";
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@tasktracker.local";
+  const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@wealix.app";
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "moh_zaher@msn.com";
 
   if (!RESEND_API_KEY) {
-    console.log("[Email] Resend API key not configured. Email would have been sent:");
-    console.log(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
-    console.log(`  Subject: ${payload.subject}`);
-    return { success: true }; // Return success in dev mode
+    console.error("[Email] RESEND_API_KEY is not configured. Cannot send email.");
+    console.error(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
+    console.error(`  Subject: ${payload.subject}`);
+    return { success: false, error: "RESEND_API_KEY is not configured." };
   }
 
   try {

@@ -97,7 +97,7 @@ async function sendEmail(payload: {
 }) {
   const env = getWorkerEnv();
   const resendApiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY || "";
-  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@tasktracker.local";
+  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@wealix.app";
 
   if (!resendApiKey) {
     return {
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       'SELECT "adminEmail" FROM "AdminSettings" ORDER BY "createdAt" ASC LIMIT 1',
     );
     const env = getWorkerEnv();
-    const adminEmail = settings?.adminEmail || env.ADMIN_EMAIL || process.env.ADMIN_EMAIL || "admin@example.com";
+    const adminEmail = settings?.adminEmail || env.ADMIN_EMAIL || process.env.ADMIN_EMAIL || "moh_zaher@msn.com";
     const reportType = body.reportType === "weekly" ? "weekly" : "daily";
 
     const tasks = await d1All<ReportTaskRow>(
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
     const template = buildInProgressReport(tasks, reportType);
     const runtimeEnv = getWorkerEnv();
     const resolvedFromEmail =
-      runtimeEnv.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@tasktracker.local";
+      runtimeEnv.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@wealix.app";
     const hasResendApiKey = Boolean(
       runtimeEnv.RESEND_API_KEY || process.env.RESEND_API_KEY,
     );

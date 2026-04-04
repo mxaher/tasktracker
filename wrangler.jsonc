@@ -19,7 +19,9 @@
     "head_sampling_rate": 1
   },
   "vars": {
-    "NEXT_TELEMETRY_DISABLED": "1"
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "FROM_EMAIL": "noreply@wealix.app",
+    "ADMIN_EMAIL": "moh_zaher@msn.com"
   },
   "d1_databases": [
     {
