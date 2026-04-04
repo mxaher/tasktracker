@@ -802,7 +802,7 @@ export default function TaskTrackerApp() {
           setEditingTask({});
         }
       }}>
-        <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogContent className="w-[92vw] max-w-6xl h-[65vh] flex flex-col p-0 gap-0 overflow-hidden">
           {/* Header */}
           <DialogHeader className="px-6 pt-5 pb-4 border-b flex-shrink-0">
             <DialogTitle>{selectedTask ? "تعديل المهمة" : "إنشاء مهمة جديدة"}</DialogTitle>
