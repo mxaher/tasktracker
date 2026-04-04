@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -145,6 +145,12 @@ export default function TaskTrackerApp() {
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
+
+  // Quick action state
+  const [quickDateTask, setQuickDateTask] = useState<Task | null>(null);
+  const [quickDateValue, setQuickDateValue] = useState("");
+  const [quickProgressTask, setQuickProgressTask] = useState<Task | null>(null);
+  const [quickProgressValue, setQuickProgressValue] = useState(0);
   
   // Scheduled reminders state
   const [scheduledReminders, setScheduledReminders] = useState<Array<{
@@ -380,6 +386,26 @@ export default function TaskTrackerApp() {
       console.error("Error deleting task:", error);
       toast.error("Failed to delete task");
     }
+  };
+
+  const handleQuickUpdate = async (taskId: string, data: Partial<Task>) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update task");
+      toast.success("تم التحديث بنجاح");
+      await fetchTasks();
+      await fetchStats();
+    } catch {
+      toast.error("فشل التحديث");
+    }
+  };
+
+  const handleMarkComplete = async (task: Task) => {
+    await handleQuickUpdate(task.id, { status: "completed", completion: 1 });
   };
 
   const handleUpload = async () => {
@@ -687,20 +713,63 @@ export default function TaskTrackerApp() {
               <StatusIcon className="h-3 w-3 mr-1" />
               {statusConfig[task.status]?.label}
             </Badge>
-            
+
             {task.dueDate && (
               <span className={`text-sm ${getRiskColor(task)}`}>
                 {daysRemaining !== null && (
-                  daysRemaining < 0 
-                    ? `${Math.abs(daysRemaining)} days overdue`
-                    : daysRemaining === 0 
-                      ? "Due today"
-                      : `${daysRemaining} days left`
+                  daysRemaining < 0
+                    ? `متأخر ${Math.abs(daysRemaining)} يوم`
+                    : daysRemaining === 0
+                      ? "اليوم"
+                      : `${daysRemaining} يوم متبقي`
                 )}
               </span>
             )}
           </div>
         </CardContent>
+        <CardFooter className="pt-0 pb-3 px-4 gap-2 flex-wrap border-t">
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 text-xs h-8"
+            disabled={task.status === "completed"}
+            onClick={(e) => { e.stopPropagation(); handleMarkComplete(task); }}
+          >
+            <CheckCircle2 className="h-3 w-3 ml-1" /> مكتمل
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 text-xs h-8"
+            onClick={(e) => { e.stopPropagation(); openTaskModal(task); }}
+          >
+            <Edit className="h-3 w-3 ml-1" /> تحديث
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 text-xs h-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              setQuickDateTask(task);
+              setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : "");
+            }}
+          >
+            <Calendar className="h-3 w-3 ml-1" /> التاريخ
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 text-xs h-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              setQuickProgressTask(task);
+              setQuickProgressValue(Math.round(task.completion * 100));
+            }}
+          >
+            <BarChart3 className="h-3 w-3 ml-1" /> التقدم
+          </Button>
+        </CardFooter>
       </Card>
     );
   };
@@ -1281,7 +1350,7 @@ export default function TaskTrackerApp() {
                   <TableHead>Status</TableHead>
                   <TableHead className="w-[100px]">Progress</TableHead>
                   <TableHead>Due Date</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-[200px]">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1346,29 +1415,60 @@ export default function TaskTrackerApp() {
                           </div>
                         ) : "-"}
                       </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openTaskModal(task); }}>
-                              <Edit className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={(e) => { 
-                                e.stopPropagation(); 
-                                setTaskToDelete(task); 
-                                setIsDeleteDialogOpen(true); 
-                              }}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-2"
+                            disabled={task.status === "completed"}
+                            onClick={() => handleMarkComplete(task)}
+                          >
+                            <CheckCircle2 className="h-3 w-3 ml-1" /> مكتمل
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-2"
+                            onClick={() => openTaskModal(task)}
+                          >
+                            <Edit className="h-3 w-3 ml-1" /> تحديث
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-2"
+                            onClick={() => {
+                              setQuickDateTask(task);
+                              setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : "");
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 ml-1" /> التاريخ
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-2"
+                            onClick={() => {
+                              setQuickProgressTask(task);
+                              setQuickProgressValue(Math.round(task.completion * 100));
+                            }}
+                          >
+                            <BarChart3 className="h-3 w-3 ml-1" /> التقدم
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => { setTaskToDelete(task); setIsDeleteDialogOpen(true); }} className="text-red-600">
+                                <Trash2 className="ml-2 h-4 w-4" /> حذف
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -1886,19 +1986,78 @@ export default function TaskTrackerApp() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogTitle>حذف المهمة</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{taskToDelete?.title}"? This action cannot be undone.
+              هل أنت متأكد من حذف "{taskToDelete?.title}"؟ لا يمكن التراجع عن هذا الإجراء.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteTask} className="bg-red-600 hover:bg-red-700">
-              Delete
+              حذف
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Quick Date Dialog */}
+      <Dialog open={!!quickDateTask} onOpenChange={(open) => { if (!open) setQuickDateTask(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>تغيير تاريخ الاستحقاق</DialogTitle>
+            <DialogDescription>{quickDateTask?.title}</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              type="date"
+              value={quickDateValue}
+              onChange={(e) => setQuickDateValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setQuickDateTask(null)}>إلغاء</Button>
+            <Button onClick={async () => {
+              if (quickDateTask) {
+                await handleQuickUpdate(quickDateTask.id, { dueDate: quickDateValue || null });
+                setQuickDateTask(null);
+              }
+            }}>حفظ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Progress Dialog */}
+      <Dialog open={!!quickProgressTask} onOpenChange={(open) => { if (!open) setQuickProgressTask(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>تغيير نسبة الإنجاز</DialogTitle>
+            <DialogDescription>{quickProgressTask?.title}</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={quickProgressValue}
+                onChange={(e) => setQuickProgressValue(Math.min(100, Math.max(0, Number(e.target.value))))}
+                className="w-24"
+              />
+              <span className="text-sm text-muted-foreground">%</span>
+            </div>
+            <Progress value={quickProgressValue} className="h-2" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setQuickProgressTask(null)}>إلغاء</Button>
+            <Button onClick={async () => {
+              if (quickProgressTask) {
+                await handleQuickUpdate(quickProgressTask.id, { completion: quickProgressValue / 100 });
+                setQuickProgressTask(null);
+              }
+            }}>حفظ</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
