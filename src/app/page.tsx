@@ -1338,8 +1338,8 @@ export default function TaskTrackerApp() {
         </div>
       ) : (
         <Card className="w-full overflow-hidden">
-          <ScrollArea className="h-[calc(100vh-400px)]">
-            <Table className="w-full">
+          <ScrollArea className="h-[calc(100vh-400px)]" dir="rtl">
+            <Table className="w-full" dir="rtl">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[60px]">الرقم</TableHead>
