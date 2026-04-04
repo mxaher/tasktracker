@@ -802,7 +802,7 @@ export default function TaskTrackerApp() {
           setEditingTask({});
         }
       }}>
-        <DialogContent className="w-[92vw] max-w-6xl h-[65vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogContent className="w-[95vw] sm:max-w-none max-w-[1200px] h-[60vh] min-h-[500px] flex flex-col p-0 gap-0 overflow-hidden">
           {/* Header */}
           <DialogHeader className="px-6 pt-5 pb-4 border-b flex-shrink-0">
             <DialogTitle>{selectedTask ? "تعديل المهمة" : "إنشاء مهمة جديدة"}</DialogTitle>
@@ -931,7 +931,7 @@ export default function TaskTrackerApp() {
             <div className="w-px bg-border flex-shrink-0" />
 
             {/* Right panel — status, progress, updates */}
-            <div className="w-80 flex-shrink-0 overflow-y-auto px-5 py-4 space-y-5 bg-muted/20">
+            <div className="w-96 flex-shrink-0 overflow-y-auto px-5 py-4 space-y-5 bg-muted/20">
 
               {/* Status & Priority */}
               <div className="grid gap-3">
