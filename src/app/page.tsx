@@ -23,7 +23,7 @@ import {
   MoreVertical, Edit, Trash2, Download, Bell, Settings, Users,
   CheckCircle2, Clock, AlertTriangle, XCircle, TrendingUp,
   Calendar, User, Building, Flag, BarChart3, PieChart, FileSpreadsheet,
-  ChevronDown, ChevronUp, ChevronsUpDown, RefreshCw, Eye, Mail, MessageSquare, Save, Send,
+  ChevronDown, ChevronUp, RefreshCw, Eye, Mail, MessageSquare, Save, Send,
   AlertCircle, X, Loader2
 } from "lucide-react";
 import { format, differenceInDays, isPast, isToday, addDays } from "date-fns";
@@ -1033,9 +1033,14 @@ function TaskListContent({
   const SortIcon = ({ field }: { field: string }) =>
     sortBy === field
       ? sortOrder === "asc"
-        ? <ChevronUp className="h-3 w-3 inline-block ml-1" />
-        : <ChevronDown className="h-3 w-3 inline-block ml-1" />
-      : <ChevronsUpDown className="h-3 w-3 inline-block ml-1 opacity-30" />;
+        ? <ChevronUp className="h-3 w-3 inline-block ml-1 flex-shrink-0" />
+        : <ChevronDown className="h-3 w-3 inline-block ml-1 flex-shrink-0" />
+      : (
+        <span className="inline-flex flex-col ml-1 opacity-30 flex-shrink-0" style={{ lineHeight: 0, gap: 0, verticalAlign: "middle" }}>
+          <ChevronUp className="h-2 w-2" />
+          <ChevronDown className="h-2 w-2" />
+        </span>
+      );
 
   const allFilteredSelected =
     filteredTasks.length > 0 &&
