@@ -18,13 +18,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { 
-  LayoutDashboard, List, Grid3X3, Upload, Plus, Search, Filter, 
+import {
+  LayoutDashboard, List, Grid3X3, Upload, Plus, Search, Filter,
   MoreVertical, Edit, Trash2, Download, Bell, Settings, Users,
   CheckCircle2, Clock, AlertTriangle, XCircle, TrendingUp,
   Calendar, User, Building, Flag, BarChart3, PieChart, FileSpreadsheet,
-  ChevronDown, ChevronUp, RefreshCw, Eye, Mail, MessageSquare, Save, Send,
-  AlertCircle, X
+  ChevronDown, ChevronUp, ChevronsUpDown, RefreshCw, Eye, Mail, MessageSquare, Save, Send,
+  AlertCircle, X, Loader2
 } from "lucide-react";
 import { format, differenceInDays, isPast, isToday, addDays } from "date-fns";
 import { Switch } from "@/components/ui/switch";
@@ -108,15 +108,18 @@ function SearchableSelect({
   options,
   placeholder = "اختر...",
   allowCustom = false,
+  onCreateOption,
 }: {
   value: string;
   onChange: (val: string) => void;
   options: SearchableSelectOption[];
   placeholder?: string;
   allowCustom?: boolean;
+  onCreateOption?: (name: string) => Promise<string | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -155,6 +158,22 @@ function SearchableSelect({
     onChange(val);
     setOpen(false);
     setSearch("");
+  };
+
+  const handleCreateOption = async () => {
+    const name = search.trim();
+    if (!name || !onCreateOption) return;
+    setCreating(true);
+    try {
+      const newId = await onCreateOption(name);
+      if (newId) {
+        onChange(newId);
+        setOpen(false);
+        setSearch("");
+      }
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -203,10 +222,12 @@ function SearchableSelect({
             {showCustom && (
               <button
                 type="button"
-                onClick={() => select(search.trim())}
-                className="w-full text-right px-3 py-1.5 text-sm text-primary hover:bg-primary/5 transition-colors border-t"
+                disabled={creating}
+                onClick={onCreateOption ? handleCreateOption : () => select(search.trim())}
+                className="w-full text-right px-3 py-1.5 text-sm text-primary hover:bg-primary/5 transition-colors border-t flex items-center gap-2 disabled:opacity-60"
               >
-                + استخدام "{search.trim()}"
+                {creating ? <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" /> : null}
+                {onCreateOption ? `+ إضافة "${search.trim()}"` : `+ استخدام "${search.trim()}"`}
               </button>
             )}
           </div>
@@ -395,12 +416,13 @@ interface TaskModalProps {
   strategicPillars: string[];
   onCreateTask: (data: Partial<Task>) => void;
   onUpdateTask: (data: Partial<Task>) => void;
+  onUserCreated: (user: User) => void;
 }
 
 function TaskModal({
   isOpen, onOpenChange, selectedTask, editingTask,
   tasks, users, departments, strategicPillars,
-  onCreateTask, onUpdateTask,
+  onCreateTask, onUpdateTask, onUserCreated,
 }: TaskModalProps) {
   const [localTask, setLocalTask] = useState<Partial<Task>>(editingTask);
   const [duplicateTitles, setDuplicateTitles] = useState<Task[]>([]);
@@ -451,6 +473,27 @@ function TaskModal({
     const existing = localTask.notes?.trim();
     setLocalTask({ ...localTask, notes: existing ? `${entry}\n${existing}` : entry });
     setQuickUpdate("");
+  };
+
+  const createUserFromName = async (name: string): Promise<string | null> => {
+    try {
+      const email = `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@tasktracker.local`;
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, role: "viewer" }),
+      });
+      if (!res.ok) throw new Error("Failed to create user");
+      const data = await res.json();
+      if (data.user) {
+        onUserCreated(data.user);
+        return data.user.id;
+      }
+      return null;
+    } catch {
+      toast.error("فشل إنشاء المستخدم");
+      return null;
+    }
   };
 
   const deptOptions = departments.map(d => ({ value: d, label: d }));
@@ -542,7 +585,9 @@ function TaskModal({
                   value={localTask.ownerId || "none"}
                   onChange={(val) => setLocalTask({ ...localTask, ownerId: val === "none" ? null : val })}
                   options={ownerOptions}
-                  placeholder="اختر المالك"
+                  placeholder="اختر أو أضف المالك"
+                  allowCustom
+                  onCreateOption={createUserFromName}
                 />
               </div>
               <div className="grid gap-2">
@@ -551,7 +596,9 @@ function TaskModal({
                   value={localTask.assigneeId || "none"}
                   onChange={(val) => setLocalTask({ ...localTask, assigneeId: val === "none" ? null : val })}
                   options={assigneeOptions}
-                  placeholder="اختر المُكلَّف"
+                  placeholder="اختر أو أضف المُكلَّف"
+                  allowCustom
+                  onCreateOption={createUserFromName}
                 />
               </div>
             </div>
@@ -949,6 +996,10 @@ interface TaskListContentProps {
   onCompleteTask: (task: Task) => void;
   onDateClick: (task: Task) => void;
   onProgressClick: (task: Task) => void;
+  sortBy: string;
+  setSortBy: (s: string) => void;
+  sortOrder: "asc" | "desc";
+  setSortOrder: (o: "asc" | "desc") => void;
   onExport: () => void;
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
@@ -967,8 +1018,25 @@ function TaskListContent({
   setIsBulkDeleteDialogOpen,
   onOpenTaskModal, onDeleteTask, onCompleteTask,
   onDateClick, onProgressClick, onExport,
+  sortBy, setSortBy, sortOrder, setSortOrder,
   getDaysRemaining, getRiskColor,
 }: TaskListContentProps) {
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const SortIcon = ({ field }: { field: string }) =>
+    sortBy === field
+      ? sortOrder === "asc"
+        ? <ChevronUp className="h-3 w-3 inline-block ml-1" />
+        : <ChevronDown className="h-3 w-3 inline-block ml-1" />
+      : <ChevronsUpDown className="h-3 w-3 inline-block ml-1 opacity-30" />;
+
   const allFilteredSelected =
     filteredTasks.length > 0 &&
     filteredTasks.every(t => selectedTaskIds.has(t.id));
@@ -1162,19 +1230,58 @@ function TaskListContent({
                       <Checkbox checked={allFilteredSelected} onCheckedChange={toggleSelectAll} aria-label="تحديد الكل" />
                     </div>
                   </TableHead>
-                  <TableHead className="w-[60px] text-center">الرقم</TableHead>
-                  <TableHead className="min-w-[200px] text-center">المهمة</TableHead>
-                  <TableHead className="text-center">القسم</TableHead>
-                  <TableHead className="text-center">المسؤول</TableHead>
-                  <TableHead className="text-center">الأولوية</TableHead>
-                  <TableHead className="text-center">الحالة</TableHead>
-                  <TableHead className="w-[100px] text-center">التقدم</TableHead>
-                  <TableHead className="text-center">تاريخ الاكتمال</TableHead>
-                  <TableHead className="w-[200px] text-center">الإجراءات</TableHead>
+                  <TableHead className="w-[50px] text-center select-none">
+                    <div className="flex items-center justify-center">#</div>
+                  </TableHead>
+                  <TableHead
+                    className="min-w-[200px] text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("title")}
+                  >
+                    <div className="flex items-center justify-center">المهمة<SortIcon field="title" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("department")}
+                  >
+                    <div className="flex items-center justify-center">القسم<SortIcon field="department" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("owner")}
+                  >
+                    <div className="flex items-center justify-center">المسؤول<SortIcon field="owner" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("priority")}
+                  >
+                    <div className="flex items-center justify-center">الأولوية<SortIcon field="priority" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("status")}
+                  >
+                    <div className="flex items-center justify-center">الحالة<SortIcon field="status" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="w-[100px] text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("completion")}
+                  >
+                    <div className="flex items-center justify-center">التقدم<SortIcon field="completion" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("dueDate")}
+                  >
+                    <div className="flex items-center justify-center">تاريخ الاكتمال<SortIcon field="dueDate" /></div>
+                  </TableHead>
+                  <TableHead className="w-[200px] text-center select-none">
+                    <div className="flex items-center justify-center">الإجراءات</div>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTasks.map(task => {
+                {filteredTasks.map((task, index) => {
                   const StatusIcon = statusConfig[task.status]?.icon || Clock;
                   const daysRemaining = getDaysRemaining(task.dueDate);
                   const isSelected = selectedTaskIds.has(task.id);
@@ -1190,7 +1297,7 @@ function TaskListContent({
                           <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-xs">{task.taskId || "-"}</TableCell>
+                      <TableCell className="text-center text-sm font-medium text-muted-foreground">{index + 1}</TableCell>
                       <TableCell>
                         <div className="font-medium line-clamp-1">{task.title}</div>
                         {task.description && <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div>}
@@ -1760,11 +1867,19 @@ export default function TaskTrackerApp() {
       let bVal: string | number = "";
       switch (sortBy) {
         case "title": aVal = a.title.toLowerCase(); bVal = b.title.toLowerCase(); break;
+        case "department": aVal = a.department?.toLowerCase() || "ω"; bVal = b.department?.toLowerCase() || "ω"; break;
+        case "owner": aVal = a.owner?.name?.toLowerCase() || "ω"; bVal = b.owner?.name?.toLowerCase() || "ω"; break;
         case "dueDate": aVal = a.dueDate ? new Date(a.dueDate).getTime() : 0; bVal = b.dueDate ? new Date(b.dueDate).getTime() : 0; break;
         case "priority": {
           const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
           aVal = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
           bVal = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+          break;
+        }
+        case "status": {
+          const statusOrder = { not_started: 1, in_progress: 2, delayed: 3, completed: 4 };
+          aVal = statusOrder[a.status as keyof typeof statusOrder] || 0;
+          bVal = statusOrder[b.status as keyof typeof statusOrder] || 0;
           break;
         }
         case "completion": aVal = a.completion; bVal = b.completion; break;
@@ -2135,6 +2250,10 @@ export default function TaskTrackerApp() {
               onCompleteTask={handleMarkComplete}
               onDateClick={(task) => { setQuickDateTask(task); setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : ""); }}
               onProgressClick={(task) => { setQuickProgressTask(task); setQuickProgressValue(Math.round(task.completion * 100)); }}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
               onExport={handleExport}
               getDaysRemaining={getDaysRemaining}
               getRiskColor={getRiskColor}
@@ -2185,6 +2304,7 @@ export default function TaskTrackerApp() {
         strategicPillars={strategicPillars}
         onCreateTask={handleCreateTask}
         onUpdateTask={handleUpdateTask}
+        onUserCreated={(user) => setUsers(prev => [...prev, user])}
       />
 
       {/* Upload Modal */}
