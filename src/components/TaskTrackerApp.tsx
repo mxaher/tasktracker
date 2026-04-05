@@ -1,4 +1,4 @@
-"use client";
+ll"use client";
 
 import ContactsTab from "@/components/settings/ContactsTab";
 import { useState, useEffect, useMemo, useRef, memo } from "react";
@@ -285,7 +285,6 @@ interface TaskCardProps {
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
 }
-?
 const TaskCard = memo(function TaskCard({
   task, onEdit, onDelete, onComplete,
   onSendReminder, onDateClick, onProgressClick, getDaysRemaining, getRiskColor
