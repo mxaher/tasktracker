@@ -281,7 +281,7 @@ interface TaskCardProps {
   onComplete: (task: Task) => void;
   onDateClick: (task: Task) => void;
   onProgressClick: (task: Task) => void;
-    onSendRemind?er: (task: Task) => void;
+    onSendReminder?: (task: Task) => void;
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
 }
