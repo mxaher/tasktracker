@@ -76,7 +76,9 @@ function getLinkedUserLabel(user: UserRecord) {
 }
 
 function normalizePhone(value: string) {
-  return value.replace(/[\s()-]/g, "");
+  const stripped = value.replace(/[\s()-]/g, "");
+  // Auto-prepend + if the number starts with digits
+  return stripped && !stripped.startsWith("+") ? `+${stripped}` : stripped;
 }
 
 function validateForm(form: ContactFormState) {

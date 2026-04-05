@@ -47,7 +47,9 @@ type ParsedContactUpdateInput = Partial<ParsedContactInput>;
  * Normalizes a phone number for storage and lookup.
  */
 export function normalizePhoneNumber(value: string): string {
-  return value.replace(/[\s()-]/g, "");
+  const stripped = value.replace(/[\s()-]/g, "");
+  // Auto-prepend + if the number starts with digits
+  return stripped && !stripped.startsWith("+") ? `+${stripped}` : stripped;
 }
 
 /**
