@@ -281,11 +281,11 @@ interface TaskCardProps {
   onComplete: (task: Task) => void;
   onDateClick: (task: Task) => void;
   onProgressClick: (task: Task) => void;
-    onSendReminder: (task: Task) => void;
+    onSendRemind?er: (task: Task) => void;
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
 }
-
+?
 const TaskCard = memo(function TaskCard({
   task, onEdit, onDelete, onComplete,
   onSendReminder, onDateClick, onProgressClick, getDaysRemaining, getRiskColor
@@ -1258,7 +1258,7 @@ function TaskListContent({
               onComplete={onCompleteTask}
               onDateClick={onDateClick}
               onProgressClick={onProgressClick}
-                            onSendReminder={handleSendTaskReminder}
+                            
               getDaysRemaining={getDaysRemaining}
               getRiskColor={getRiskColor}
             />
