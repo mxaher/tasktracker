@@ -2,6 +2,8 @@ import { parseContactUpdateInput } from "@/lib/contact-validation";
 import { d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 type ContactRow = {
   id: string;
   name: string;
