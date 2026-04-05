@@ -12,14 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -195,6 +188,12 @@ export default function ContactsTab() {
     setIsDialogOpen(true);
   };
 
+  const closeEditor = () => {
+    setIsDialogOpen(false);
+    setEditingContact(null);
+    setForm(emptyFormState);
+  };
+
   const handleSubmit = async () => {
     const validationError = validateForm(form);
     if (validationError) {
@@ -230,9 +229,7 @@ export default function ContactsTab() {
       }
 
       await loadData();
-      setIsDialogOpen(false);
-      setForm(emptyFormState);
-      setEditingContact(null);
+      closeEditor();
       toast.success(editingContact ? "Contact updated successfully." : "Contact added successfully.");
     } catch (saveError) {
       console.error("Failed to save contact:", saveError);
@@ -290,6 +287,76 @@ export default function ContactsTab() {
           Add Contact
         </Button>
       </div>
+
+      {isDialogOpen ? (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle>{editingContact ? "Edit Contact" : "Add Contact"}</CardTitle>
+            <CardDescription>
+              Store a contact that can receive WhatsApp reminders and email notifications.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="inline-contact-name">Name</Label>
+              <Input
+                id="inline-contact-name"
+                value={form.name}
+                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="inline-contact-phone">Phone</Label>
+              <Input
+                id="inline-contact-phone"
+                value={form.phone}
+                onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                placeholder="+966xxxxxxxxx"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="inline-contact-email">Email</Label>
+              <Input
+                id="inline-contact-email"
+                type="email"
+                value={form.email}
+                onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Linked User</Label>
+              <Select
+                value={form.userId}
+                onValueChange={(value) => setForm((current) => ({ ...current, userId: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No linked user</SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {getLinkedUserLabel(user)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={closeEditor}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} disabled={saving}>
+                {saving ? "Saving..." : editingContact ? "Save Changes" : "Add Contact"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {error ? (
         <Alert variant="destructive">
@@ -376,77 +443,6 @@ export default function ContactsTab() {
           </Table>
         </div>
       )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingContact ? "Edit Contact" : "Add Contact"}</DialogTitle>
-            <DialogDescription>
-              Store a contact that can receive WhatsApp reminders and email notifications.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="contact-name">Name</Label>
-              <Input
-                id="contact-name"
-                value={form.name}
-                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contact-phone">Phone</Label>
-              <Input
-                id="contact-phone"
-                value={form.phone}
-                onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-                placeholder="+966xxxxxxxxx"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contact-email">Email</Label>
-              <Input
-                id="contact-email"
-                type="email"
-                value={form.email}
-                onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Linked User</Label>
-              <Select
-                value={form.userId}
-                onValueChange={(value) => setForm((current) => ({ ...current, userId: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No linked user</SelectItem>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {getLinkedUserLabel(user)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
-              {saving ? "Saving..." : editingContact ? "Save Changes" : "Add Contact"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
