@@ -72,6 +72,7 @@ model Task {
   nextStep         String?
   ceoNotes         String?
   sourceMonth      String?
+  source           String?  // Origin of the task: CEO, Audit Committee, etc.
   
   // Data source tracking
   dataSourceId     String?

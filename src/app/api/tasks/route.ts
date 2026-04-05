@@ -22,6 +22,7 @@ type TaskRow = {
   nextStep: string | null;
   ceoNotes: string | null;
   sourceMonth: string | null;
+  source: string | null;
   createdAt: string;
   updatedAt: string;
   owner_user_id: string | null;
@@ -101,6 +102,7 @@ function mapTaskRow(row: TaskRow) {
     nextStep: row.nextStep,
     ceoNotes: row.ceoNotes,
     sourceMonth: row.sourceMonth,
+    source: row.source,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     owner:
@@ -135,6 +137,7 @@ const TASK_SELECT_SQL = `
     t.nextStep,
     t.ceoNotes,
     t.sourceMonth,
+    t.source,
     t.createdAt,
     t.updatedAt,
     owner.id AS owner_user_id,
@@ -212,9 +215,9 @@ export async function POST(request: NextRequest) {
           "id", "taskId", "title", "description", "ownerId", "assigneeId", "department",
           "priority", "status", "strategicPillar", "completion", "riskIndicator",
           "startDate", "dueDate", "completedAt", "notes", "nextStep", "ceoNotes",
-          "sourceMonth", "dataSourceId", "createdAt", "updatedAt"
+          "sourceMonth", "source", "dataSourceId", "createdAt", "updatedAt"
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       id,
       data.taskId || null,
@@ -235,6 +238,7 @@ export async function POST(request: NextRequest) {
       data.nextStep || null,
       data.ceoNotes || null,
       data.sourceMonth || null,
+      data.source || null,
       null,
       createdAt,
       timestamp,

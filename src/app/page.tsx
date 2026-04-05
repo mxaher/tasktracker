@@ -52,6 +52,7 @@ interface Task {
   nextStep: string | null;
   ceoNotes: string | null;
   sourceMonth: string | null;
+  source: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -496,8 +497,21 @@ function TaskModal({
     }
   };
 
+  const DEFAULT_SOURCES = [
+    "الرئيس التنفيذي",
+    "لجنة التدقيق",
+    "اللجنة التنفيذية",
+    "مجلس الإدارة",
+    "الإدارة العليا",
+    "خطة استراتيجية",
+    "تدقيق داخلي",
+    "تدقيق خارجي",
+    "مبادرة ذاتية",
+  ];
+
   const deptOptions = departments.map(d => ({ value: d, label: d }));
   const pillarOptions = strategicPillars.map(p => ({ value: p, label: p }));
+  const sourceOptions = DEFAULT_SOURCES.map(s => ({ value: s, label: s }));
   const ownerOptions: SearchableSelectOption[] = [
     { value: "none", label: "لا يوجد مالك" },
     ...users.map(u => ({ value: u.id, label: u.name || u.email })),
@@ -579,6 +593,16 @@ function TaskModal({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>مصدر المهمة</Label>
+                <SearchableSelect
+                  value={localTask.source || ""}
+                  onChange={(val) => setLocalTask({ ...localTask, source: val || null })}
+                  options={sourceOptions}
+                  placeholder="اختر أو اكتب المصدر"
+                  allowCustom
+                />
+              </div>
               <div className="grid gap-2">
                 <Label>المالك</Label>
                 <SearchableSelect
@@ -985,6 +1009,9 @@ interface TaskListContentProps {
   setFilterOverdue: (v: boolean) => void;
   filterDueSoon: boolean;
   setFilterDueSoon: (v: boolean) => void;
+  filterSource: string;
+  setFilterSource: (s: string) => void;
+  sourceFilterOptions: SearchableSelectOption[];
   deptFilterOptions: SearchableSelectOption[];
   viewMode: "table" | "card";
   setViewMode: (m: "table" | "card") => void;
@@ -1013,6 +1040,7 @@ function TaskListContent({
   filterDepartment, setFilterDepartment,
   filterOverdue, setFilterOverdue,
   filterDueSoon, setFilterDueSoon,
+  filterSource, setFilterSource, sourceFilterOptions,
   deptFilterOptions, viewMode, setViewMode,
   selectedTaskIds, setSelectedTaskIds,
   setIsBulkDeleteDialogOpen,
@@ -1157,6 +1185,14 @@ function TaskListContent({
               placeholder="كل الأقسام"
             />
           </div>
+          <div className="w-[180px]">
+            <SearchableSelect
+              value={filterSource}
+              onChange={setFilterSource}
+              options={sourceFilterOptions}
+              placeholder="كل المصادر"
+            />
+          </div>
         </div>
 
         <div className="flex gap-2">
@@ -1246,6 +1282,12 @@ function TaskListContent({
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
+                    onClick={() => handleSort("source")}
+                  >
+                    <div className="flex items-center justify-center">المصدر<SortIcon field="source" /></div>
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("department")}
                   >
                     <div className="flex items-center justify-center">القسم<SortIcon field="department" /></div>
@@ -1306,6 +1348,11 @@ function TaskListContent({
                       <TableCell>
                         <div className="font-medium line-clamp-1">{task.title}</div>
                         {task.description && <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div>}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {task.source ? (
+                          <Badge variant="outline" className="text-xs whitespace-nowrap">{task.source}</Badge>
+                        ) : "-"}
                       </TableCell>
                       <TableCell>{task.department || "-"}</TableCell>
                       <TableCell>{task.owner?.name || "-"}</TableCell>
@@ -1713,6 +1760,7 @@ export default function TaskTrackerApp() {
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [filterOverdue, setFilterOverdue] = useState(false);
   const [filterDueSoon, setFilterDueSoon] = useState(false);
+  const [filterSource, setFilterSource] = useState<string>("all");
 
   const [settings, setSettings] = useState<SettingsState>({
     adminEmail: "",
@@ -1857,6 +1905,7 @@ export default function TaskTrackerApp() {
     if (filterStatuses.length > 0) result = result.filter(task => filterStatuses.includes(task.status));
     if (filterPriority !== "all") result = result.filter(task => task.priority === filterPriority);
     if (filterDepartment !== "all") result = result.filter(task => task.department === filterDepartment);
+    if (filterSource !== "all") result = result.filter(task => task.source === filterSource);
     if (filterOverdue) {
       const todayStart = new Date(); todayStart.setHours(0,0,0,0);
       result = result.filter(task => task.status !== "completed" && task.dueDate && new Date(task.dueDate).setHours(0,0,0,0) < todayStart.getTime());
@@ -1872,6 +1921,7 @@ export default function TaskTrackerApp() {
       let bVal: string | number = "";
       switch (sortBy) {
         case "title": aVal = a.title.toLowerCase(); bVal = b.title.toLowerCase(); break;
+        case "source": aVal = a.source?.toLowerCase() || "ω"; bVal = b.source?.toLowerCase() || "ω"; break;
         case "department": aVal = a.department?.toLowerCase() || "ω"; bVal = b.department?.toLowerCase() || "ω"; break;
         case "owner": aVal = a.owner?.name?.toLowerCase() || "ω"; bVal = b.owner?.name?.toLowerCase() || "ω"; break;
         case "dueDate": aVal = a.dueDate ? new Date(a.dueDate).getTime() : 0; bVal = b.dueDate ? new Date(b.dueDate).getTime() : 0; break;
@@ -1895,7 +1945,7 @@ export default function TaskTrackerApp() {
     });
 
     return result;
-  }, [tasks, searchQuery, filterStatuses, filterPriority, filterDepartment, filterOverdue, filterDueSoon, sortBy, sortOrder]);
+  }, [tasks, searchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon, sortBy, sortOrder]);
 
   const handleCreateTask = async (taskData: Partial<Task>) => {
     try {
@@ -2170,6 +2220,16 @@ export default function TaskTrackerApp() {
     ...departments.map(d => ({ value: d, label: d })),
   ];
 
+  const taskSources = useMemo(() => {
+    const s = new Set(tasks.map(t => t.source).filter(Boolean));
+    return Array.from(s) as string[];
+  }, [tasks]);
+
+  const sourceFilterOptions: SearchableSelectOption[] = [
+    { value: "all", label: "كل المصادر" },
+    ...taskSources.map(s => ({ value: s, label: s })),
+  ];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -2244,6 +2304,9 @@ export default function TaskTrackerApp() {
               setFilterOverdue={setFilterOverdue}
               filterDueSoon={filterDueSoon}
               setFilterDueSoon={setFilterDueSoon}
+              filterSource={filterSource}
+              setFilterSource={setFilterSource}
+              sourceFilterOptions={sourceFilterOptions}
               deptFilterOptions={deptFilterOptions}
               viewMode={viewMode}
               setViewMode={setViewMode}

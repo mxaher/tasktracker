@@ -33,6 +33,7 @@ type TaskRow = {
   nextStep: string | null;
   ceoNotes: string | null;
   sourceMonth: string | null;
+  source: string | null;
   dataSourceId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -139,6 +140,7 @@ export function mapTaskRow(row: TaskRow) {
     nextStep: row.nextStep,
     ceoNotes: row.ceoNotes,
     sourceMonth: row.sourceMonth,
+    source: row.source,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     owner:
@@ -201,6 +203,7 @@ export const TASK_SELECT_SQL = `
     t.nextStep,
     t.ceoNotes,
     t.sourceMonth,
+    t.source,
     t.dataSourceId,
     t.createdAt,
     t.updatedAt,

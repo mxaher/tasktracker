@@ -31,6 +31,7 @@ type BaseTaskRow = {
   nextStep: string | null;
   ceoNotes: string | null;
   sourceMonth: string | null;
+  source: string | null;
 };
 
 async function getTaskRow(id: string) {
@@ -90,6 +91,7 @@ export async function PUT(
       "nextStep",
       "ceoNotes",
       "sourceMonth",
+      "source",
     ] as const;
 
     const updates: string[] = [];
