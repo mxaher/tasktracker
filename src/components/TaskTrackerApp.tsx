@@ -287,10 +287,9 @@ interface TaskCardProps {
 }
 
 const TaskCard = memo(function TaskCard({
-  task, onEdit, onDelete, onComplete, o
-    onSendReminder, onDateClick, onProgressClick,  getDaysRemaining, getRiskColor,
-}: TaskCardProps) {
-  const StatusIcon = statusConfig[task.status]?.icon || Clock;
+  task, onEdit, onDelete, onComplete,
+  onSendReminder, onDateClick, onProgressClick, getDaysRemaining, getRiskColor
+}: TaskCardProps) {  const StatusIcon = statusConfig[task.status]?.icon || Clock;
   const daysRemaining = getDaysRemaining(task.dueDate);
 
   return (
