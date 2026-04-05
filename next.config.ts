@@ -4,6 +4,7 @@ import("@opennextjs/cloudflare").then((mod) => mod.initOpenNextCloudflareForDev(
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: "standalone",
 
   turbopack: {
     root: process.cwd(),

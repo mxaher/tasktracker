@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-export const runtime = "edge";
-
 // GET /api/reminders - List all scheduled reminders
 export async function GET(request: NextRequest) {
   try {

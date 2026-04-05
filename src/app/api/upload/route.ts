@@ -3,8 +3,6 @@ import { Prisma } from "../../../generated/prisma/edge";
 import { db } from "@/lib/db";
 import * as XLSX from "xlsx";
 
-export const runtime = "edge";
-
 // Column mapping for Arabic/English columns
 const columnMapping: Record<string, string> = {
   // Arabic columns

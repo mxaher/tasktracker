@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import * as XLSX from "xlsx";
 
-export const runtime = "edge";
-
 // GET /api/tasks/export - Export tasks to Excel
 export async function GET() {
   try {

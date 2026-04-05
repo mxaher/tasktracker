@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tasktracker",
+  "account_id": "a76a117ad4225d384a4a2dc22ebece83",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-04-02",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
