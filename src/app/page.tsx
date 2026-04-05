@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
@@ -22,7 +23,8 @@ import {
   MoreVertical, Edit, Trash2, Download, Bell, Settings, Users,
   CheckCircle2, Clock, AlertTriangle, XCircle, TrendingUp,
   Calendar, User, Building, Flag, BarChart3, PieChart, FileSpreadsheet,
-  ChevronDown, ChevronUp, RefreshCw, Eye, Mail, MessageSquare, Save, Send
+  ChevronDown, ChevronUp, RefreshCw, Eye, Mail, MessageSquare, Save, Send,
+  AlertCircle, X
 } from "lucide-react";
 import { format, differenceInDays, isPast, isToday, addDays } from "date-fns";
 import { Switch } from "@/components/ui/switch";
@@ -91,6 +93,129 @@ const priorityConfig: Record<string, { label: string; color: string; bgColor: st
   critical: { label: "حرج", color: "text-red-600", bgColor: "bg-red-100" },
 };
 
+// ─────────────────────────────────────────────────────────────
+// SearchableSelect — searchable dropdown for departments,
+// strategic pillars, owners and assignees
+// ─────────────────────────────────────────────────────────────
+interface SearchableSelectOption {
+  value: string;
+  label: string;
+}
+
+function SearchableSelect({
+  value,
+  onChange,
+  options,
+  placeholder = "اختر...",
+  allowCustom = false,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: SearchableSelectOption[];
+  placeholder?: string;
+  allowCustom?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const displayLabel = options.find((o) => o.value === value)?.label || (value && value !== "none" ? value : "");
+
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const showCustom =
+    allowCustom &&
+    search.trim().length > 0 &&
+    !options.some((o) => o.label.toLowerCase() === search.toLowerCase());
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && inputRef.current) inputRef.current.focus();
+  }, [open]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") { setOpen(false); setSearch(""); }
+  };
+
+  const select = (val: string) => {
+    onChange(val);
+    setOpen(false);
+    setSearch("");
+  };
+
+  return (
+    <div ref={containerRef} className="relative" onKeyDown={handleKeyDown}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:border-primary/50 transition-colors"
+      >
+        <span className={displayLabel ? "text-foreground" : "text-muted-foreground"}>
+          {displayLabel || placeholder}
+        </span>
+        <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1 w-full min-w-[180px] rounded-md border bg-background shadow-lg">
+          <div className="p-2 border-b">
+            <div className="relative">
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                ref={inputRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="بحث..."
+                className="w-full h-8 rounded-sm border border-input bg-transparent pr-7 pl-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+          </div>
+          <div className="max-h-52 overflow-y-auto py-1">
+            {filtered.length === 0 && !showCustom && (
+              <div className="px-3 py-2 text-sm text-muted-foreground">لا توجد نتائج</div>
+            )}
+            {filtered.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => select(opt.value)}
+                className={`w-full text-right px-3 py-1.5 text-sm hover:bg-muted transition-colors ${
+                  opt.value === value ? "bg-primary/10 font-medium" : ""
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+            {showCustom && (
+              <button
+                type="button"
+                onClick={() => select(search.trim())}
+                className="w-full text-right px-3 py-1.5 text-sm text-primary hover:bg-primary/5 transition-colors border-t"
+              >
+                + استخدام "{search.trim()}"
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function TaskTrackerApp() {
   // State
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -114,6 +239,10 @@ export default function TaskTrackerApp() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [sortBy, setSortBy] = useState<string>("updatedAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // Multi-select state
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   
   // Settings state
   const [settings, setSettings] = useState<{
@@ -258,16 +387,25 @@ export default function TaskTrackerApp() {
     setMounted(true);
   }, []);
 
+  // Clear selection when filters change
+  useEffect(() => {
+    setSelectedTaskIds(new Set());
+  }, [searchQuery, filterStatuses, filterPriority, filterDepartment]);
+
   // Computed values
   const departments = useMemo(() => {
     const depts = new Set(tasks.map(t => t.department).filter(Boolean));
     return Array.from(depts) as string[];
   }, [tasks]);
 
+  const strategicPillars = useMemo(() => {
+    const pillars = new Set(tasks.map(t => t.strategicPillar).filter(Boolean));
+    return Array.from(pillars) as string[];
+  }, [tasks]);
+
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
 
-    // Search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(task =>
@@ -279,7 +417,6 @@ export default function TaskTrackerApp() {
       );
     }
 
-    // Filters
     if (filterStatuses.length > 0) {
       result = result.filter(task => filterStatuses.includes(task.status));
     }
@@ -290,7 +427,6 @@ export default function TaskTrackerApp() {
       result = result.filter(task => task.department === filterDepartment);
     }
 
-    // Sort
     result.sort((a, b) => {
       let aVal: string | number = "";
       let bVal: string | number = "";
@@ -386,6 +522,23 @@ export default function TaskTrackerApp() {
       console.error("Error deleting task:", error);
       toast.error("Failed to delete task");
     }
+  };
+
+  // Bulk delete handler
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedTaskIds);
+    let deleted = 0;
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+        if (res.ok) deleted++;
+      } catch {}
+    }
+    toast.success(`تم حذف ${deleted} مهمة بنجاح`);
+    setSelectedTaskIds(new Set());
+    setIsBulkDeleteDialogOpen(false);
+    await fetchTasks();
+    await fetchStats();
   };
 
   const handleQuickUpdate = async (taskId: string, data: Partial<Task>) => {
@@ -613,7 +766,8 @@ export default function TaskTrackerApp() {
     }
   };
 
-  // Components
+  // ─── Components ───────────────────────────────────────────────
+
   const KPICard = ({ title, value, subtitle, icon: Icon, trend, color = "primary" }: {
     title: string;
     value: string | number;
@@ -764,12 +918,30 @@ export default function TaskTrackerApp() {
     );
   };
 
+  // ─── Task Modal with duplicate detection + searchable dropdowns ───
   const TaskModal = () => {
     const [localTask, setLocalTask] = useState<Partial<Task>>(editingTask);
+    const [duplicateTitles, setDuplicateTitles] = useState<Task[]>([]);
     
     useEffect(() => {
       setLocalTask(editingTask);
     }, [editingTask]);
+
+    // Duplicate detection
+    useEffect(() => {
+      const titleVal = (localTask.title || "").trim();
+      if (titleVal.length < 3) {
+        setDuplicateTitles([]);
+        return;
+      }
+      const lower = titleVal.toLowerCase();
+      const matches = tasks.filter(t => {
+        if (t.id === selectedTask?.id) return false;
+        const tl = t.title.toLowerCase().trim();
+        return tl.includes(lower) || lower.includes(tl);
+      });
+      setDuplicateTitles(matches);
+    }, [localTask.title]);
 
     const handleSubmit = () => {
       if (!localTask.title?.trim()) {
@@ -794,6 +966,18 @@ export default function TaskTrackerApp() {
       setQuickUpdate("");
     };
 
+    // Searchable options
+    const deptOptions = departments.map(d => ({ value: d, label: d }));
+    const pillarOptions = strategicPillars.map(p => ({ value: p, label: p }));
+    const ownerOptions: SearchableSelectOption[] = [
+      { value: "none", label: "لا يوجد مالك" },
+      ...users.map(u => ({ value: u.id, label: u.name || u.email })),
+    ];
+    const assigneeOptions: SearchableSelectOption[] = [
+      { value: "none", label: "لا يوجد مُكلَّف" },
+      ...users.map(u => ({ value: u.id, label: u.name || u.email })),
+    ];
+
     return (
       <Dialog open={isTaskModalOpen} onOpenChange={(open) => {
         setIsTaskModalOpen(open);
@@ -816,6 +1000,7 @@ export default function TaskTrackerApp() {
 
             {/* Left panel — task details */}
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {/* Title with duplicate detection */}
               <div className="grid gap-2">
                 <Label htmlFor="title">العنوان *</Label>
                 <Input
@@ -823,7 +1008,22 @@ export default function TaskTrackerApp() {
                   value={localTask.title || ""}
                   onChange={(e) => setLocalTask({ ...localTask, title: e.target.value })}
                   placeholder="أدخل عنوان المهمة"
+                  className={duplicateTitles.length > 0 ? "border-amber-400 focus-visible:ring-amber-400" : ""}
                 />
+                {/* Duplicate warning banner */}
+                {duplicateTitles.length > 0 && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-start gap-2">
+                    <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <p className="font-medium">تحذير: يوجد مهام مشابهة</p>
+                      {duplicateTitles.map(d => (
+                        <p key={d.id}>
+                          "{d.title}" — {statusConfig[d.status]?.label || d.status}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -838,60 +1038,50 @@ export default function TaskTrackerApp() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                {/* Department — searchable */}
                 <div className="grid gap-2">
-                  <Label htmlFor="department">القسم</Label>
-                  <Input
-                    id="department"
+                  <Label>القسم</Label>
+                  <SearchableSelect
                     value={localTask.department || ""}
-                    onChange={(e) => setLocalTask({ ...localTask, department: e.target.value })}
-                    placeholder="أدخل القسم"
+                    onChange={(val) => setLocalTask({ ...localTask, department: val || null })}
+                    options={deptOptions}
+                    placeholder="اختر أو اكتب القسم"
+                    allowCustom
                   />
                 </div>
+                {/* Strategic Pillar — searchable */}
                 <div className="grid gap-2">
-                  <Label htmlFor="strategicPillar">الركيزة الاستراتيجية</Label>
-                  <Input
-                    id="strategicPillar"
+                  <Label>الركيزة الاستراتيجية</Label>
+                  <SearchableSelect
                     value={localTask.strategicPillar || ""}
-                    onChange={(e) => setLocalTask({ ...localTask, strategicPillar: e.target.value })}
-                    placeholder="أدخل الركيزة الاستراتيجية"
+                    onChange={(val) => setLocalTask({ ...localTask, strategicPillar: val || null })}
+                    options={pillarOptions}
+                    placeholder="اختر أو اكتب الركيزة"
+                    allowCustom
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                {/* Owner — searchable */}
                 <div className="grid gap-2">
-                  <Label htmlFor="owner">المالك</Label>
-                  <Select
+                  <Label>المالك</Label>
+                  <SearchableSelect
                     value={localTask.ownerId || "none"}
-                    onValueChange={(value) => setLocalTask({ ...localTask, ownerId: value === "none" ? null : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر المالك" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">لا يوجد مالك</SelectItem>
-                      {users.map(user => (
-                        <SelectItem key={user.id} value={user.id}>{user.name || user.email}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(val) => setLocalTask({ ...localTask, ownerId: val === "none" ? null : val })}
+                    options={ownerOptions}
+                    placeholder="اختر المالك"
+                  />
                 </div>
+                {/* Assignee — searchable */}
                 <div className="grid gap-2">
-                  <Label htmlFor="assignee">المُكلَّف</Label>
-                  <Select
+                  <Label>المُكلَّف</Label>
+                  <SearchableSelect
                     value={localTask.assigneeId || "none"}
-                    onValueChange={(value) => setLocalTask({ ...localTask, assigneeId: value === "none" ? null : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر المُكلَّف" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">لا يوجد مُكلَّف</SelectItem>
-                      {users.map(user => (
-                        <SelectItem key={user.id} value={user.id}>{user.name || user.email}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(val) => setLocalTask({ ...localTask, assigneeId: val === "none" ? null : val })}
+                    options={assigneeOptions}
+                    placeholder="اختر المُكلَّف"
+                  />
                 </div>
               </div>
 
@@ -1159,7 +1349,6 @@ export default function TaskTrackerApp() {
 
         {/* Charts Row */}
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Status Distribution */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">توزيع الحالات</CardTitle>
@@ -1189,7 +1378,6 @@ export default function TaskTrackerApp() {
             </CardContent>
           </Card>
 
-          {/* Priority Distribution */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">توزيع الأولويات</CardTitle>
@@ -1275,287 +1463,365 @@ export default function TaskTrackerApp() {
     );
   };
 
+  // Derived options for department filter (searchable)
+  const deptFilterOptions: SearchableSelectOption[] = [
+    { value: "all", label: "كل الأقسام" },
+    ...departments.map(d => ({ value: d, label: d })),
+  ];
+
   // Task list content
-  const TaskListContent = () => (
-    <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 gap-2">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="البحث في المهام..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-9"
-            />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 h-9">
-                <Filter className="size-4" />
-                {filterStatuses.length === 0 ? "كل الحالات" : `${filterStatuses.length} حالات`}
-                <ChevronDown className="size-4 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>تصفية حسب الحالة</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {(["not_started", "in_progress", "delayed", "completed"] as const).map(status => (
-                <DropdownMenuCheckboxItem
-                  key={status}
-                  checked={filterStatuses.includes(status)}
-                  onCheckedChange={(checked) => {
-                    setFilterStatuses(prev =>
-                      checked ? [...prev, status] : prev.filter(s => s !== status)
-                    );
-                  }}
-                >
-                  <span className={`inline-block size-2 rounded-full me-2 ${statusConfig[status]?.color?.replace("text-", "bg-").split(" ")[0] ?? ""}`} />
-                  {statusConfig[status]?.label ?? status}
-                </DropdownMenuCheckboxItem>
-              ))}
-              {filterStatuses.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setFilterStatuses([])}>
-                    مسح التصفية
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {filterStatuses.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {filterStatuses.map(status => (
-                <Badge
-                  key={status}
-                  variant="secondary"
-                  className="gap-1 cursor-pointer hover:opacity-80"
-                  onClick={() => setFilterStatuses(prev => prev.filter(s => s !== status))}
-                >
-                  {statusConfig[status]?.label ?? status}
-                  <span className="text-xs leading-none">×</span>
-                </Badge>
-              ))}
+  const TaskListContent = () => {
+    const allFilteredSelected =
+      filteredTasks.length > 0 &&
+      filteredTasks.every(t => selectedTaskIds.has(t.id));
+
+    const toggleSelectAll = () => {
+      if (allFilteredSelected) {
+        setSelectedTaskIds(new Set());
+      } else {
+        setSelectedTaskIds(new Set(filteredTasks.map(t => t.id)));
+      }
+    };
+
+    const toggleSelectTask = (id: string) => {
+      setSelectedTaskIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    };
+
+    return (
+      <div className="space-y-4">
+        {/* Toolbar */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-1 gap-2 flex-wrap">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="البحث في المهام..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-9"
+              />
             </div>
-          )}
-          <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="الأولوية" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">كل الأولويات</SelectItem>
-              <SelectItem value="critical">حرج</SelectItem>
-              <SelectItem value="high">عالي</SelectItem>
-              <SelectItem value="medium">متوسط</SelectItem>
-              <SelectItem value="low">منخفض</SelectItem>
-            </SelectContent>
-          </Select>
-          {departments.length > 0 && (
-            <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="القسم" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 h-9">
+                  <Filter className="size-4" />
+                  {filterStatuses.length === 0 ? "كل الحالات" : `${filterStatuses.length} حالات`}
+                  <ChevronDown className="size-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>تصفية حسب الحالة</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {(["not_started", "in_progress", "delayed", "completed"] as const).map(status => (
+                  <DropdownMenuCheckboxItem
+                    key={status}
+                    checked={filterStatuses.includes(status)}
+                    onCheckedChange={(checked) => {
+                      setFilterStatuses(prev =>
+                        checked ? [...prev, status] : prev.filter(s => s !== status)
+                      );
+                    }}
+                  >
+                    <span className={`inline-block size-2 rounded-full me-2 ${statusConfig[status]?.color?.replace("text-", "bg-").split(" ")[0] ?? ""}`} />
+                    {statusConfig[status]?.label ?? status}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {filterStatuses.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setFilterStatuses([])}>
+                      مسح التصفية
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {filterStatuses.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {filterStatuses.map(status => (
+                  <Badge
+                    key={status}
+                    variant="secondary"
+                    className="gap-1 cursor-pointer hover:opacity-80"
+                    onClick={() => setFilterStatuses(prev => prev.filter(s => s !== status))}
+                  >
+                    {statusConfig[status]?.label ?? status}
+                    <span className="text-xs leading-none">×</span>
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <Select value={filterPriority} onValueChange={setFilterPriority}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="الأولوية" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">كل الأقسام</SelectItem>
-                {departments.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                ))}
+                <SelectItem value="all">كل الأولويات</SelectItem>
+                <SelectItem value="critical">حرج</SelectItem>
+                <SelectItem value="high">عالي</SelectItem>
+                <SelectItem value="medium">متوسط</SelectItem>
+                <SelectItem value="low">منخفض</SelectItem>
               </SelectContent>
             </Select>
-          )}
-        </div>
-        
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === "table" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("table")}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === "card" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("card")}
-          >
-            <Grid3X3 className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 ml-1" />
-            تصدير
-          </Button>
-        </div>
-      </div>
-
-      {/* Results count */}
-      <div className="text-sm text-muted-foreground">
-        عرض {filteredTasks.length} من {tasks.length} مهمة
-      </div>
-
-      {/* Task views */}
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : filteredTasks.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-            <List className="h-12 w-12 mb-4" />
-            <p>لا توجد مهام</p>
-            <Button className="mt-4" onClick={() => openTaskModal()}>
-              <Plus className="ml-2 h-4 w-4" />
-              أنشئ مهمتك الأولى
+            {/* Searchable department filter */}
+            <div className="w-[180px]">
+              <SearchableSelect
+                value={filterDepartment}
+                onChange={setFilterDepartment}
+                options={deptFilterOptions}
+                placeholder="كل الأقسام"
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === "table" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("table")}
+            >
+              <List className="h-4 w-4" />
             </Button>
-          </CardContent>
-        </Card>
-      ) : viewMode === "card" ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredTasks.map(task => (
-            <TaskCard key={task.id} task={task} />
-          ))}
+            <Button
+              variant={viewMode === "card" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("card")}
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="h-4 w-4 ml-1" />
+              تصدير
+            </Button>
+          </div>
         </div>
-      ) : (
-        <Card className="w-full overflow-hidden">
-          <ScrollArea className="h-[calc(100vh-400px)]" dir="rtl">
-            <Table className="w-full" dir="rtl">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[60px]">الرقم</TableHead>
-                  <TableHead className="min-w-[200px]">العنوان</TableHead>
-                  <TableHead>القسم</TableHead>
-                  <TableHead>المالك</TableHead>
-                  <TableHead>الأولوية</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="w-[100px]">التقدم</TableHead>
-                  <TableHead>تاريخ الاستحقاق</TableHead>
-                  <TableHead className="w-[200px]">الإجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTasks.map(task => {
-                  const StatusIcon = statusConfig[task.status]?.icon || Clock;
-                  const daysRemaining = getDaysRemaining(task.dueDate);
-                  
-                  return (
-                    <TableRow 
-                      key={task.id} 
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => openTaskModal(task)}
-                    >
-                      <TableCell className="font-mono text-xs">
-                        {task.taskId || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium line-clamp-1">{task.title}</div>
-                        {task.description && (
-                          <div className="text-xs text-muted-foreground line-clamp-1">
-                            {task.description}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>{task.department || "-"}</TableCell>
-                      <TableCell>{task.owner?.name || "-"}</TableCell>
-                      <TableCell>
-                        <Badge className={`${priorityConfig[task.priority]?.bgColor} ${priorityConfig[task.priority]?.color}`}>
-                          {priorityConfig[task.priority]?.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${statusConfig[task.status]?.bgColor} ${statusConfig[task.status]?.color}`}>
-                          <StatusIcon className="h-3 w-3 mr-1" />
-                          {statusConfig[task.status]?.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Progress value={task.completion * 100} className="h-2 flex-1" />
-                          <span className="text-xs font-medium w-8">
-                            {Math.round(task.completion * 100)}%
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {task.dueDate ? (
-                          <div className={getRiskColor(task)}>
-                            <div className="text-sm">
-                              {format(new Date(task.dueDate), "MMM d, yyyy")}
+
+        {/* Bulk action bar */}
+        {selectedTaskIds.size > 0 && viewMode === "table" && (
+          <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+            <span className="text-sm font-medium text-primary">
+              {selectedTaskIds.size} مهمة محددة
+            </span>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="h-7 text-xs"
+              onClick={() => setIsBulkDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-3 w-3 ml-1" />
+              حذف المحدد
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+              onClick={toggleSelectAll}
+            >
+              {allFilteredSelected ? "إلغاء تحديد الكل" : "تحديد الكل"}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 ml-auto"
+              onClick={() => setSelectedTaskIds(new Set())}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Results count */}
+        <div className="text-sm text-muted-foreground">
+          عرض {filteredTasks.length} من {tasks.length} مهمة
+        </div>
+
+        {/* Task views */}
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filteredTasks.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+              <List className="h-12 w-12 mb-4" />
+              <p>لا توجد مهام</p>
+              <Button className="mt-4" onClick={() => openTaskModal()}>
+                <Plus className="ml-2 h-4 w-4" />
+                أنشئ مهمتك الأولى
+              </Button>
+            </CardContent>
+          </Card>
+        ) : viewMode === "card" ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredTasks.map(task => (
+              <TaskCard key={task.id} task={task} />
+            ))}
+          </div>
+        ) : (
+          <Card className="w-full overflow-hidden">
+            <ScrollArea className="h-[calc(100vh-400px)]" dir="rtl">
+              <Table className="w-full" dir="rtl">
+                <TableHeader>
+                  <TableRow>
+                    {/* Select-all checkbox */}
+                    <TableHead className="w-[40px] pr-4">
+                      <Checkbox
+                        checked={allFilteredSelected}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="تحديد الكل"
+                      />
+                    </TableHead>
+                    <TableHead className="w-[60px]">الرقم</TableHead>
+                    <TableHead className="min-w-[200px]">العنوان</TableHead>
+                    <TableHead>القسم</TableHead>
+                    <TableHead>المالك</TableHead>
+                    <TableHead>الأولوية</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="w-[100px]">التقدم</TableHead>
+                    <TableHead>تاريخ الاستحقاق</TableHead>
+                    <TableHead className="w-[200px]">الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTasks.map(task => {
+                    const StatusIcon = statusConfig[task.status]?.icon || Clock;
+                    const daysRemaining = getDaysRemaining(task.dueDate);
+                    const isSelected = selectedTaskIds.has(task.id);
+                    
+                    return (
+                      <TableRow 
+                        key={task.id} 
+                        className={`cursor-pointer hover:bg-muted/50 ${
+                          isSelected ? "bg-primary/5 hover:bg-primary/10" : ""
+                        }`}
+                        onClick={() => openTaskModal(task)}
+                      >
+                        {/* Row checkbox */}
+                        <TableCell className="pr-4" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleSelectTask(task.id)}
+                            aria-label={`تحديد ${task.title}`}
+                          />
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {task.taskId || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium line-clamp-1">{task.title}</div>
+                          {task.description && (
+                            <div className="text-xs text-muted-foreground line-clamp-1">
+                              {task.description}
                             </div>
-                            {daysRemaining !== null && task.status !== "completed" && (
-                              <div className="text-xs">
-                                {daysRemaining < 0 
-                                  ? `${Math.abs(daysRemaining)}d overdue`
-                                  : daysRemaining === 0 
-                                    ? "Today"
-                                    : `${daysRemaining}d left`
-                                }
-                              </div>
-                            )}
+                          )}
+                        </TableCell>
+                        <TableCell>{task.department || "-"}</TableCell>
+                        <TableCell>{task.owner?.name || "-"}</TableCell>
+                        <TableCell>
+                          <Badge className={`${priorityConfig[task.priority]?.bgColor} ${priorityConfig[task.priority]?.color}`}>
+                            {priorityConfig[task.priority]?.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${statusConfig[task.status]?.bgColor} ${statusConfig[task.status]?.color}`}>
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusConfig[task.status]?.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Progress value={task.completion * 100} className="h-2 flex-1" />
+                            <span className="text-xs font-medium w-8">
+                              {Math.round(task.completion * 100)}%
+                            </span>
                           </div>
-                        ) : "-"}
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-2"
-                            disabled={task.status === "completed"}
-                            onClick={() => handleMarkComplete(task)}
-                          >
-                            <CheckCircle2 className="h-3 w-3 ml-1" /> مكتمل
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-2"
-                            onClick={() => openTaskModal(task)}
-                          >
-                            <Edit className="h-3 w-3 ml-1" /> تحديث
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-2"
-                            onClick={() => {
-                              setQuickDateTask(task);
-                              setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : "");
-                            }}
-                          >
-                            <Calendar className="h-3 w-3 ml-1" /> التاريخ
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-2"
-                            onClick={() => {
-                              setQuickProgressTask(task);
-                              setQuickProgressValue(Math.round(task.completion * 100));
-                            }}
-                          >
-                            <BarChart3 className="h-3 w-3 ml-1" /> التقدم
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => { setTaskToDelete(task); setIsDeleteDialogOpen(true); }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        </Card>
-      )}
-    </div>
-  );
+                        </TableCell>
+                        <TableCell>
+                          {task.dueDate ? (
+                            <div className={getRiskColor(task)}>
+                              <div className="text-sm">
+                                {format(new Date(task.dueDate), "MMM d, yyyy")}
+                              </div>
+                              {daysRemaining !== null && task.status !== "completed" && (
+                                <div className="text-xs">
+                                  {daysRemaining < 0 
+                                    ? `${Math.abs(daysRemaining)}d overdue`
+                                    : daysRemaining === 0 
+                                      ? "Today"
+                                      : `${daysRemaining}d left`
+                                  }
+                                </div>
+                              )}
+                            </div>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-2"
+                              disabled={task.status === "completed"}
+                              onClick={() => handleMarkComplete(task)}
+                            >
+                              <CheckCircle2 className="h-3 w-3 ml-1" /> مكتمل
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-2"
+                              onClick={() => openTaskModal(task)}
+                            >
+                              <Edit className="h-3 w-3 ml-1" /> تحديث
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-2"
+                              onClick={() => {
+                                setQuickDateTask(task);
+                                setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : "");
+                              }}
+                            >
+                              <Calendar className="h-3 w-3 ml-1" /> التاريخ
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-2"
+                              onClick={() => {
+                                setQuickProgressTask(task);
+                                setQuickProgressValue(Math.round(task.completion * 100));
+                              }}
+                            >
+                              <BarChart3 className="h-3 w-3 ml-1" /> التقدم
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => { setTaskToDelete(task); setIsDeleteDialogOpen(true); }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </Card>
+        )}
+      </div>
+    );
+  };
 
   // Settings content
   const SettingsContent = () => (
@@ -1575,7 +1841,6 @@ export default function TaskTrackerApp() {
         </Button>
       </div>
 
-      {/* Admin Email Settings */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -1615,7 +1880,6 @@ export default function TaskTrackerApp() {
         </CardContent>
       </Card>
 
-      {/* Scheduled Reminders with Calendar Picker */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -1660,7 +1924,6 @@ export default function TaskTrackerApp() {
             </div>
           )}
 
-          {/* Add new reminder form */}
           {showReminderForm ? (
             <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
               <div className="grid gap-2">
@@ -1737,7 +2000,6 @@ export default function TaskTrackerApp() {
             </Button>
           )}
 
-          {/* Manual cron trigger */}
           <div className="pt-4 border-t">
             <Button variant="outline" onClick={handleTriggerCron}>
               <RefreshCw className="h-4 w-4 ml-2" />
@@ -1750,7 +2012,6 @@ export default function TaskTrackerApp() {
         </CardContent>
       </Card>
 
-      {/* Custom Reminder Dates */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -1792,7 +2053,6 @@ export default function TaskTrackerApp() {
         </CardContent>
       </Card>
 
-      {/* In-Progress Task Reports */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -1891,7 +2151,6 @@ export default function TaskTrackerApp() {
         </CardContent>
       </Card>
 
-      {/* Task Reminders */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -1942,7 +2201,6 @@ export default function TaskTrackerApp() {
         </CardContent>
       </Card>
 
-      {/* Email Configuration Info */}
       <Card className="border-amber-200 bg-amber-50/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2 text-amber-700">
@@ -2057,7 +2315,7 @@ export default function TaskTrackerApp() {
       <TaskModal />
       <UploadModal />
       
-      {/* Delete Confirmation */}
+      {/* Single Delete Confirmation */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -2070,6 +2328,24 @@ export default function TaskTrackerApp() {
             <AlertDialogCancel>إلغاء</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteTask} className="bg-red-600 hover:bg-red-700">
               حذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف المهام المحددة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف {selectedTaskIds.size} مهمة؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-red-600 hover:bg-red-700">
+              حذف {selectedTaskIds.size} مهمة
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
