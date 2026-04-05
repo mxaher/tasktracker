@@ -286,7 +286,8 @@ interface TaskCardProps {
 }
 
 const TaskCard = memo(function TaskCard({
-  task, onEdit, onDelete, onComplete, onDateClick, onProgressClick,
+  task, onEdit, onDelete, onComplete, o
+    onSendReminder: (task: Task) => void;nDateClick, onProgressClick, onDateClick, onProgressClick,
   getDaysRemaining, getRiskColor,
 }: TaskCardProps) {
   const StatusIcon = statusConfig[task.status]?.icon || Clock;
@@ -2237,6 +2238,17 @@ export default function TaskTrackerApp() {
     } catch (error) {
       console.error("Error triggering cron:", error);
       toast.error("Failed to trigger cron");
+    }
+  };
+
+    const handleSendTaskReminder = async (task: Task) => {
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/remind`, { method: "POST" });
+      if (!response.ok) throw new Error("Failed to send task reminder");
+      toast.success("Task reminder sent successfully");
+    } catch (error) {
+      console.error("Error sending task reminder:", error);
+      toast.error("Failed to send task reminder");
     }
   };
 
