@@ -24,6 +24,16 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Task = $Result.DefaultSelection<Prisma.$TaskPayload>
 /**
+ * Model Contact
+ * 
+ */
+export type Contact = $Result.DefaultSelection<Prisma.$ContactPayload>
+/**
+ * Model TaskUpdate
+ * 
+ */
+export type TaskUpdate = $Result.DefaultSelection<Prisma.$TaskUpdatePayload>
+/**
  * Model TaskAuditLog
  * 
  */
@@ -196,6 +206,26 @@ export class PrismaClient<
     * ```
     */
   get task(): Prisma.TaskDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contact`: Exposes CRUD operations for the **Contact** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Contacts
+    * const contacts = await prisma.contact.findMany()
+    * ```
+    */
+  get contact(): Prisma.ContactDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.taskUpdate`: Exposes CRUD operations for the **TaskUpdate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TaskUpdates
+    * const taskUpdates = await prisma.taskUpdate.findMany()
+    * ```
+    */
+  get taskUpdate(): Prisma.TaskUpdateDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.taskAuditLog`: Exposes CRUD operations for the **TaskAuditLog** model.
@@ -709,6 +739,8 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Task: 'Task',
+    Contact: 'Contact',
+    TaskUpdate: 'TaskUpdate',
     TaskAuditLog: 'TaskAuditLog',
     DataSource: 'DataSource',
     Notification: 'Notification',
@@ -734,7 +766,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "task" | "taskAuditLog" | "dataSource" | "notification" | "notificationRule" | "systemConfig" | "adminSettings" | "scheduledReminder"
+      modelProps: "user" | "task" | "contact" | "taskUpdate" | "taskAuditLog" | "dataSource" | "notification" | "notificationRule" | "systemConfig" | "adminSettings" | "scheduledReminder"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -883,6 +915,154 @@ export namespace Prisma {
           count: {
             args: Prisma.TaskCountArgs<ExtArgs>
             result: $Utils.Optional<TaskCountAggregateOutputType> | number
+          }
+        }
+      }
+      Contact: {
+        payload: Prisma.$ContactPayload<ExtArgs>
+        fields: Prisma.ContactFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContactFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContactFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>
+          }
+          findFirst: {
+            args: Prisma.ContactFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContactFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>
+          }
+          findMany: {
+            args: Prisma.ContactFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>[]
+          }
+          create: {
+            args: Prisma.ContactCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>
+          }
+          createMany: {
+            args: Prisma.ContactCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ContactCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>[]
+          }
+          delete: {
+            args: Prisma.ContactDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>
+          }
+          update: {
+            args: Prisma.ContactUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContactDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContactUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ContactUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>[]
+          }
+          upsert: {
+            args: Prisma.ContactUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContactPayload>
+          }
+          aggregate: {
+            args: Prisma.ContactAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContact>
+          }
+          groupBy: {
+            args: Prisma.ContactGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContactGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ContactCountArgs<ExtArgs>
+            result: $Utils.Optional<ContactCountAggregateOutputType> | number
+          }
+        }
+      }
+      TaskUpdate: {
+        payload: Prisma.$TaskUpdatePayload<ExtArgs>
+        fields: Prisma.TaskUpdateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TaskUpdateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TaskUpdateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>
+          }
+          findFirst: {
+            args: Prisma.TaskUpdateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TaskUpdateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>
+          }
+          findMany: {
+            args: Prisma.TaskUpdateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>[]
+          }
+          create: {
+            args: Prisma.TaskUpdateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>
+          }
+          createMany: {
+            args: Prisma.TaskUpdateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TaskUpdateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>[]
+          }
+          delete: {
+            args: Prisma.TaskUpdateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>
+          }
+          update: {
+            args: Prisma.TaskUpdateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>
+          }
+          deleteMany: {
+            args: Prisma.TaskUpdateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TaskUpdateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TaskUpdateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>[]
+          }
+          upsert: {
+            args: Prisma.TaskUpdateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TaskUpdatePayload>
+          }
+          aggregate: {
+            args: Prisma.TaskUpdateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTaskUpdate>
+          }
+          groupBy: {
+            args: Prisma.TaskUpdateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TaskUpdateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TaskUpdateCountArgs<ExtArgs>
+            result: $Utils.Optional<TaskUpdateCountAggregateOutputType> | number
           }
         }
       }
@@ -1502,6 +1682,8 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     user?: UserOmit
     task?: TaskOmit
+    contact?: ContactOmit
+    taskUpdate?: TaskUpdateOmit
     taskAuditLog?: TaskAuditLogOmit
     dataSource?: DataSourceOmit
     notification?: NotificationOmit
@@ -1649,11 +1831,13 @@ export namespace Prisma {
   export type TaskCountOutputType = {
     auditLogs: number
     notifications: number
+    updates: number
   }
 
   export type TaskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     auditLogs?: boolean | TaskCountOutputTypeCountAuditLogsArgs
     notifications?: boolean | TaskCountOutputTypeCountNotificationsArgs
+    updates?: boolean | TaskCountOutputTypeCountUpdatesArgs
   }
 
   // Custom InputTypes
@@ -1679,6 +1863,13 @@ export namespace Prisma {
    */
   export type TaskCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+  /**
+   * TaskCountOutputType without action
+   */
+  export type TaskCountOutputTypeCountUpdatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskUpdateWhereInput
   }
 
 
@@ -1740,6 +1931,7 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     email: string | null
+    username: string | null
     name: string | null
     role: string | null
     department: string | null
@@ -1757,6 +1949,7 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     email: string | null
+    username: string | null
     name: string | null
     role: string | null
     department: string | null
@@ -1774,6 +1967,7 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     email: number
+    username: number
     name: number
     role: number
     department: number
@@ -1801,6 +1995,7 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     email?: true
+    username?: true
     name?: true
     role?: true
     department?: true
@@ -1818,6 +2013,7 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     email?: true
+    username?: true
     name?: true
     role?: true
     department?: true
@@ -1835,6 +2031,7 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     email?: true
+    username?: true
     name?: true
     role?: true
     department?: true
@@ -1939,6 +2136,7 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     email: string
+    username: string | null
     name: string | null
     role: string
     department: string | null
@@ -1975,6 +2173,7 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     email?: boolean
+    username?: boolean
     name?: boolean
     role?: boolean
     department?: boolean
@@ -1991,12 +2190,14 @@ export namespace Prisma {
     assignedTasks?: boolean | User$assignedTasksArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    contact?: boolean | User$contactArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     email?: boolean
+    username?: boolean
     name?: boolean
     role?: boolean
     department?: boolean
@@ -2014,6 +2215,7 @@ export namespace Prisma {
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     email?: boolean
+    username?: boolean
     name?: boolean
     role?: boolean
     department?: boolean
@@ -2031,6 +2233,7 @@ export namespace Prisma {
   export type UserSelectScalar = {
     id?: boolean
     email?: boolean
+    username?: boolean
     name?: boolean
     role?: boolean
     department?: boolean
@@ -2045,12 +2248,13 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "role" | "department" | "phone" | "avatar" | "isActive" | "receiveTaskReminders" | "receiveDailyDigest" | "receiveWeeklyReport" | "reminderDaysBefore" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "username" | "name" | "role" | "department" | "phone" | "avatar" | "isActive" | "receiveTaskReminders" | "receiveDailyDigest" | "receiveWeeklyReport" | "reminderDaysBefore" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ownedTasks?: boolean | User$ownedTasksArgs<ExtArgs>
     assignedTasks?: boolean | User$assignedTasksArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    contact?: boolean | User$contactArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2063,10 +2267,12 @@ export namespace Prisma {
       assignedTasks: Prisma.$TaskPayload<ExtArgs>[]
       auditLogs: Prisma.$TaskAuditLogPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      contact: Prisma.$ContactPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       email: string
+      username: string | null
       name: string | null
       role: string
       department: string | null
@@ -2477,6 +2683,7 @@ export namespace Prisma {
     assignedTasks<T extends User$assignedTasksArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    contact<T extends User$contactArgs<ExtArgs> = {}>(args?: Subset<T, User$contactArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2508,6 +2715,7 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
+    readonly username: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'String'>
     readonly department: FieldRef<"User", 'String'>
@@ -3002,6 +3210,25 @@ export namespace Prisma {
   }
 
   /**
+   * User.contact
+   */
+  export type User$contactArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    where?: ContactWhereInput
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3045,6 +3272,8 @@ export namespace Prisma {
     taskId: string | null
     title: string | null
     description: string | null
+    sentdmMessageId: string | null
+    lastReminderSentAt: Date | null
     ownerId: string | null
     assigneeId: string | null
     department: string | null
@@ -3060,6 +3289,7 @@ export namespace Prisma {
     nextStep: string | null
     ceoNotes: string | null
     sourceMonth: string | null
+    source: string | null
     dataSourceId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3070,6 +3300,8 @@ export namespace Prisma {
     taskId: string | null
     title: string | null
     description: string | null
+    sentdmMessageId: string | null
+    lastReminderSentAt: Date | null
     ownerId: string | null
     assigneeId: string | null
     department: string | null
@@ -3085,6 +3317,7 @@ export namespace Prisma {
     nextStep: string | null
     ceoNotes: string | null
     sourceMonth: string | null
+    source: string | null
     dataSourceId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3095,6 +3328,8 @@ export namespace Prisma {
     taskId: number
     title: number
     description: number
+    sentdmMessageId: number
+    lastReminderSentAt: number
     ownerId: number
     assigneeId: number
     department: number
@@ -3110,6 +3345,7 @@ export namespace Prisma {
     nextStep: number
     ceoNotes: number
     sourceMonth: number
+    source: number
     dataSourceId: number
     createdAt: number
     updatedAt: number
@@ -3130,6 +3366,8 @@ export namespace Prisma {
     taskId?: true
     title?: true
     description?: true
+    sentdmMessageId?: true
+    lastReminderSentAt?: true
     ownerId?: true
     assigneeId?: true
     department?: true
@@ -3145,6 +3383,7 @@ export namespace Prisma {
     nextStep?: true
     ceoNotes?: true
     sourceMonth?: true
+    source?: true
     dataSourceId?: true
     createdAt?: true
     updatedAt?: true
@@ -3155,6 +3394,8 @@ export namespace Prisma {
     taskId?: true
     title?: true
     description?: true
+    sentdmMessageId?: true
+    lastReminderSentAt?: true
     ownerId?: true
     assigneeId?: true
     department?: true
@@ -3170,6 +3411,7 @@ export namespace Prisma {
     nextStep?: true
     ceoNotes?: true
     sourceMonth?: true
+    source?: true
     dataSourceId?: true
     createdAt?: true
     updatedAt?: true
@@ -3180,6 +3422,8 @@ export namespace Prisma {
     taskId?: true
     title?: true
     description?: true
+    sentdmMessageId?: true
+    lastReminderSentAt?: true
     ownerId?: true
     assigneeId?: true
     department?: true
@@ -3195,6 +3439,7 @@ export namespace Prisma {
     nextStep?: true
     ceoNotes?: true
     sourceMonth?: true
+    source?: true
     dataSourceId?: true
     createdAt?: true
     updatedAt?: true
@@ -3292,6 +3537,8 @@ export namespace Prisma {
     taskId: string | null
     title: string
     description: string | null
+    sentdmMessageId: string | null
+    lastReminderSentAt: Date | null
     ownerId: string | null
     assigneeId: string | null
     department: string | null
@@ -3307,6 +3554,7 @@ export namespace Prisma {
     nextStep: string | null
     ceoNotes: string | null
     sourceMonth: string | null
+    source: string | null
     dataSourceId: string | null
     createdAt: Date
     updatedAt: Date
@@ -3336,6 +3584,8 @@ export namespace Prisma {
     taskId?: boolean
     title?: boolean
     description?: boolean
+    sentdmMessageId?: boolean
+    lastReminderSentAt?: boolean
     ownerId?: boolean
     assigneeId?: boolean
     department?: boolean
@@ -3351,6 +3601,7 @@ export namespace Prisma {
     nextStep?: boolean
     ceoNotes?: boolean
     sourceMonth?: boolean
+    source?: boolean
     dataSourceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3359,6 +3610,7 @@ export namespace Prisma {
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
     auditLogs?: boolean | Task$auditLogsArgs<ExtArgs>
     notifications?: boolean | Task$notificationsArgs<ExtArgs>
+    updates?: boolean | Task$updatesArgs<ExtArgs>
     _count?: boolean | TaskCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["task"]>
 
@@ -3367,6 +3619,8 @@ export namespace Prisma {
     taskId?: boolean
     title?: boolean
     description?: boolean
+    sentdmMessageId?: boolean
+    lastReminderSentAt?: boolean
     ownerId?: boolean
     assigneeId?: boolean
     department?: boolean
@@ -3382,6 +3636,7 @@ export namespace Prisma {
     nextStep?: boolean
     ceoNotes?: boolean
     sourceMonth?: boolean
+    source?: boolean
     dataSourceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3395,6 +3650,8 @@ export namespace Prisma {
     taskId?: boolean
     title?: boolean
     description?: boolean
+    sentdmMessageId?: boolean
+    lastReminderSentAt?: boolean
     ownerId?: boolean
     assigneeId?: boolean
     department?: boolean
@@ -3410,6 +3667,7 @@ export namespace Prisma {
     nextStep?: boolean
     ceoNotes?: boolean
     sourceMonth?: boolean
+    source?: boolean
     dataSourceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3423,6 +3681,8 @@ export namespace Prisma {
     taskId?: boolean
     title?: boolean
     description?: boolean
+    sentdmMessageId?: boolean
+    lastReminderSentAt?: boolean
     ownerId?: boolean
     assigneeId?: boolean
     department?: boolean
@@ -3438,18 +3698,20 @@ export namespace Prisma {
     nextStep?: boolean
     ceoNotes?: boolean
     sourceMonth?: boolean
+    source?: boolean
     dataSourceId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "taskId" | "title" | "description" | "ownerId" | "assigneeId" | "department" | "priority" | "status" | "strategicPillar" | "completion" | "riskIndicator" | "startDate" | "dueDate" | "completedAt" | "notes" | "nextStep" | "ceoNotes" | "sourceMonth" | "dataSourceId" | "createdAt" | "updatedAt", ExtArgs["result"]["task"]>
+  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "taskId" | "title" | "description" | "sentdmMessageId" | "lastReminderSentAt" | "ownerId" | "assigneeId" | "department" | "priority" | "status" | "strategicPillar" | "completion" | "riskIndicator" | "startDate" | "dueDate" | "completedAt" | "notes" | "nextStep" | "ceoNotes" | "sourceMonth" | "source" | "dataSourceId" | "createdAt" | "updatedAt", ExtArgs["result"]["task"]>
   export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
     auditLogs?: boolean | Task$auditLogsArgs<ExtArgs>
     notifications?: boolean | Task$notificationsArgs<ExtArgs>
+    updates?: boolean | Task$updatesArgs<ExtArgs>
     _count?: boolean | TaskCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3471,12 +3733,15 @@ export namespace Prisma {
       dataSource: Prisma.$DataSourcePayload<ExtArgs> | null
       auditLogs: Prisma.$TaskAuditLogPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      updates: Prisma.$TaskUpdatePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       taskId: string | null
       title: string
       description: string | null
+      sentdmMessageId: string | null
+      lastReminderSentAt: Date | null
       ownerId: string | null
       assigneeId: string | null
       department: string | null
@@ -3492,6 +3757,7 @@ export namespace Prisma {
       nextStep: string | null
       ceoNotes: string | null
       sourceMonth: string | null
+      source: string | null
       dataSourceId: string | null
       createdAt: Date
       updatedAt: Date
@@ -3894,6 +4160,7 @@ export namespace Prisma {
     dataSource<T extends Task$dataSourceArgs<ExtArgs> = {}>(args?: Subset<T, Task$dataSourceArgs<ExtArgs>>): Prisma__DataSourceClient<$Result.GetResult<Prisma.$DataSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     auditLogs<T extends Task$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, Task$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends Task$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Task$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    updates<T extends Task$updatesArgs<ExtArgs> = {}>(args?: Subset<T, Task$updatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3927,6 +4194,8 @@ export namespace Prisma {
     readonly taskId: FieldRef<"Task", 'String'>
     readonly title: FieldRef<"Task", 'String'>
     readonly description: FieldRef<"Task", 'String'>
+    readonly sentdmMessageId: FieldRef<"Task", 'String'>
+    readonly lastReminderSentAt: FieldRef<"Task", 'DateTime'>
     readonly ownerId: FieldRef<"Task", 'String'>
     readonly assigneeId: FieldRef<"Task", 'String'>
     readonly department: FieldRef<"Task", 'String'>
@@ -3942,6 +4211,7 @@ export namespace Prisma {
     readonly nextStep: FieldRef<"Task", 'String'>
     readonly ceoNotes: FieldRef<"Task", 'String'>
     readonly sourceMonth: FieldRef<"Task", 'String'>
+    readonly source: FieldRef<"Task", 'String'>
     readonly dataSourceId: FieldRef<"Task", 'String'>
     readonly createdAt: FieldRef<"Task", 'DateTime'>
     readonly updatedAt: FieldRef<"Task", 'DateTime'>
@@ -4444,6 +4714,30 @@ export namespace Prisma {
   }
 
   /**
+   * Task.updates
+   */
+  export type Task$updatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    where?: TaskUpdateWhereInput
+    orderBy?: TaskUpdateOrderByWithRelationInput | TaskUpdateOrderByWithRelationInput[]
+    cursor?: TaskUpdateWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskUpdateScalarFieldEnum | TaskUpdateScalarFieldEnum[]
+  }
+
+  /**
    * Task without action
    */
   export type TaskDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4459,6 +4753,2163 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: TaskInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Contact
+   */
+
+  export type AggregateContact = {
+    _count: ContactCountAggregateOutputType | null
+    _min: ContactMinAggregateOutputType | null
+    _max: ContactMaxAggregateOutputType | null
+  }
+
+  export type ContactMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    phone: string | null
+    email: string | null
+    userId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContactMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    phone: string | null
+    email: string | null
+    userId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContactCountAggregateOutputType = {
+    id: number
+    name: number
+    phone: number
+    email: number
+    userId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ContactMinAggregateInputType = {
+    id?: true
+    name?: true
+    phone?: true
+    email?: true
+    userId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContactMaxAggregateInputType = {
+    id?: true
+    name?: true
+    phone?: true
+    email?: true
+    userId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContactCountAggregateInputType = {
+    id?: true
+    name?: true
+    phone?: true
+    email?: true
+    userId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ContactAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Contact to aggregate.
+     */
+    where?: ContactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Contacts to fetch.
+     */
+    orderBy?: ContactOrderByWithRelationInput | ContactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Contacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Contacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Contacts
+    **/
+    _count?: true | ContactCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContactMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContactMaxAggregateInputType
+  }
+
+  export type GetContactAggregateType<T extends ContactAggregateArgs> = {
+        [P in keyof T & keyof AggregateContact]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContact[P]>
+      : GetScalarType<T[P], AggregateContact[P]>
+  }
+
+
+
+
+  export type ContactGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContactWhereInput
+    orderBy?: ContactOrderByWithAggregationInput | ContactOrderByWithAggregationInput[]
+    by: ContactScalarFieldEnum[] | ContactScalarFieldEnum
+    having?: ContactScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContactCountAggregateInputType | true
+    _min?: ContactMinAggregateInputType
+    _max?: ContactMaxAggregateInputType
+  }
+
+  export type ContactGroupByOutputType = {
+    id: string
+    name: string
+    phone: string | null
+    email: string | null
+    userId: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ContactCountAggregateOutputType | null
+    _min: ContactMinAggregateOutputType | null
+    _max: ContactMaxAggregateOutputType | null
+  }
+
+  type GetContactGroupByPayload<T extends ContactGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContactGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContactGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContactGroupByOutputType[P]>
+            : GetScalarType<T[P], ContactGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContactSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | Contact$userArgs<ExtArgs>
+  }, ExtArgs["result"]["contact"]>
+
+  export type ContactSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | Contact$userArgs<ExtArgs>
+  }, ExtArgs["result"]["contact"]>
+
+  export type ContactSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | Contact$userArgs<ExtArgs>
+  }, ExtArgs["result"]["contact"]>
+
+  export type ContactSelectScalar = {
+    id?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "phone" | "email" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["contact"]>
+  export type ContactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Contact$userArgs<ExtArgs>
+  }
+  export type ContactIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Contact$userArgs<ExtArgs>
+  }
+  export type ContactIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Contact$userArgs<ExtArgs>
+  }
+
+  export type $ContactPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Contact"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      phone: string | null
+      email: string | null
+      userId: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["contact"]>
+    composites: {}
+  }
+
+  type ContactGetPayload<S extends boolean | null | undefined | ContactDefaultArgs> = $Result.GetResult<Prisma.$ContactPayload, S>
+
+  type ContactCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContactFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContactCountAggregateInputType | true
+    }
+
+  export interface ContactDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Contact'], meta: { name: 'Contact' } }
+    /**
+     * Find zero or one Contact that matches the filter.
+     * @param {ContactFindUniqueArgs} args - Arguments to find a Contact
+     * @example
+     * // Get one Contact
+     * const contact = await prisma.contact.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContactFindUniqueArgs>(args: SelectSubset<T, ContactFindUniqueArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Contact that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContactFindUniqueOrThrowArgs} args - Arguments to find a Contact
+     * @example
+     * // Get one Contact
+     * const contact = await prisma.contact.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContactFindUniqueOrThrowArgs>(args: SelectSubset<T, ContactFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Contact that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactFindFirstArgs} args - Arguments to find a Contact
+     * @example
+     * // Get one Contact
+     * const contact = await prisma.contact.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContactFindFirstArgs>(args?: SelectSubset<T, ContactFindFirstArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Contact that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactFindFirstOrThrowArgs} args - Arguments to find a Contact
+     * @example
+     * // Get one Contact
+     * const contact = await prisma.contact.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContactFindFirstOrThrowArgs>(args?: SelectSubset<T, ContactFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Contacts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Contacts
+     * const contacts = await prisma.contact.findMany()
+     * 
+     * // Get first 10 Contacts
+     * const contacts = await prisma.contact.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contactWithIdOnly = await prisma.contact.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContactFindManyArgs>(args?: SelectSubset<T, ContactFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Contact.
+     * @param {ContactCreateArgs} args - Arguments to create a Contact.
+     * @example
+     * // Create one Contact
+     * const Contact = await prisma.contact.create({
+     *   data: {
+     *     // ... data to create a Contact
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContactCreateArgs>(args: SelectSubset<T, ContactCreateArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Contacts.
+     * @param {ContactCreateManyArgs} args - Arguments to create many Contacts.
+     * @example
+     * // Create many Contacts
+     * const contact = await prisma.contact.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContactCreateManyArgs>(args?: SelectSubset<T, ContactCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Contacts and returns the data saved in the database.
+     * @param {ContactCreateManyAndReturnArgs} args - Arguments to create many Contacts.
+     * @example
+     * // Create many Contacts
+     * const contact = await prisma.contact.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Contacts and only return the `id`
+     * const contactWithIdOnly = await prisma.contact.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ContactCreateManyAndReturnArgs>(args?: SelectSubset<T, ContactCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Contact.
+     * @param {ContactDeleteArgs} args - Arguments to delete one Contact.
+     * @example
+     * // Delete one Contact
+     * const Contact = await prisma.contact.delete({
+     *   where: {
+     *     // ... filter to delete one Contact
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContactDeleteArgs>(args: SelectSubset<T, ContactDeleteArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Contact.
+     * @param {ContactUpdateArgs} args - Arguments to update one Contact.
+     * @example
+     * // Update one Contact
+     * const contact = await prisma.contact.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContactUpdateArgs>(args: SelectSubset<T, ContactUpdateArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Contacts.
+     * @param {ContactDeleteManyArgs} args - Arguments to filter Contacts to delete.
+     * @example
+     * // Delete a few Contacts
+     * const { count } = await prisma.contact.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContactDeleteManyArgs>(args?: SelectSubset<T, ContactDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Contacts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Contacts
+     * const contact = await prisma.contact.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContactUpdateManyArgs>(args: SelectSubset<T, ContactUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Contacts and returns the data updated in the database.
+     * @param {ContactUpdateManyAndReturnArgs} args - Arguments to update many Contacts.
+     * @example
+     * // Update many Contacts
+     * const contact = await prisma.contact.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Contacts and only return the `id`
+     * const contactWithIdOnly = await prisma.contact.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ContactUpdateManyAndReturnArgs>(args: SelectSubset<T, ContactUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Contact.
+     * @param {ContactUpsertArgs} args - Arguments to update or create a Contact.
+     * @example
+     * // Update or create a Contact
+     * const contact = await prisma.contact.upsert({
+     *   create: {
+     *     // ... data to create a Contact
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Contact we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContactUpsertArgs>(args: SelectSubset<T, ContactUpsertArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Contacts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactCountArgs} args - Arguments to filter Contacts to count.
+     * @example
+     * // Count the number of Contacts
+     * const count = await prisma.contact.count({
+     *   where: {
+     *     // ... the filter for the Contacts we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContactCountArgs>(
+      args?: Subset<T, ContactCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContactCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Contact.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContactAggregateArgs>(args: Subset<T, ContactAggregateArgs>): Prisma.PrismaPromise<GetContactAggregateType<T>>
+
+    /**
+     * Group by Contact.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContactGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContactGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContactGroupByArgs['orderBy'] }
+        : { orderBy?: ContactGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContactGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContactGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Contact model
+   */
+  readonly fields: ContactFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Contact.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContactClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends Contact$userArgs<ExtArgs> = {}>(args?: Subset<T, Contact$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Contact model
+   */
+  interface ContactFieldRefs {
+    readonly id: FieldRef<"Contact", 'String'>
+    readonly name: FieldRef<"Contact", 'String'>
+    readonly phone: FieldRef<"Contact", 'String'>
+    readonly email: FieldRef<"Contact", 'String'>
+    readonly userId: FieldRef<"Contact", 'String'>
+    readonly createdAt: FieldRef<"Contact", 'DateTime'>
+    readonly updatedAt: FieldRef<"Contact", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Contact findUnique
+   */
+  export type ContactFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * Filter, which Contact to fetch.
+     */
+    where: ContactWhereUniqueInput
+  }
+
+  /**
+   * Contact findUniqueOrThrow
+   */
+  export type ContactFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * Filter, which Contact to fetch.
+     */
+    where: ContactWhereUniqueInput
+  }
+
+  /**
+   * Contact findFirst
+   */
+  export type ContactFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * Filter, which Contact to fetch.
+     */
+    where?: ContactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Contacts to fetch.
+     */
+    orderBy?: ContactOrderByWithRelationInput | ContactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Contacts.
+     */
+    cursor?: ContactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Contacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Contacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Contacts.
+     */
+    distinct?: ContactScalarFieldEnum | ContactScalarFieldEnum[]
+  }
+
+  /**
+   * Contact findFirstOrThrow
+   */
+  export type ContactFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * Filter, which Contact to fetch.
+     */
+    where?: ContactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Contacts to fetch.
+     */
+    orderBy?: ContactOrderByWithRelationInput | ContactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Contacts.
+     */
+    cursor?: ContactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Contacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Contacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Contacts.
+     */
+    distinct?: ContactScalarFieldEnum | ContactScalarFieldEnum[]
+  }
+
+  /**
+   * Contact findMany
+   */
+  export type ContactFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * Filter, which Contacts to fetch.
+     */
+    where?: ContactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Contacts to fetch.
+     */
+    orderBy?: ContactOrderByWithRelationInput | ContactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Contacts.
+     */
+    cursor?: ContactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Contacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Contacts.
+     */
+    skip?: number
+    distinct?: ContactScalarFieldEnum | ContactScalarFieldEnum[]
+  }
+
+  /**
+   * Contact create
+   */
+  export type ContactCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Contact.
+     */
+    data: XOR<ContactCreateInput, ContactUncheckedCreateInput>
+  }
+
+  /**
+   * Contact createMany
+   */
+  export type ContactCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Contacts.
+     */
+    data: ContactCreateManyInput | ContactCreateManyInput[]
+  }
+
+  /**
+   * Contact createManyAndReturn
+   */
+  export type ContactCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * The data used to create many Contacts.
+     */
+    data: ContactCreateManyInput | ContactCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Contact update
+   */
+  export type ContactUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Contact.
+     */
+    data: XOR<ContactUpdateInput, ContactUncheckedUpdateInput>
+    /**
+     * Choose, which Contact to update.
+     */
+    where: ContactWhereUniqueInput
+  }
+
+  /**
+   * Contact updateMany
+   */
+  export type ContactUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Contacts.
+     */
+    data: XOR<ContactUpdateManyMutationInput, ContactUncheckedUpdateManyInput>
+    /**
+     * Filter which Contacts to update
+     */
+    where?: ContactWhereInput
+    /**
+     * Limit how many Contacts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Contact updateManyAndReturn
+   */
+  export type ContactUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * The data used to update Contacts.
+     */
+    data: XOR<ContactUpdateManyMutationInput, ContactUncheckedUpdateManyInput>
+    /**
+     * Filter which Contacts to update
+     */
+    where?: ContactWhereInput
+    /**
+     * Limit how many Contacts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Contact upsert
+   */
+  export type ContactUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Contact to update in case it exists.
+     */
+    where: ContactWhereUniqueInput
+    /**
+     * In case the Contact found by the `where` argument doesn't exist, create a new Contact with this data.
+     */
+    create: XOR<ContactCreateInput, ContactUncheckedCreateInput>
+    /**
+     * In case the Contact was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContactUpdateInput, ContactUncheckedUpdateInput>
+  }
+
+  /**
+   * Contact delete
+   */
+  export type ContactDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    /**
+     * Filter which Contact to delete.
+     */
+    where: ContactWhereUniqueInput
+  }
+
+  /**
+   * Contact deleteMany
+   */
+  export type ContactDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Contacts to delete
+     */
+    where?: ContactWhereInput
+    /**
+     * Limit how many Contacts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Contact.user
+   */
+  export type Contact$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Contact without action
+   */
+  export type ContactDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TaskUpdate
+   */
+
+  export type AggregateTaskUpdate = {
+    _count: TaskUpdateCountAggregateOutputType | null
+    _min: TaskUpdateMinAggregateOutputType | null
+    _max: TaskUpdateMaxAggregateOutputType | null
+  }
+
+  export type TaskUpdateMinAggregateOutputType = {
+    id: string | null
+    taskId: string | null
+    source: string | null
+    content: string | null
+    createdAt: Date | null
+  }
+
+  export type TaskUpdateMaxAggregateOutputType = {
+    id: string | null
+    taskId: string | null
+    source: string | null
+    content: string | null
+    createdAt: Date | null
+  }
+
+  export type TaskUpdateCountAggregateOutputType = {
+    id: number
+    taskId: number
+    source: number
+    content: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type TaskUpdateMinAggregateInputType = {
+    id?: true
+    taskId?: true
+    source?: true
+    content?: true
+    createdAt?: true
+  }
+
+  export type TaskUpdateMaxAggregateInputType = {
+    id?: true
+    taskId?: true
+    source?: true
+    content?: true
+    createdAt?: true
+  }
+
+  export type TaskUpdateCountAggregateInputType = {
+    id?: true
+    taskId?: true
+    source?: true
+    content?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type TaskUpdateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TaskUpdate to aggregate.
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaskUpdates to fetch.
+     */
+    orderBy?: TaskUpdateOrderByWithRelationInput | TaskUpdateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TaskUpdateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaskUpdates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaskUpdates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TaskUpdates
+    **/
+    _count?: true | TaskUpdateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TaskUpdateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TaskUpdateMaxAggregateInputType
+  }
+
+  export type GetTaskUpdateAggregateType<T extends TaskUpdateAggregateArgs> = {
+        [P in keyof T & keyof AggregateTaskUpdate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTaskUpdate[P]>
+      : GetScalarType<T[P], AggregateTaskUpdate[P]>
+  }
+
+
+
+
+  export type TaskUpdateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskUpdateWhereInput
+    orderBy?: TaskUpdateOrderByWithAggregationInput | TaskUpdateOrderByWithAggregationInput[]
+    by: TaskUpdateScalarFieldEnum[] | TaskUpdateScalarFieldEnum
+    having?: TaskUpdateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TaskUpdateCountAggregateInputType | true
+    _min?: TaskUpdateMinAggregateInputType
+    _max?: TaskUpdateMaxAggregateInputType
+  }
+
+  export type TaskUpdateGroupByOutputType = {
+    id: string
+    taskId: string
+    source: string
+    content: string
+    createdAt: Date
+    _count: TaskUpdateCountAggregateOutputType | null
+    _min: TaskUpdateMinAggregateOutputType | null
+    _max: TaskUpdateMaxAggregateOutputType | null
+  }
+
+  type GetTaskUpdateGroupByPayload<T extends TaskUpdateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TaskUpdateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TaskUpdateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TaskUpdateGroupByOutputType[P]>
+            : GetScalarType<T[P], TaskUpdateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TaskUpdateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    taskId?: boolean
+    source?: boolean
+    content?: boolean
+    createdAt?: boolean
+    task?: boolean | TaskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taskUpdate"]>
+
+  export type TaskUpdateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    taskId?: boolean
+    source?: boolean
+    content?: boolean
+    createdAt?: boolean
+    task?: boolean | TaskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taskUpdate"]>
+
+  export type TaskUpdateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    taskId?: boolean
+    source?: boolean
+    content?: boolean
+    createdAt?: boolean
+    task?: boolean | TaskDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["taskUpdate"]>
+
+  export type TaskUpdateSelectScalar = {
+    id?: boolean
+    taskId?: boolean
+    source?: boolean
+    content?: boolean
+    createdAt?: boolean
+  }
+
+  export type TaskUpdateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "taskId" | "source" | "content" | "createdAt", ExtArgs["result"]["taskUpdate"]>
+  export type TaskUpdateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    task?: boolean | TaskDefaultArgs<ExtArgs>
+  }
+  export type TaskUpdateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    task?: boolean | TaskDefaultArgs<ExtArgs>
+  }
+  export type TaskUpdateIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    task?: boolean | TaskDefaultArgs<ExtArgs>
+  }
+
+  export type $TaskUpdatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TaskUpdate"
+    objects: {
+      task: Prisma.$TaskPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      taskId: string
+      source: string
+      content: string
+      createdAt: Date
+    }, ExtArgs["result"]["taskUpdate"]>
+    composites: {}
+  }
+
+  type TaskUpdateGetPayload<S extends boolean | null | undefined | TaskUpdateDefaultArgs> = $Result.GetResult<Prisma.$TaskUpdatePayload, S>
+
+  type TaskUpdateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TaskUpdateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TaskUpdateCountAggregateInputType | true
+    }
+
+  export interface TaskUpdateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TaskUpdate'], meta: { name: 'TaskUpdate' } }
+    /**
+     * Find zero or one TaskUpdate that matches the filter.
+     * @param {TaskUpdateFindUniqueArgs} args - Arguments to find a TaskUpdate
+     * @example
+     * // Get one TaskUpdate
+     * const taskUpdate = await prisma.taskUpdate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TaskUpdateFindUniqueArgs>(args: SelectSubset<T, TaskUpdateFindUniqueArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TaskUpdate that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TaskUpdateFindUniqueOrThrowArgs} args - Arguments to find a TaskUpdate
+     * @example
+     * // Get one TaskUpdate
+     * const taskUpdate = await prisma.taskUpdate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TaskUpdateFindUniqueOrThrowArgs>(args: SelectSubset<T, TaskUpdateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TaskUpdate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateFindFirstArgs} args - Arguments to find a TaskUpdate
+     * @example
+     * // Get one TaskUpdate
+     * const taskUpdate = await prisma.taskUpdate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TaskUpdateFindFirstArgs>(args?: SelectSubset<T, TaskUpdateFindFirstArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TaskUpdate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateFindFirstOrThrowArgs} args - Arguments to find a TaskUpdate
+     * @example
+     * // Get one TaskUpdate
+     * const taskUpdate = await prisma.taskUpdate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TaskUpdateFindFirstOrThrowArgs>(args?: SelectSubset<T, TaskUpdateFindFirstOrThrowArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TaskUpdates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TaskUpdates
+     * const taskUpdates = await prisma.taskUpdate.findMany()
+     * 
+     * // Get first 10 TaskUpdates
+     * const taskUpdates = await prisma.taskUpdate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const taskUpdateWithIdOnly = await prisma.taskUpdate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TaskUpdateFindManyArgs>(args?: SelectSubset<T, TaskUpdateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TaskUpdate.
+     * @param {TaskUpdateCreateArgs} args - Arguments to create a TaskUpdate.
+     * @example
+     * // Create one TaskUpdate
+     * const TaskUpdate = await prisma.taskUpdate.create({
+     *   data: {
+     *     // ... data to create a TaskUpdate
+     *   }
+     * })
+     * 
+     */
+    create<T extends TaskUpdateCreateArgs>(args: SelectSubset<T, TaskUpdateCreateArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TaskUpdates.
+     * @param {TaskUpdateCreateManyArgs} args - Arguments to create many TaskUpdates.
+     * @example
+     * // Create many TaskUpdates
+     * const taskUpdate = await prisma.taskUpdate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TaskUpdateCreateManyArgs>(args?: SelectSubset<T, TaskUpdateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TaskUpdates and returns the data saved in the database.
+     * @param {TaskUpdateCreateManyAndReturnArgs} args - Arguments to create many TaskUpdates.
+     * @example
+     * // Create many TaskUpdates
+     * const taskUpdate = await prisma.taskUpdate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TaskUpdates and only return the `id`
+     * const taskUpdateWithIdOnly = await prisma.taskUpdate.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TaskUpdateCreateManyAndReturnArgs>(args?: SelectSubset<T, TaskUpdateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TaskUpdate.
+     * @param {TaskUpdateDeleteArgs} args - Arguments to delete one TaskUpdate.
+     * @example
+     * // Delete one TaskUpdate
+     * const TaskUpdate = await prisma.taskUpdate.delete({
+     *   where: {
+     *     // ... filter to delete one TaskUpdate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TaskUpdateDeleteArgs>(args: SelectSubset<T, TaskUpdateDeleteArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TaskUpdate.
+     * @param {TaskUpdateUpdateArgs} args - Arguments to update one TaskUpdate.
+     * @example
+     * // Update one TaskUpdate
+     * const taskUpdate = await prisma.taskUpdate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TaskUpdateUpdateArgs>(args: SelectSubset<T, TaskUpdateUpdateArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TaskUpdates.
+     * @param {TaskUpdateDeleteManyArgs} args - Arguments to filter TaskUpdates to delete.
+     * @example
+     * // Delete a few TaskUpdates
+     * const { count } = await prisma.taskUpdate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TaskUpdateDeleteManyArgs>(args?: SelectSubset<T, TaskUpdateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TaskUpdates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TaskUpdates
+     * const taskUpdate = await prisma.taskUpdate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TaskUpdateUpdateManyArgs>(args: SelectSubset<T, TaskUpdateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TaskUpdates and returns the data updated in the database.
+     * @param {TaskUpdateUpdateManyAndReturnArgs} args - Arguments to update many TaskUpdates.
+     * @example
+     * // Update many TaskUpdates
+     * const taskUpdate = await prisma.taskUpdate.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more TaskUpdates and only return the `id`
+     * const taskUpdateWithIdOnly = await prisma.taskUpdate.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TaskUpdateUpdateManyAndReturnArgs>(args: SelectSubset<T, TaskUpdateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TaskUpdate.
+     * @param {TaskUpdateUpsertArgs} args - Arguments to update or create a TaskUpdate.
+     * @example
+     * // Update or create a TaskUpdate
+     * const taskUpdate = await prisma.taskUpdate.upsert({
+     *   create: {
+     *     // ... data to create a TaskUpdate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TaskUpdate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TaskUpdateUpsertArgs>(args: SelectSubset<T, TaskUpdateUpsertArgs<ExtArgs>>): Prisma__TaskUpdateClient<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TaskUpdates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateCountArgs} args - Arguments to filter TaskUpdates to count.
+     * @example
+     * // Count the number of TaskUpdates
+     * const count = await prisma.taskUpdate.count({
+     *   where: {
+     *     // ... the filter for the TaskUpdates we want to count
+     *   }
+     * })
+    **/
+    count<T extends TaskUpdateCountArgs>(
+      args?: Subset<T, TaskUpdateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TaskUpdateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TaskUpdate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TaskUpdateAggregateArgs>(args: Subset<T, TaskUpdateAggregateArgs>): Prisma.PrismaPromise<GetTaskUpdateAggregateType<T>>
+
+    /**
+     * Group by TaskUpdate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TaskUpdateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TaskUpdateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TaskUpdateGroupByArgs['orderBy'] }
+        : { orderBy?: TaskUpdateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TaskUpdateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTaskUpdateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TaskUpdate model
+   */
+  readonly fields: TaskUpdateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TaskUpdate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TaskUpdateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    task<T extends TaskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TaskDefaultArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TaskUpdate model
+   */
+  interface TaskUpdateFieldRefs {
+    readonly id: FieldRef<"TaskUpdate", 'String'>
+    readonly taskId: FieldRef<"TaskUpdate", 'String'>
+    readonly source: FieldRef<"TaskUpdate", 'String'>
+    readonly content: FieldRef<"TaskUpdate", 'String'>
+    readonly createdAt: FieldRef<"TaskUpdate", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TaskUpdate findUnique
+   */
+  export type TaskUpdateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskUpdate to fetch.
+     */
+    where: TaskUpdateWhereUniqueInput
+  }
+
+  /**
+   * TaskUpdate findUniqueOrThrow
+   */
+  export type TaskUpdateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskUpdate to fetch.
+     */
+    where: TaskUpdateWhereUniqueInput
+  }
+
+  /**
+   * TaskUpdate findFirst
+   */
+  export type TaskUpdateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskUpdate to fetch.
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaskUpdates to fetch.
+     */
+    orderBy?: TaskUpdateOrderByWithRelationInput | TaskUpdateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TaskUpdates.
+     */
+    cursor?: TaskUpdateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaskUpdates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaskUpdates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TaskUpdates.
+     */
+    distinct?: TaskUpdateScalarFieldEnum | TaskUpdateScalarFieldEnum[]
+  }
+
+  /**
+   * TaskUpdate findFirstOrThrow
+   */
+  export type TaskUpdateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskUpdate to fetch.
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaskUpdates to fetch.
+     */
+    orderBy?: TaskUpdateOrderByWithRelationInput | TaskUpdateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TaskUpdates.
+     */
+    cursor?: TaskUpdateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaskUpdates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaskUpdates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TaskUpdates.
+     */
+    distinct?: TaskUpdateScalarFieldEnum | TaskUpdateScalarFieldEnum[]
+  }
+
+  /**
+   * TaskUpdate findMany
+   */
+  export type TaskUpdateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * Filter, which TaskUpdates to fetch.
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TaskUpdates to fetch.
+     */
+    orderBy?: TaskUpdateOrderByWithRelationInput | TaskUpdateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TaskUpdates.
+     */
+    cursor?: TaskUpdateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TaskUpdates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TaskUpdates.
+     */
+    skip?: number
+    distinct?: TaskUpdateScalarFieldEnum | TaskUpdateScalarFieldEnum[]
+  }
+
+  /**
+   * TaskUpdate create
+   */
+  export type TaskUpdateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TaskUpdate.
+     */
+    data: XOR<TaskUpdateCreateInput, TaskUpdateUncheckedCreateInput>
+  }
+
+  /**
+   * TaskUpdate createMany
+   */
+  export type TaskUpdateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TaskUpdates.
+     */
+    data: TaskUpdateCreateManyInput | TaskUpdateCreateManyInput[]
+  }
+
+  /**
+   * TaskUpdate createManyAndReturn
+   */
+  export type TaskUpdateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * The data used to create many TaskUpdates.
+     */
+    data: TaskUpdateCreateManyInput | TaskUpdateCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TaskUpdate update
+   */
+  export type TaskUpdateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TaskUpdate.
+     */
+    data: XOR<TaskUpdateUpdateInput, TaskUpdateUncheckedUpdateInput>
+    /**
+     * Choose, which TaskUpdate to update.
+     */
+    where: TaskUpdateWhereUniqueInput
+  }
+
+  /**
+   * TaskUpdate updateMany
+   */
+  export type TaskUpdateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TaskUpdates.
+     */
+    data: XOR<TaskUpdateUpdateManyMutationInput, TaskUpdateUncheckedUpdateManyInput>
+    /**
+     * Filter which TaskUpdates to update
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * Limit how many TaskUpdates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TaskUpdate updateManyAndReturn
+   */
+  export type TaskUpdateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * The data used to update TaskUpdates.
+     */
+    data: XOR<TaskUpdateUpdateManyMutationInput, TaskUpdateUncheckedUpdateManyInput>
+    /**
+     * Filter which TaskUpdates to update
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * Limit how many TaskUpdates to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TaskUpdate upsert
+   */
+  export type TaskUpdateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TaskUpdate to update in case it exists.
+     */
+    where: TaskUpdateWhereUniqueInput
+    /**
+     * In case the TaskUpdate found by the `where` argument doesn't exist, create a new TaskUpdate with this data.
+     */
+    create: XOR<TaskUpdateCreateInput, TaskUpdateUncheckedCreateInput>
+    /**
+     * In case the TaskUpdate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TaskUpdateUpdateInput, TaskUpdateUncheckedUpdateInput>
+  }
+
+  /**
+   * TaskUpdate delete
+   */
+  export type TaskUpdateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
+    /**
+     * Filter which TaskUpdate to delete.
+     */
+    where: TaskUpdateWhereUniqueInput
+  }
+
+  /**
+   * TaskUpdate deleteMany
+   */
+  export type TaskUpdateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TaskUpdates to delete
+     */
+    where?: TaskUpdateWhereInput
+    /**
+     * Limit how many TaskUpdates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TaskUpdate without action
+   */
+  export type TaskUpdateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskUpdate
+     */
+    select?: TaskUpdateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TaskUpdate
+     */
+    omit?: TaskUpdateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskUpdateInclude<ExtArgs> | null
   }
 
 
@@ -12369,6 +14820,7 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     email: 'email',
+    username: 'username',
     name: 'name',
     role: 'role',
     department: 'department',
@@ -12391,6 +14843,8 @@ export namespace Prisma {
     taskId: 'taskId',
     title: 'title',
     description: 'description',
+    sentdmMessageId: 'sentdmMessageId',
+    lastReminderSentAt: 'lastReminderSentAt',
     ownerId: 'ownerId',
     assigneeId: 'assigneeId',
     department: 'department',
@@ -12406,12 +14860,37 @@ export namespace Prisma {
     nextStep: 'nextStep',
     ceoNotes: 'ceoNotes',
     sourceMonth: 'sourceMonth',
+    source: 'source',
     dataSourceId: 'dataSourceId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
+
+
+  export const ContactScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    phone: 'phone',
+    email: 'email',
+    userId: 'userId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ContactScalarFieldEnum = (typeof ContactScalarFieldEnum)[keyof typeof ContactScalarFieldEnum]
+
+
+  export const TaskUpdateScalarFieldEnum: {
+    id: 'id',
+    taskId: 'taskId',
+    source: 'source',
+    content: 'content',
+    createdAt: 'createdAt'
+  };
+
+  export type TaskUpdateScalarFieldEnum = (typeof TaskUpdateScalarFieldEnum)[keyof typeof TaskUpdateScalarFieldEnum]
 
 
   export const TaskAuditLogScalarFieldEnum: {
@@ -12596,6 +15075,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
+    username?: StringNullableFilter<"User"> | string | null
     name?: StringNullableFilter<"User"> | string | null
     role?: StringFilter<"User"> | string
     department?: StringNullableFilter<"User"> | string | null
@@ -12612,11 +15092,13 @@ export namespace Prisma {
     assignedTasks?: TaskListRelationFilter
     auditLogs?: TaskAuditLogListRelationFilter
     notifications?: NotificationListRelationFilter
+    contact?: XOR<ContactNullableScalarRelationFilter, ContactWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     email?: SortOrder
+    username?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
     role?: SortOrder
     department?: SortOrderInput | SortOrder
@@ -12633,11 +15115,13 @@ export namespace Prisma {
     assignedTasks?: TaskOrderByRelationAggregateInput
     auditLogs?: TaskAuditLogOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    contact?: ContactOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     email?: string
+    username?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
@@ -12657,11 +15141,13 @@ export namespace Prisma {
     assignedTasks?: TaskListRelationFilter
     auditLogs?: TaskAuditLogListRelationFilter
     notifications?: NotificationListRelationFilter
-  }, "id" | "email">
+    contact?: XOR<ContactNullableScalarRelationFilter, ContactWhereInput> | null
+  }, "id" | "email" | "username">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     email?: SortOrder
+    username?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
     role?: SortOrder
     department?: SortOrderInput | SortOrder
@@ -12687,6 +15173,7 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
+    username?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: StringWithAggregatesFilter<"User"> | string
     department?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -12709,6 +15196,8 @@ export namespace Prisma {
     taskId?: StringNullableFilter<"Task"> | string | null
     title?: StringFilter<"Task"> | string
     description?: StringNullableFilter<"Task"> | string | null
+    sentdmMessageId?: StringNullableFilter<"Task"> | string | null
+    lastReminderSentAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     ownerId?: StringNullableFilter<"Task"> | string | null
     assigneeId?: StringNullableFilter<"Task"> | string | null
     department?: StringNullableFilter<"Task"> | string | null
@@ -12724,6 +15213,7 @@ export namespace Prisma {
     nextStep?: StringNullableFilter<"Task"> | string | null
     ceoNotes?: StringNullableFilter<"Task"> | string | null
     sourceMonth?: StringNullableFilter<"Task"> | string | null
+    source?: StringNullableFilter<"Task"> | string | null
     dataSourceId?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
@@ -12732,6 +15222,7 @@ export namespace Prisma {
     dataSource?: XOR<DataSourceNullableScalarRelationFilter, DataSourceWhereInput> | null
     auditLogs?: TaskAuditLogListRelationFilter
     notifications?: NotificationListRelationFilter
+    updates?: TaskUpdateListRelationFilter
   }
 
   export type TaskOrderByWithRelationInput = {
@@ -12739,6 +15230,8 @@ export namespace Prisma {
     taskId?: SortOrderInput | SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
+    sentdmMessageId?: SortOrderInput | SortOrder
+    lastReminderSentAt?: SortOrderInput | SortOrder
     ownerId?: SortOrderInput | SortOrder
     assigneeId?: SortOrderInput | SortOrder
     department?: SortOrderInput | SortOrder
@@ -12754,6 +15247,7 @@ export namespace Prisma {
     nextStep?: SortOrderInput | SortOrder
     ceoNotes?: SortOrderInput | SortOrder
     sourceMonth?: SortOrderInput | SortOrder
+    source?: SortOrderInput | SortOrder
     dataSourceId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12762,6 +15256,7 @@ export namespace Prisma {
     dataSource?: DataSourceOrderByWithRelationInput
     auditLogs?: TaskAuditLogOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    updates?: TaskUpdateOrderByRelationAggregateInput
   }
 
   export type TaskWhereUniqueInput = Prisma.AtLeast<{
@@ -12772,6 +15267,8 @@ export namespace Prisma {
     taskId?: StringNullableFilter<"Task"> | string | null
     title?: StringFilter<"Task"> | string
     description?: StringNullableFilter<"Task"> | string | null
+    sentdmMessageId?: StringNullableFilter<"Task"> | string | null
+    lastReminderSentAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     ownerId?: StringNullableFilter<"Task"> | string | null
     assigneeId?: StringNullableFilter<"Task"> | string | null
     department?: StringNullableFilter<"Task"> | string | null
@@ -12787,6 +15284,7 @@ export namespace Prisma {
     nextStep?: StringNullableFilter<"Task"> | string | null
     ceoNotes?: StringNullableFilter<"Task"> | string | null
     sourceMonth?: StringNullableFilter<"Task"> | string | null
+    source?: StringNullableFilter<"Task"> | string | null
     dataSourceId?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
@@ -12795,6 +15293,7 @@ export namespace Prisma {
     dataSource?: XOR<DataSourceNullableScalarRelationFilter, DataSourceWhereInput> | null
     auditLogs?: TaskAuditLogListRelationFilter
     notifications?: NotificationListRelationFilter
+    updates?: TaskUpdateListRelationFilter
   }, "id">
 
   export type TaskOrderByWithAggregationInput = {
@@ -12802,6 +15301,8 @@ export namespace Prisma {
     taskId?: SortOrderInput | SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
+    sentdmMessageId?: SortOrderInput | SortOrder
+    lastReminderSentAt?: SortOrderInput | SortOrder
     ownerId?: SortOrderInput | SortOrder
     assigneeId?: SortOrderInput | SortOrder
     department?: SortOrderInput | SortOrder
@@ -12817,6 +15318,7 @@ export namespace Prisma {
     nextStep?: SortOrderInput | SortOrder
     ceoNotes?: SortOrderInput | SortOrder
     sourceMonth?: SortOrderInput | SortOrder
+    source?: SortOrderInput | SortOrder
     dataSourceId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12835,6 +15337,8 @@ export namespace Prisma {
     taskId?: StringNullableWithAggregatesFilter<"Task"> | string | null
     title?: StringWithAggregatesFilter<"Task"> | string
     description?: StringNullableWithAggregatesFilter<"Task"> | string | null
+    sentdmMessageId?: StringNullableWithAggregatesFilter<"Task"> | string | null
+    lastReminderSentAt?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
     ownerId?: StringNullableWithAggregatesFilter<"Task"> | string | null
     assigneeId?: StringNullableWithAggregatesFilter<"Task"> | string | null
     department?: StringNullableWithAggregatesFilter<"Task"> | string | null
@@ -12850,9 +15354,130 @@ export namespace Prisma {
     nextStep?: StringNullableWithAggregatesFilter<"Task"> | string | null
     ceoNotes?: StringNullableWithAggregatesFilter<"Task"> | string | null
     sourceMonth?: StringNullableWithAggregatesFilter<"Task"> | string | null
+    source?: StringNullableWithAggregatesFilter<"Task"> | string | null
     dataSourceId?: StringNullableWithAggregatesFilter<"Task"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
+  }
+
+  export type ContactWhereInput = {
+    AND?: ContactWhereInput | ContactWhereInput[]
+    OR?: ContactWhereInput[]
+    NOT?: ContactWhereInput | ContactWhereInput[]
+    id?: StringFilter<"Contact"> | string
+    name?: StringFilter<"Contact"> | string
+    phone?: StringNullableFilter<"Contact"> | string | null
+    email?: StringNullableFilter<"Contact"> | string | null
+    userId?: StringNullableFilter<"Contact"> | string | null
+    createdAt?: DateTimeFilter<"Contact"> | Date | string
+    updatedAt?: DateTimeFilter<"Contact"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type ContactOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type ContactWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: ContactWhereInput | ContactWhereInput[]
+    OR?: ContactWhereInput[]
+    NOT?: ContactWhereInput | ContactWhereInput[]
+    name?: StringFilter<"Contact"> | string
+    phone?: StringNullableFilter<"Contact"> | string | null
+    email?: StringNullableFilter<"Contact"> | string | null
+    createdAt?: DateTimeFilter<"Contact"> | Date | string
+    updatedAt?: DateTimeFilter<"Contact"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "userId">
+
+  export type ContactOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ContactCountOrderByAggregateInput
+    _max?: ContactMaxOrderByAggregateInput
+    _min?: ContactMinOrderByAggregateInput
+  }
+
+  export type ContactScalarWhereWithAggregatesInput = {
+    AND?: ContactScalarWhereWithAggregatesInput | ContactScalarWhereWithAggregatesInput[]
+    OR?: ContactScalarWhereWithAggregatesInput[]
+    NOT?: ContactScalarWhereWithAggregatesInput | ContactScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Contact"> | string
+    name?: StringWithAggregatesFilter<"Contact"> | string
+    phone?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    email?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
+  }
+
+  export type TaskUpdateWhereInput = {
+    AND?: TaskUpdateWhereInput | TaskUpdateWhereInput[]
+    OR?: TaskUpdateWhereInput[]
+    NOT?: TaskUpdateWhereInput | TaskUpdateWhereInput[]
+    id?: StringFilter<"TaskUpdate"> | string
+    taskId?: StringFilter<"TaskUpdate"> | string
+    source?: StringFilter<"TaskUpdate"> | string
+    content?: StringFilter<"TaskUpdate"> | string
+    createdAt?: DateTimeFilter<"TaskUpdate"> | Date | string
+    task?: XOR<TaskScalarRelationFilter, TaskWhereInput>
+  }
+
+  export type TaskUpdateOrderByWithRelationInput = {
+    id?: SortOrder
+    taskId?: SortOrder
+    source?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    task?: TaskOrderByWithRelationInput
+  }
+
+  export type TaskUpdateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TaskUpdateWhereInput | TaskUpdateWhereInput[]
+    OR?: TaskUpdateWhereInput[]
+    NOT?: TaskUpdateWhereInput | TaskUpdateWhereInput[]
+    taskId?: StringFilter<"TaskUpdate"> | string
+    source?: StringFilter<"TaskUpdate"> | string
+    content?: StringFilter<"TaskUpdate"> | string
+    createdAt?: DateTimeFilter<"TaskUpdate"> | Date | string
+    task?: XOR<TaskScalarRelationFilter, TaskWhereInput>
+  }, "id">
+
+  export type TaskUpdateOrderByWithAggregationInput = {
+    id?: SortOrder
+    taskId?: SortOrder
+    source?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    _count?: TaskUpdateCountOrderByAggregateInput
+    _max?: TaskUpdateMaxOrderByAggregateInput
+    _min?: TaskUpdateMinOrderByAggregateInput
+  }
+
+  export type TaskUpdateScalarWhereWithAggregatesInput = {
+    AND?: TaskUpdateScalarWhereWithAggregatesInput | TaskUpdateScalarWhereWithAggregatesInput[]
+    OR?: TaskUpdateScalarWhereWithAggregatesInput[]
+    NOT?: TaskUpdateScalarWhereWithAggregatesInput | TaskUpdateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TaskUpdate"> | string
+    taskId?: StringWithAggregatesFilter<"TaskUpdate"> | string
+    source?: StringWithAggregatesFilter<"TaskUpdate"> | string
+    content?: StringWithAggregatesFilter<"TaskUpdate"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"TaskUpdate"> | Date | string
   }
 
   export type TaskAuditLogWhereInput = {
@@ -13445,6 +16070,7 @@ export namespace Prisma {
   export type UserCreateInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -13461,11 +16087,13 @@ export namespace Prisma {
     assignedTasks?: TaskCreateNestedManyWithoutAssigneeInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    contact?: ContactCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -13482,11 +16110,13 @@ export namespace Prisma {
     assignedTasks?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    contact?: ContactUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13503,11 +16133,13 @@ export namespace Prisma {
     assignedTasks?: TaskUpdateManyWithoutAssigneeNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    contact?: ContactUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13524,11 +16156,13 @@ export namespace Prisma {
     assignedTasks?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    contact?: ContactUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -13546,6 +16180,7 @@ export namespace Prisma {
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13563,6 +16198,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13582,6 +16218,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     department?: string | null
     priority?: string
     status?: string
@@ -13595,6 +16233,7 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
@@ -13602,6 +16241,7 @@ export namespace Prisma {
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
 
   export type TaskUncheckedCreateInput = {
@@ -13609,6 +16249,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     assigneeId?: string | null
     department?: string | null
@@ -13624,11 +16266,13 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
 
   export type TaskUpdateInput = {
@@ -13636,6 +16280,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -13649,6 +16295,7 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
@@ -13656,6 +16303,7 @@ export namespace Prisma {
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateInput = {
@@ -13663,6 +16311,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13678,11 +16328,13 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskCreateManyInput = {
@@ -13690,6 +16342,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     assigneeId?: string | null
     department?: string | null
@@ -13705,6 +16359,7 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13715,6 +16370,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -13728,6 +16385,7 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13737,6 +16395,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13752,9 +16412,134 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContactCreateInput = {
+    id?: string
+    name: string
+    phone?: string | null
+    email?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user?: UserCreateNestedOneWithoutContactInput
+  }
+
+  export type ContactUncheckedCreateInput = {
+    id?: string
+    name: string
+    phone?: string | null
+    email?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContactUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutContactNestedInput
+  }
+
+  export type ContactUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContactCreateManyInput = {
+    id?: string
+    name: string
+    phone?: string | null
+    email?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContactUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContactUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskUpdateCreateInput = {
+    id?: string
+    source: string
+    content: string
+    createdAt?: Date | string
+    task: TaskCreateNestedOneWithoutUpdatesInput
+  }
+
+  export type TaskUpdateUncheckedCreateInput = {
+    id?: string
+    taskId: string
+    source: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type TaskUpdateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    task?: TaskUpdateOneRequiredWithoutUpdatesNestedInput
+  }
+
+  export type TaskUpdateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskUpdateCreateManyInput = {
+    id?: string
+    taskId: string
+    source: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type TaskUpdateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskUpdateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskAuditLogCreateInput = {
@@ -14502,6 +17287,11 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type ContactNullableScalarRelationFilter = {
+    is?: ContactWhereInput | null
+    isNot?: ContactWhereInput | null
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -14522,6 +17312,7 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
+    username?: SortOrder
     name?: SortOrder
     role?: SortOrder
     department?: SortOrder
@@ -14543,6 +17334,7 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
+    username?: SortOrder
     name?: SortOrder
     role?: SortOrder
     department?: SortOrder
@@ -14560,6 +17352,7 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
+    username?: SortOrder
     name?: SortOrder
     role?: SortOrder
     department?: SortOrder
@@ -14650,17 +17443,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type FloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -14670,6 +17452,17 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type UserNullableScalarRelationFilter = {
@@ -14682,11 +17475,23 @@ export namespace Prisma {
     isNot?: DataSourceWhereInput | null
   }
 
+  export type TaskUpdateListRelationFilter = {
+    every?: TaskUpdateWhereInput
+    some?: TaskUpdateWhereInput
+    none?: TaskUpdateWhereInput
+  }
+
+  export type TaskUpdateOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type TaskCountOrderByAggregateInput = {
     id?: SortOrder
     taskId?: SortOrder
     title?: SortOrder
     description?: SortOrder
+    sentdmMessageId?: SortOrder
+    lastReminderSentAt?: SortOrder
     ownerId?: SortOrder
     assigneeId?: SortOrder
     department?: SortOrder
@@ -14702,6 +17507,7 @@ export namespace Prisma {
     nextStep?: SortOrder
     ceoNotes?: SortOrder
     sourceMonth?: SortOrder
+    source?: SortOrder
     dataSourceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14716,6 +17522,8 @@ export namespace Prisma {
     taskId?: SortOrder
     title?: SortOrder
     description?: SortOrder
+    sentdmMessageId?: SortOrder
+    lastReminderSentAt?: SortOrder
     ownerId?: SortOrder
     assigneeId?: SortOrder
     department?: SortOrder
@@ -14731,6 +17539,7 @@ export namespace Prisma {
     nextStep?: SortOrder
     ceoNotes?: SortOrder
     sourceMonth?: SortOrder
+    source?: SortOrder
     dataSourceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14741,6 +17550,8 @@ export namespace Prisma {
     taskId?: SortOrder
     title?: SortOrder
     description?: SortOrder
+    sentdmMessageId?: SortOrder
+    lastReminderSentAt?: SortOrder
     ownerId?: SortOrder
     assigneeId?: SortOrder
     department?: SortOrder
@@ -14756,6 +17567,7 @@ export namespace Prisma {
     nextStep?: SortOrder
     ceoNotes?: SortOrder
     sourceMonth?: SortOrder
+    source?: SortOrder
     dataSourceId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14763,6 +17575,20 @@ export namespace Prisma {
 
   export type TaskSumOrderByAggregateInput = {
     completion?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -14781,23 +17607,63 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  export type ContactCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContactMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContactMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TaskScalarRelationFilter = {
     is?: TaskWhereInput
     isNot?: TaskWhereInput
+  }
+
+  export type TaskUpdateCountOrderByAggregateInput = {
+    id?: SortOrder
+    taskId?: SortOrder
+    source?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TaskUpdateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    taskId?: SortOrder
+    source?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TaskUpdateMinOrderByAggregateInput = {
+    id?: SortOrder
+    taskId?: SortOrder
+    source?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type TaskAuditLogCountOrderByAggregateInput = {
@@ -15186,6 +18052,12 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type ContactCreateNestedOneWithoutUserInput = {
+    create?: XOR<ContactCreateWithoutUserInput, ContactUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ContactCreateOrConnectWithoutUserInput
+    connect?: ContactWhereUniqueInput
+  }
+
   export type TaskUncheckedCreateNestedManyWithoutOwnerInput = {
     create?: XOR<TaskCreateWithoutOwnerInput, TaskUncheckedCreateWithoutOwnerInput> | TaskCreateWithoutOwnerInput[] | TaskUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: TaskCreateOrConnectWithoutOwnerInput | TaskCreateOrConnectWithoutOwnerInput[]
@@ -15212,6 +18084,12 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
     createMany?: NotificationCreateManyUserInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type ContactUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<ContactCreateWithoutUserInput, ContactUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ContactCreateOrConnectWithoutUserInput
+    connect?: ContactWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -15294,6 +18172,16 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type ContactUpdateOneWithoutUserNestedInput = {
+    create?: XOR<ContactCreateWithoutUserInput, ContactUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ContactCreateOrConnectWithoutUserInput
+    upsert?: ContactUpsertWithoutUserInput
+    disconnect?: ContactWhereInput | boolean
+    delete?: ContactWhereInput | boolean
+    connect?: ContactWhereUniqueInput
+    update?: XOR<XOR<ContactUpdateToOneWithWhereWithoutUserInput, ContactUpdateWithoutUserInput>, ContactUncheckedUpdateWithoutUserInput>
+  }
+
   export type TaskUncheckedUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<TaskCreateWithoutOwnerInput, TaskUncheckedCreateWithoutOwnerInput> | TaskCreateWithoutOwnerInput[] | TaskUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: TaskCreateOrConnectWithoutOwnerInput | TaskCreateOrConnectWithoutOwnerInput[]
@@ -15350,6 +18238,16 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type ContactUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<ContactCreateWithoutUserInput, ContactUncheckedCreateWithoutUserInput>
+    connectOrCreate?: ContactCreateOrConnectWithoutUserInput
+    upsert?: ContactUpsertWithoutUserInput
+    disconnect?: ContactWhereInput | boolean
+    delete?: ContactWhereInput | boolean
+    connect?: ContactWhereUniqueInput
+    update?: XOR<XOR<ContactUpdateToOneWithWhereWithoutUserInput, ContactUpdateWithoutUserInput>, ContactUncheckedUpdateWithoutUserInput>
+  }
+
   export type UserCreateNestedOneWithoutOwnedTasksInput = {
     create?: XOR<UserCreateWithoutOwnedTasksInput, UserUncheckedCreateWithoutOwnedTasksInput>
     connectOrCreate?: UserCreateOrConnectWithoutOwnedTasksInput
@@ -15382,6 +18280,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type TaskUpdateCreateNestedManyWithoutTaskInput = {
+    create?: XOR<TaskUpdateCreateWithoutTaskInput, TaskUpdateUncheckedCreateWithoutTaskInput> | TaskUpdateCreateWithoutTaskInput[] | TaskUpdateUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TaskUpdateCreateOrConnectWithoutTaskInput | TaskUpdateCreateOrConnectWithoutTaskInput[]
+    createMany?: TaskUpdateCreateManyTaskInputEnvelope
+    connect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+  }
+
   export type TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput = {
     create?: XOR<TaskAuditLogCreateWithoutTaskInput, TaskAuditLogUncheckedCreateWithoutTaskInput> | TaskAuditLogCreateWithoutTaskInput[] | TaskAuditLogUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskAuditLogCreateOrConnectWithoutTaskInput | TaskAuditLogCreateOrConnectWithoutTaskInput[]
@@ -15396,16 +18301,23 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type TaskUpdateUncheckedCreateNestedManyWithoutTaskInput = {
+    create?: XOR<TaskUpdateCreateWithoutTaskInput, TaskUpdateUncheckedCreateWithoutTaskInput> | TaskUpdateCreateWithoutTaskInput[] | TaskUpdateUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TaskUpdateCreateOrConnectWithoutTaskInput | TaskUpdateCreateOrConnectWithoutTaskInput[]
+    createMany?: TaskUpdateCreateManyTaskInputEnvelope
+    connect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type FloatFieldUpdateOperationsInput = {
     set?: number
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type UserUpdateOneWithoutOwnedTasksNestedInput = {
@@ -15466,6 +18378,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type TaskUpdateUpdateManyWithoutTaskNestedInput = {
+    create?: XOR<TaskUpdateCreateWithoutTaskInput, TaskUpdateUncheckedCreateWithoutTaskInput> | TaskUpdateCreateWithoutTaskInput[] | TaskUpdateUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TaskUpdateCreateOrConnectWithoutTaskInput | TaskUpdateCreateOrConnectWithoutTaskInput[]
+    upsert?: TaskUpdateUpsertWithWhereUniqueWithoutTaskInput | TaskUpdateUpsertWithWhereUniqueWithoutTaskInput[]
+    createMany?: TaskUpdateCreateManyTaskInputEnvelope
+    set?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    disconnect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    delete?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    connect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    update?: TaskUpdateUpdateWithWhereUniqueWithoutTaskInput | TaskUpdateUpdateWithWhereUniqueWithoutTaskInput[]
+    updateMany?: TaskUpdateUpdateManyWithWhereWithoutTaskInput | TaskUpdateUpdateManyWithWhereWithoutTaskInput[]
+    deleteMany?: TaskUpdateScalarWhereInput | TaskUpdateScalarWhereInput[]
+  }
+
   export type TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput = {
     create?: XOR<TaskAuditLogCreateWithoutTaskInput, TaskAuditLogUncheckedCreateWithoutTaskInput> | TaskAuditLogCreateWithoutTaskInput[] | TaskAuditLogUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskAuditLogCreateOrConnectWithoutTaskInput | TaskAuditLogCreateOrConnectWithoutTaskInput[]
@@ -15492,6 +18418,50 @@ export namespace Prisma {
     update?: NotificationUpdateWithWhereUniqueWithoutTaskInput | NotificationUpdateWithWhereUniqueWithoutTaskInput[]
     updateMany?: NotificationUpdateManyWithWhereWithoutTaskInput | NotificationUpdateManyWithWhereWithoutTaskInput[]
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput = {
+    create?: XOR<TaskUpdateCreateWithoutTaskInput, TaskUpdateUncheckedCreateWithoutTaskInput> | TaskUpdateCreateWithoutTaskInput[] | TaskUpdateUncheckedCreateWithoutTaskInput[]
+    connectOrCreate?: TaskUpdateCreateOrConnectWithoutTaskInput | TaskUpdateCreateOrConnectWithoutTaskInput[]
+    upsert?: TaskUpdateUpsertWithWhereUniqueWithoutTaskInput | TaskUpdateUpsertWithWhereUniqueWithoutTaskInput[]
+    createMany?: TaskUpdateCreateManyTaskInputEnvelope
+    set?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    disconnect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    delete?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    connect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+    update?: TaskUpdateUpdateWithWhereUniqueWithoutTaskInput | TaskUpdateUpdateWithWhereUniqueWithoutTaskInput[]
+    updateMany?: TaskUpdateUpdateManyWithWhereWithoutTaskInput | TaskUpdateUpdateManyWithWhereWithoutTaskInput[]
+    deleteMany?: TaskUpdateScalarWhereInput | TaskUpdateScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutContactInput = {
+    create?: XOR<UserCreateWithoutContactInput, UserUncheckedCreateWithoutContactInput>
+    connectOrCreate?: UserCreateOrConnectWithoutContactInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneWithoutContactNestedInput = {
+    create?: XOR<UserCreateWithoutContactInput, UserUncheckedCreateWithoutContactInput>
+    connectOrCreate?: UserCreateOrConnectWithoutContactInput
+    upsert?: UserUpsertWithoutContactInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutContactInput, UserUpdateWithoutContactInput>, UserUncheckedUpdateWithoutContactInput>
+  }
+
+  export type TaskCreateNestedOneWithoutUpdatesInput = {
+    create?: XOR<TaskCreateWithoutUpdatesInput, TaskUncheckedCreateWithoutUpdatesInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutUpdatesInput
+    connect?: TaskWhereUniqueInput
+  }
+
+  export type TaskUpdateOneRequiredWithoutUpdatesNestedInput = {
+    create?: XOR<TaskCreateWithoutUpdatesInput, TaskUncheckedCreateWithoutUpdatesInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutUpdatesInput
+    upsert?: TaskUpsertWithoutUpdatesInput
+    connect?: TaskWhereUniqueInput
+    update?: XOR<XOR<TaskUpdateToOneWithWhereWithoutUpdatesInput, TaskUpdateWithoutUpdatesInput>, TaskUncheckedUpdateWithoutUpdatesInput>
   }
 
   export type TaskCreateNestedOneWithoutAuditLogsInput = {
@@ -15766,6 +18736,20 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[]
@@ -15780,20 +18764,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -15828,6 +18798,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     department?: string | null
     priority?: string
     status?: string
@@ -15841,12 +18813,14 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
 
   export type TaskUncheckedCreateWithoutOwnerInput = {
@@ -15854,6 +18828,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     assigneeId?: string | null
     department?: string | null
     priority?: string
@@ -15868,11 +18844,13 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
 
   export type TaskCreateOrConnectWithoutOwnerInput = {
@@ -15889,6 +18867,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     department?: string | null
     priority?: string
     status?: string
@@ -15902,12 +18882,14 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
 
   export type TaskUncheckedCreateWithoutAssigneeInput = {
@@ -15915,6 +18897,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     department?: string | null
     priority?: string
@@ -15929,11 +18913,13 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
 
   export type TaskCreateOrConnectWithoutAssigneeInput = {
@@ -16011,6 +18997,29 @@ export namespace Prisma {
     data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
   }
 
+  export type ContactCreateWithoutUserInput = {
+    id?: string
+    name: string
+    phone?: string | null
+    email?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContactUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    phone?: string | null
+    email?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContactCreateOrConnectWithoutUserInput = {
+    where: ContactWhereUniqueInput
+    create: XOR<ContactCreateWithoutUserInput, ContactUncheckedCreateWithoutUserInput>
+  }
+
   export type TaskUpsertWithWhereUniqueWithoutOwnerInput = {
     where: TaskWhereUniqueInput
     update: XOR<TaskUpdateWithoutOwnerInput, TaskUncheckedUpdateWithoutOwnerInput>
@@ -16035,6 +19044,8 @@ export namespace Prisma {
     taskId?: StringNullableFilter<"Task"> | string | null
     title?: StringFilter<"Task"> | string
     description?: StringNullableFilter<"Task"> | string | null
+    sentdmMessageId?: StringNullableFilter<"Task"> | string | null
+    lastReminderSentAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     ownerId?: StringNullableFilter<"Task"> | string | null
     assigneeId?: StringNullableFilter<"Task"> | string | null
     department?: StringNullableFilter<"Task"> | string | null
@@ -16050,6 +19061,7 @@ export namespace Prisma {
     nextStep?: StringNullableFilter<"Task"> | string | null
     ceoNotes?: StringNullableFilter<"Task"> | string | null
     sourceMonth?: StringNullableFilter<"Task"> | string | null
+    source?: StringNullableFilter<"Task"> | string | null
     dataSourceId?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
@@ -16135,9 +19147,39 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
+  export type ContactUpsertWithoutUserInput = {
+    update: XOR<ContactUpdateWithoutUserInput, ContactUncheckedUpdateWithoutUserInput>
+    create: XOR<ContactCreateWithoutUserInput, ContactUncheckedCreateWithoutUserInput>
+    where?: ContactWhereInput
+  }
+
+  export type ContactUpdateToOneWithWhereWithoutUserInput = {
+    where?: ContactWhereInput
+    data: XOR<ContactUpdateWithoutUserInput, ContactUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ContactUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContactUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateWithoutOwnedTasksInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16153,11 +19195,13 @@ export namespace Prisma {
     assignedTasks?: TaskCreateNestedManyWithoutAssigneeInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    contact?: ContactCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOwnedTasksInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16173,6 +19217,7 @@ export namespace Prisma {
     assignedTasks?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    contact?: ContactUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOwnedTasksInput = {
@@ -16183,6 +19228,7 @@ export namespace Prisma {
   export type UserCreateWithoutAssignedTasksInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16198,11 +19244,13 @@ export namespace Prisma {
     ownedTasks?: TaskCreateNestedManyWithoutOwnerInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    contact?: ContactCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAssignedTasksInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16218,6 +19266,7 @@ export namespace Prisma {
     ownedTasks?: TaskUncheckedCreateNestedManyWithoutOwnerInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    contact?: ContactUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAssignedTasksInput = {
@@ -16318,6 +19367,29 @@ export namespace Prisma {
     data: NotificationCreateManyTaskInput | NotificationCreateManyTaskInput[]
   }
 
+  export type TaskUpdateCreateWithoutTaskInput = {
+    id?: string
+    source: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type TaskUpdateUncheckedCreateWithoutTaskInput = {
+    id?: string
+    source: string
+    content: string
+    createdAt?: Date | string
+  }
+
+  export type TaskUpdateCreateOrConnectWithoutTaskInput = {
+    where: TaskUpdateWhereUniqueInput
+    create: XOR<TaskUpdateCreateWithoutTaskInput, TaskUpdateUncheckedCreateWithoutTaskInput>
+  }
+
+  export type TaskUpdateCreateManyTaskInputEnvelope = {
+    data: TaskUpdateCreateManyTaskInput | TaskUpdateCreateManyTaskInput[]
+  }
+
   export type UserUpsertWithoutOwnedTasksInput = {
     update: XOR<UserUpdateWithoutOwnedTasksInput, UserUncheckedUpdateWithoutOwnedTasksInput>
     create: XOR<UserCreateWithoutOwnedTasksInput, UserUncheckedCreateWithoutOwnedTasksInput>
@@ -16332,6 +19404,7 @@ export namespace Prisma {
   export type UserUpdateWithoutOwnedTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16347,11 +19420,13 @@ export namespace Prisma {
     assignedTasks?: TaskUpdateManyWithoutAssigneeNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    contact?: ContactUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16367,6 +19442,7 @@ export namespace Prisma {
     assignedTasks?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    contact?: ContactUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutAssignedTasksInput = {
@@ -16383,6 +19459,7 @@ export namespace Prisma {
   export type UserUpdateWithoutAssignedTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16398,11 +19475,13 @@ export namespace Prisma {
     ownedTasks?: TaskUpdateManyWithoutOwnerNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    contact?: ContactUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16418,6 +19497,7 @@ export namespace Prisma {
     ownedTasks?: TaskUncheckedUpdateManyWithoutOwnerNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    contact?: ContactUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type DataSourceUpsertWithoutTasksInput = {
@@ -16485,11 +19565,144 @@ export namespace Prisma {
     data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutTaskInput>
   }
 
-  export type TaskCreateWithoutAuditLogsInput = {
+  export type TaskUpdateUpsertWithWhereUniqueWithoutTaskInput = {
+    where: TaskUpdateWhereUniqueInput
+    update: XOR<TaskUpdateUpdateWithoutTaskInput, TaskUpdateUncheckedUpdateWithoutTaskInput>
+    create: XOR<TaskUpdateCreateWithoutTaskInput, TaskUpdateUncheckedCreateWithoutTaskInput>
+  }
+
+  export type TaskUpdateUpdateWithWhereUniqueWithoutTaskInput = {
+    where: TaskUpdateWhereUniqueInput
+    data: XOR<TaskUpdateUpdateWithoutTaskInput, TaskUpdateUncheckedUpdateWithoutTaskInput>
+  }
+
+  export type TaskUpdateUpdateManyWithWhereWithoutTaskInput = {
+    where: TaskUpdateScalarWhereInput
+    data: XOR<TaskUpdateUpdateManyMutationInput, TaskUpdateUncheckedUpdateManyWithoutTaskInput>
+  }
+
+  export type TaskUpdateScalarWhereInput = {
+    AND?: TaskUpdateScalarWhereInput | TaskUpdateScalarWhereInput[]
+    OR?: TaskUpdateScalarWhereInput[]
+    NOT?: TaskUpdateScalarWhereInput | TaskUpdateScalarWhereInput[]
+    id?: StringFilter<"TaskUpdate"> | string
+    taskId?: StringFilter<"TaskUpdate"> | string
+    source?: StringFilter<"TaskUpdate"> | string
+    content?: StringFilter<"TaskUpdate"> | string
+    createdAt?: DateTimeFilter<"TaskUpdate"> | Date | string
+  }
+
+  export type UserCreateWithoutContactInput = {
+    id?: string
+    email: string
+    username?: string | null
+    name?: string | null
+    role?: string
+    department?: string | null
+    phone?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    receiveTaskReminders?: boolean
+    receiveDailyDigest?: boolean
+    receiveWeeklyReport?: boolean
+    reminderDaysBefore?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedTasks?: TaskCreateNestedManyWithoutOwnerInput
+    assignedTasks?: TaskCreateNestedManyWithoutAssigneeInput
+    auditLogs?: TaskAuditLogCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutContactInput = {
+    id?: string
+    email: string
+    username?: string | null
+    name?: string | null
+    role?: string
+    department?: string | null
+    phone?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    receiveTaskReminders?: boolean
+    receiveDailyDigest?: boolean
+    receiveWeeklyReport?: boolean
+    reminderDaysBefore?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedTasks?: TaskUncheckedCreateNestedManyWithoutOwnerInput
+    assignedTasks?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
+    auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutContactInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutContactInput, UserUncheckedCreateWithoutContactInput>
+  }
+
+  export type UserUpsertWithoutContactInput = {
+    update: XOR<UserUpdateWithoutContactInput, UserUncheckedUpdateWithoutContactInput>
+    create: XOR<UserCreateWithoutContactInput, UserUncheckedCreateWithoutContactInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutContactInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutContactInput, UserUncheckedUpdateWithoutContactInput>
+  }
+
+  export type UserUpdateWithoutContactInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: StringFieldUpdateOperationsInput | string
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    receiveTaskReminders?: BoolFieldUpdateOperationsInput | boolean
+    receiveDailyDigest?: BoolFieldUpdateOperationsInput | boolean
+    receiveWeeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    reminderDaysBefore?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedTasks?: TaskUpdateManyWithoutOwnerNestedInput
+    assignedTasks?: TaskUpdateManyWithoutAssigneeNestedInput
+    auditLogs?: TaskAuditLogUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutContactInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: StringFieldUpdateOperationsInput | string
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    receiveTaskReminders?: BoolFieldUpdateOperationsInput | boolean
+    receiveDailyDigest?: BoolFieldUpdateOperationsInput | boolean
+    receiveWeeklyReport?: BoolFieldUpdateOperationsInput | boolean
+    reminderDaysBefore?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedTasks?: TaskUncheckedUpdateManyWithoutOwnerNestedInput
+    assignedTasks?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
+    auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type TaskCreateWithoutUpdatesInput = {
     id?: string
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     department?: string | null
     priority?: string
     status?: string
@@ -16503,19 +19716,23 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
   }
 
-  export type TaskUncheckedCreateWithoutAuditLogsInput = {
+  export type TaskUncheckedCreateWithoutUpdatesInput = {
     id?: string
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     assigneeId?: string | null
     department?: string | null
@@ -16531,10 +19748,148 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
+    dataSourceId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutUpdatesInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutUpdatesInput, TaskUncheckedCreateWithoutUpdatesInput>
+  }
+
+  export type TaskUpsertWithoutUpdatesInput = {
+    update: XOR<TaskUpdateWithoutUpdatesInput, TaskUncheckedUpdateWithoutUpdatesInput>
+    create: XOR<TaskCreateWithoutUpdatesInput, TaskUncheckedCreateWithoutUpdatesInput>
+    where?: TaskWhereInput
+  }
+
+  export type TaskUpdateToOneWithWhereWithoutUpdatesInput = {
+    where?: TaskWhereInput
+    data: XOR<TaskUpdateWithoutUpdatesInput, TaskUncheckedUpdateWithoutUpdatesInput>
+  }
+
+  export type TaskUpdateWithoutUpdatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutOwnedTasksNestedInput
+    assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
+    dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
+    notifications?: NotificationUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutUpdatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskCreateWithoutAuditLogsInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner?: UserCreateNestedOneWithoutOwnedTasksInput
+    assignee?: UserCreateNestedOneWithoutAssignedTasksInput
+    dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutAuditLogsInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    ownerId?: string | null
+    assigneeId?: string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
 
   export type TaskCreateOrConnectWithoutAuditLogsInput = {
@@ -16545,6 +19900,7 @@ export namespace Prisma {
   export type UserCreateWithoutAuditLogsInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16560,11 +19916,13 @@ export namespace Prisma {
     ownedTasks?: TaskCreateNestedManyWithoutOwnerInput
     assignedTasks?: TaskCreateNestedManyWithoutAssigneeInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    contact?: ContactCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16580,6 +19938,7 @@ export namespace Prisma {
     ownedTasks?: TaskUncheckedCreateNestedManyWithoutOwnerInput
     assignedTasks?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    contact?: ContactUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -16603,6 +19962,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -16616,12 +19977,14 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateWithoutAuditLogsInput = {
@@ -16629,6 +19992,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16644,10 +20009,12 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
 
   export type UserUpsertWithoutAuditLogsInput = {
@@ -16664,6 +20031,7 @@ export namespace Prisma {
   export type UserUpdateWithoutAuditLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16679,11 +20047,13 @@ export namespace Prisma {
     ownedTasks?: TaskUpdateManyWithoutOwnerNestedInput
     assignedTasks?: TaskUpdateManyWithoutAssigneeNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    contact?: ContactUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16699,6 +20069,7 @@ export namespace Prisma {
     ownedTasks?: TaskUncheckedUpdateManyWithoutOwnerNestedInput
     assignedTasks?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    contact?: ContactUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type TaskCreateWithoutDataSourceInput = {
@@ -16706,6 +20077,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     department?: string | null
     priority?: string
     status?: string
@@ -16719,12 +20092,14 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
 
   export type TaskUncheckedCreateWithoutDataSourceInput = {
@@ -16732,6 +20107,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     assigneeId?: string | null
     department?: string | null
@@ -16747,10 +20124,12 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
 
   export type TaskCreateOrConnectWithoutDataSourceInput = {
@@ -16783,6 +20162,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     department?: string | null
     priority?: string
     status?: string
@@ -16796,12 +20177,14 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
 
   export type TaskUncheckedCreateWithoutNotificationsInput = {
@@ -16809,6 +20192,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     assigneeId?: string | null
     department?: string | null
@@ -16824,10 +20209,12 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
 
   export type TaskCreateOrConnectWithoutNotificationsInput = {
@@ -16838,6 +20225,7 @@ export namespace Prisma {
   export type UserCreateWithoutNotificationsInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16853,11 +20241,13 @@ export namespace Prisma {
     ownedTasks?: TaskCreateNestedManyWithoutOwnerInput
     assignedTasks?: TaskCreateNestedManyWithoutAssigneeInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutUserInput
+    contact?: ContactCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
     id?: string
     email: string
+    username?: string | null
     name?: string | null
     role?: string
     department?: string | null
@@ -16873,6 +20263,7 @@ export namespace Prisma {
     ownedTasks?: TaskUncheckedCreateNestedManyWithoutOwnerInput
     assignedTasks?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutUserInput
+    contact?: ContactUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -16896,6 +20287,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -16909,12 +20302,14 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateWithoutNotificationsInput = {
@@ -16922,6 +20317,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16937,10 +20334,12 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
 
   export type UserUpsertWithoutNotificationsInput = {
@@ -16957,6 +20356,7 @@ export namespace Prisma {
   export type UserUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16972,11 +20372,13 @@ export namespace Prisma {
     ownedTasks?: TaskUpdateManyWithoutOwnerNestedInput
     assignedTasks?: TaskUpdateManyWithoutAssigneeNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutUserNestedInput
+    contact?: ContactUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16992,6 +20394,7 @@ export namespace Prisma {
     ownedTasks?: TaskUncheckedUpdateManyWithoutOwnerNestedInput
     assignedTasks?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutUserNestedInput
+    contact?: ContactUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type TaskCreateManyOwnerInput = {
@@ -16999,6 +20402,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     assigneeId?: string | null
     department?: string | null
     priority?: string
@@ -17013,6 +20418,7 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -17023,6 +20429,8 @@ export namespace Prisma {
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     department?: string | null
     priority?: string
@@ -17037,6 +20445,7 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     dataSourceId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -17071,6 +20480,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -17084,12 +20495,14 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateWithoutOwnerInput = {
@@ -17097,6 +20510,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
@@ -17111,11 +20526,13 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateManyWithoutOwnerInput = {
@@ -17123,6 +20540,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
@@ -17137,6 +20556,7 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17147,6 +20567,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -17160,12 +20582,14 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateWithoutAssigneeInput = {
@@ -17173,6 +20597,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
@@ -17187,11 +20613,13 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateManyWithoutAssigneeInput = {
@@ -17199,6 +20627,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
@@ -17213,6 +20643,7 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17314,6 +20745,13 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type TaskUpdateCreateManyTaskInput = {
+    id?: string
+    source: string
+    content: string
+    createdAt?: Date | string
+  }
+
   export type TaskAuditLogUpdateWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     action?: StringFieldUpdateOperationsInput | string
@@ -17386,11 +20824,34 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TaskUpdateUpdateWithoutTaskInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskUpdateUncheckedUpdateWithoutTaskInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskUpdateUncheckedUpdateManyWithoutTaskInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type TaskCreateManyDataSourceInput = {
     id?: string
     taskId?: string | null
     title: string
     description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
     ownerId?: string | null
     assigneeId?: string | null
     department?: string | null
@@ -17406,6 +20867,7 @@ export namespace Prisma {
     nextStep?: string | null
     ceoNotes?: string | null
     sourceMonth?: string | null
+    source?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -17415,6 +20877,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -17428,12 +20892,14 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateWithoutDataSourceInput = {
@@ -17441,6 +20907,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17456,10 +20924,12 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
 
   export type TaskUncheckedUpdateManyWithoutDataSourceInput = {
@@ -17467,6 +20937,8 @@ export namespace Prisma {
     taskId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     department?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17482,6 +20954,7 @@ export namespace Prisma {
     nextStep?: NullableStringFieldUpdateOperationsInput | string | null
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
