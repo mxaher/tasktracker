@@ -531,7 +531,7 @@ export class EmailService {
       // Get all in-progress and overdue tasks
       tasks = await db.task.findMany({
         where: {
-          status: { in: ["in_progress", "delayed", "not_started"] },
+          status: { in: ["pending", "in_progress", "delayed", "not_started"] },
         },
         include: { owner: true },
         orderBy: [{ priority: "desc" }, { dueDate: "asc" }],
@@ -640,7 +640,7 @@ export class EmailService {
     // Get all active tasks
     const tasks = await db.task.findMany({
       where: {
-        status: { in: ["in_progress", "delayed", "not_started"] },
+        status: { in: ["pending", "in_progress", "delayed", "not_started"] },
       },
       include: { owner: true },
       orderBy: [{ priority: "desc" }, { dueDate: "asc" }],

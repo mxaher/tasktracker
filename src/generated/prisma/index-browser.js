@@ -121,6 +121,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  username: 'username',
   name: 'name',
   role: 'role',
   department: 'department',
@@ -140,6 +141,8 @@ exports.Prisma.TaskScalarFieldEnum = {
   taskId: 'taskId',
   title: 'title',
   description: 'description',
+  sentdmMessageId: 'sentdmMessageId',
+  lastReminderSentAt: 'lastReminderSentAt',
   ownerId: 'ownerId',
   assigneeId: 'assigneeId',
   department: 'department',
@@ -155,9 +158,28 @@ exports.Prisma.TaskScalarFieldEnum = {
   nextStep: 'nextStep',
   ceoNotes: 'ceoNotes',
   sourceMonth: 'sourceMonth',
+  source: 'source',
   dataSourceId: 'dataSourceId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContactScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaskUpdateScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  source: 'source',
+  content: 'content',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.TaskAuditLogScalarFieldEnum = {
@@ -270,6 +292,8 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   User: 'User',
   Task: 'Task',
+  Contact: 'Contact',
+  TaskUpdate: 'TaskUpdate',
   TaskAuditLog: 'TaskAuditLog',
   DataSource: 'DataSource',
   Notification: 'Notification',

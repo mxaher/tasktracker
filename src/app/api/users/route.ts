@@ -6,6 +6,7 @@ type D1Value = string | number | null;
 type UserRow = {
   id: string;
   email: string;
+  username: string | null;
   name: string | null;
   department: string | null;
   role: string;
@@ -59,6 +60,7 @@ function mapUserRow(row: UserRow) {
   return {
     id: row.id,
     email: row.email,
+    username: row.username,
     name: row.name,
     department: row.department,
     role: row.role,
@@ -71,7 +73,7 @@ export async function GET() {
   try {
     const users = await d1All<UserRow>(
       `
-        SELECT "id", "email", "name", "department", "role", "isActive", "createdAt"
+        SELECT "id", "email", "username", "name", "department", "role", "isActive", "createdAt"
         FROM "User"
         ORDER BY COALESCE("name", "email") ASC
       `,
@@ -106,14 +108,15 @@ export async function POST(request: NextRequest) {
     await d1Run(
       `
         INSERT INTO "User" (
-          "id", "email", "name", "role", "department", "phone", "avatar", "isActive",
+          "id", "email", "username", "name", "role", "department", "phone", "avatar", "isActive",
           "receiveTaskReminders", "receiveDailyDigest", "receiveWeeklyReport",
           "reminderDaysBefore", "createdAt", "updatedAt"
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       id,
       data.email,
+      data.username || null,
       data.name || null,
       data.role || "viewer",
       data.department || null,
@@ -130,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     const user = await d1First<UserRow>(
       `
-        SELECT "id", "email", "name", "department", "role", "isActive", "createdAt"
+        SELECT "id", "email", "username", "name", "department", "role", "isActive", "createdAt"
         FROM "User"
         WHERE "id" = ?
         LIMIT 1

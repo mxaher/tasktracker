@@ -17,6 +17,7 @@ datasource db {
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
+  username      String?  @unique
   name          String?
   role          String   @default("viewer") // admin, manager, viewer
   department    String?
@@ -37,6 +38,7 @@ model User {
   assignedTasks Task[]         @relation("TaskAssignee")
   auditLogs     TaskAuditLog[]
   notifications Notification[]
+  contact       Contact?
 }
 
 // Main Task model
@@ -45,6 +47,8 @@ model Task {
   taskId           String?  // External task ID from Excel
   title            String
   description      String?
+  sentdmMessageId  String?
+  lastReminderSentAt DateTime?
   
   // Ownership and assignment
   ownerId          String?
@@ -85,6 +89,33 @@ model Task {
   // Relations
   auditLogs        TaskAuditLog[]
   notifications    Notification[]
+  updates          TaskUpdate[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([phone])
+  @@index([email])
+}
+
+model TaskUpdate {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  source    String   // "whatsapp" | "telegram" | "manual"
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([taskId, createdAt])
 }
 
 // Audit log for tracking all task changes

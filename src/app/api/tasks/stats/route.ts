@@ -50,7 +50,9 @@ export async function GET() {
     const completedTasks = tasks.filter((task) => task.status === "completed").length;
     const inProgressTasks = tasks.filter((task) => task.status === "in_progress").length;
     const delayedTasks = tasks.filter((task) => task.status === "delayed").length;
-    const notStartedTasks = tasks.filter((task) => task.status === "not_started").length;
+    const notStartedTasks = tasks.filter(
+      (task) => task.status === "not_started" || task.status === "pending",
+    ).length;
     const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
     const today = startOfDay(new Date());
@@ -90,7 +92,7 @@ export async function GET() {
       .filter((priority) => priorityMap.has(priority))
       .map((priority) => ({ priority, count: priorityMap.get(priority) || 0 }));
 
-    const statusOrder = ["not_started", "in_progress", "delayed", "completed"];
+    const statusOrder = ["pending", "not_started", "in_progress", "delayed", "completed"];
     const tasksByStatus = statusOrder
       .filter((status) => statusMap.has(status))
       .map((status) => ({ status, count: statusMap.get(status) || 0 }));

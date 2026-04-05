@@ -20,8 +20,12 @@
   },
   "vars": {
     "NEXT_TELEMETRY_DISABLED": "1",
+    "DATABASE_URL": "file:./dev.db",
     "FROM_EMAIL": "noreply@wealix.app",
     "ADMIN_EMAIL": "tasks@wealix.app"
+  },
+  "triggers": {
+    "crons": ["0 6 * * *"]
   },
   "d1_databases": [
     {
