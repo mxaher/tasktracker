@@ -15,7 +15,8 @@ export const metadata: Metadata = {
   keywords: ["TaskTracker", "Task Management", "Project Management", "Next.js", "TypeScript", "React"],
   authors: [{ name: "TaskTracker Team" }],
   icons: {
-    icon: "/logo.svg",
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    shortcut: "/logo.svg",
   },
   openGraph: {
     title: "TaskTracker - Task Management System",

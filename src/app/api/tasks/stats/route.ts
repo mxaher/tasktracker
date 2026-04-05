@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { addDays, isPast, isWithinInterval, startOfDay } from "date-fns";
+import { addDays, isBefore, isWithinInterval, startOfDay } from "date-fns";
 
 type D1Value = string | number | null;
 
@@ -61,10 +61,10 @@ export async function GET() {
 
     for (const task of tasks) {
       if (!task.dueDate || task.status === "completed") continue;
-      const dueDate = new Date(task.dueDate);
-      if (isPast(dueDate)) {
+      const dueDay = startOfDay(new Date(task.dueDate));
+      if (isBefore(dueDay, today)) {
         overdueTasks++;
-      } else if (isWithinInterval(dueDate, { start: today, end: sevenDaysFromNow })) {
+      } else if (isWithinInterval(dueDay, { start: today, end: sevenDaysFromNow })) {
         dueSoonTasks++;
       }
     }
