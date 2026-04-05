@@ -1258,6 +1258,7 @@ function TaskListContent({
               onComplete={onCompleteTask}
               onDateClick={onDateClick}
               onProgressClick={onProgressClick}
+                            onSendReminder={handleSendTaskReminder}
               getDaysRemaining={getDaysRemaining}
               getRiskColor={getRiskColor}
             />
