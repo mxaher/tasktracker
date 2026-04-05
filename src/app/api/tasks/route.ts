@@ -153,6 +153,9 @@ const TASK_SELECT_SQL = `
 
 export async function GET(request: NextRequest) {
   try {
+    // Ensure source column exists (idempotent — fails silently if already present)
+    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const priority = searchParams.get("priority");
@@ -200,6 +203,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
     const data = await request.json();
     const id = data.id || createId();
     const timestamp = data.updatedAt || nowIso();
