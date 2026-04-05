@@ -793,13 +793,16 @@ function UploadModal({ isOpen, onOpenChange, uploadFile, uploadProgress, onFileC
 // ─────────────────────────────────────────────────────────────
 interface DashboardContentProps {
   stats: DashboardStats | null;
+  onNavigateToDepartment: (department: string) => void;
+  onNavigateToOverdue: () => void;
+  onNavigateToDueSoon: () => void;
 }
 
-function DashboardContent({ stats }: DashboardContentProps) {
+function DashboardContent({ stats, onNavigateToDepartment, onNavigateToOverdue, onNavigateToDueSoon }: DashboardContentProps) {
   if (!stats) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard title="إجمالي المهام" value={stats.totalTasks} icon={List} subtitle="جميع المهام في النظام" />
         <KPICard title="معدل الإنجاز" value={`${Math.round(stats.completionRate)}%`} icon={CheckCircle2} subtitle={`${stats.completedTasks} مكتملة`} trend={5} />
@@ -809,12 +812,12 @@ function DashboardContent({ stats }: DashboardContentProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-base">توزيع الحالات</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base text-right">توزيع الحالات</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {stats.tasksByStatus.map((item) => (
                 <div key={item.status} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-row-reverse">
                     <div className={`w-3 h-3 rounded-full ${
                       item.status === "completed" ? "bg-emerald-500" :
                       item.status === "in_progress" ? "bg-amber-500" :
@@ -833,12 +836,12 @@ function DashboardContent({ stats }: DashboardContentProps) {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">توزيع الأولويات</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base text-right">توزيع الأولويات</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {stats.tasksByPriority.map((item) => (
                 <div key={item.priority} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-row-reverse">
                     <div className={`w-3 h-3 rounded-full ${
                       item.priority === "critical" ? "bg-red-600" :
                       item.priority === "high" ? "bg-orange-500" :
@@ -858,16 +861,23 @@ function DashboardContent({ stats }: DashboardContentProps) {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">المهام حسب القسم</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base text-right">المهام حسب القسم</CardTitle></CardHeader>
         <CardContent>
           <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
             {stats.tasksByDepartment.map((item) => (
-              <div key={item.department} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{item.department}</span>
-                </div>
+              <div
+                key={item.department}
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                role="button"
+                tabIndex={0}
+                onClick={() => onNavigateToDepartment(item.department)}
+                onKeyDown={(e) => e.key === "Enter" && onNavigateToDepartment(item.department)}
+              >
                 <Badge variant="secondary">{item.count}</Badge>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{item.department}</span>
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                </div>
               </div>
             ))}
           </div>
@@ -875,27 +885,33 @@ function DashboardContent({ stats }: DashboardContentProps) {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border-red-200 bg-red-50/50">
+        <Card
+          className="border-red-200 bg-red-50/50 cursor-pointer hover:shadow-md transition-shadow"
+          onClick={onNavigateToOverdue}
+        >
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-red-700">
-              <AlertTriangle className="h-4 w-4" /> المهام المتأخرة
+            <CardTitle className="text-base flex items-center gap-2 text-red-700 flex-row-reverse justify-end">
+              المهام المتأخرة <AlertTriangle className="h-4 w-4" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-red-700">{stats.overdueTasks}</p>
-            <p className="text-sm text-red-600 mt-1">مهام تجاوزت تاريخ الاستحقاق</p>
+            <p className="text-3xl font-bold text-red-700 text-right">{stats.overdueTasks}</p>
+            <p className="text-sm text-red-600 mt-1 text-right">مهام تجاوزت تاريخ الاستحقاق</p>
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200 bg-amber-50/50">
+        <Card
+          className="border-amber-200 bg-amber-50/50 cursor-pointer hover:shadow-md transition-shadow"
+          onClick={onNavigateToDueSoon}
+        >
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-amber-700">
-              <Clock className="h-4 w-4" /> تستحق قريباً
+            <CardTitle className="text-base flex items-center gap-2 text-amber-700 flex-row-reverse justify-end">
+              تستحق قريباً <Clock className="h-4 w-4" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-amber-700">{stats.dueSoonTasks}</p>
-            <p className="text-sm text-amber-600 mt-1">تستحق خلال 7 أيام</p>
+            <p className="text-3xl font-bold text-amber-700 text-right">{stats.dueSoonTasks}</p>
+            <p className="text-sm text-amber-600 mt-1 text-right">تستحق خلال 7 أيام</p>
           </CardContent>
         </Card>
       </div>
@@ -918,6 +934,10 @@ interface TaskListContentProps {
   setFilterPriority: (p: string) => void;
   filterDepartment: string;
   setFilterDepartment: (d: string) => void;
+  filterOverdue: boolean;
+  setFilterOverdue: (v: boolean) => void;
+  filterDueSoon: boolean;
+  setFilterDueSoon: (v: boolean) => void;
   deptFilterOptions: SearchableSelectOption[];
   viewMode: "table" | "card";
   setViewMode: (m: "table" | "card") => void;
@@ -940,6 +960,8 @@ function TaskListContent({
   filterStatuses, setFilterStatuses,
   filterPriority, setFilterPriority,
   filterDepartment, setFilterDepartment,
+  filterOverdue, setFilterOverdue,
+  filterDueSoon, setFilterDueSoon,
   deptFilterOptions, viewMode, setViewMode,
   selectedTaskIds, setSelectedTaskIds,
   setIsBulkDeleteDialogOpen,
@@ -1017,7 +1039,7 @@ function TaskListContent({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          {filterStatuses.length > 0 && (
+          {(filterStatuses.length > 0 || filterOverdue || filterDueSoon) && (
             <div className="flex flex-wrap gap-1">
               {filterStatuses.map(status => (
                 <Badge
@@ -1030,6 +1052,16 @@ function TaskListContent({
                   <span className="text-xs leading-none">×</span>
                 </Badge>
               ))}
+              {filterOverdue && (
+                <Badge variant="destructive" className="gap-1 cursor-pointer hover:opacity-80" onClick={() => setFilterOverdue(false)}>
+                  المهام المتأخرة <span className="text-xs leading-none">×</span>
+                </Badge>
+              )}
+              {filterDueSoon && (
+                <Badge className="gap-1 cursor-pointer hover:opacity-80 bg-amber-500 hover:bg-amber-600" onClick={() => setFilterDueSoon(false)}>
+                  تستحق قريباً <span className="text-xs leading-none">×</span>
+                </Badge>
+              )}
             </div>
           )}
           <Select value={filterPriority} onValueChange={setFilterPriority}>
@@ -1124,19 +1156,21 @@ function TaskListContent({
           <ScrollArea className="h-[calc(100vh-400px)]" dir="rtl">
             <Table className="w-full" dir="rtl">
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40px] pr-4">
-                    <Checkbox checked={allFilteredSelected} onCheckedChange={toggleSelectAll} aria-label="تحديد الكل" />
+                <TableRow className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <TableHead className="w-[40px] pr-4 text-center">
+                    <div className="flex justify-center items-center">
+                      <Checkbox checked={allFilteredSelected} onCheckedChange={toggleSelectAll} aria-label="تحديد الكل" />
+                    </div>
                   </TableHead>
-                  <TableHead className="w-[60px]">الرقم</TableHead>
-                  <TableHead className="min-w-[200px]">العنوان</TableHead>
-                  <TableHead>القسم</TableHead>
-                  <TableHead>المالك</TableHead>
-                  <TableHead>الأولوية</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="w-[100px]">التقدم</TableHead>
-                  <TableHead>تاريخ الاستحقاق</TableHead>
-                  <TableHead className="w-[200px]">الإجراءات</TableHead>
+                  <TableHead className="w-[60px] text-center">الرقم</TableHead>
+                  <TableHead className="min-w-[200px] text-center">المهمة</TableHead>
+                  <TableHead className="text-center">القسم</TableHead>
+                  <TableHead className="text-center">المسؤول</TableHead>
+                  <TableHead className="text-center">الأولوية</TableHead>
+                  <TableHead className="text-center">الحالة</TableHead>
+                  <TableHead className="w-[100px] text-center">التقدم</TableHead>
+                  <TableHead className="text-center">تاريخ الاكتمال</TableHead>
+                  <TableHead className="w-[200px] text-center">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1151,8 +1185,10 @@ function TaskListContent({
                       className={`cursor-pointer hover:bg-muted/50 ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""}`}
                       onClick={() => onOpenTaskModal(task)}
                     >
-                      <TableCell className="pr-4" onClick={(e) => e.stopPropagation()}>
-                        <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
+                      <TableCell className="pr-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-center items-center">
+                          <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
+                        </div>
                       </TableCell>
                       <TableCell className="font-mono text-xs">{task.taskId || "-"}</TableCell>
                       <TableCell>
@@ -1563,6 +1599,8 @@ export default function TaskTrackerApp() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [filterOverdue, setFilterOverdue] = useState(false);
+  const [filterDueSoon, setFilterDueSoon] = useState(false);
 
   const [settings, setSettings] = useState<SettingsState>({
     adminEmail: "",
@@ -1707,6 +1745,15 @@ export default function TaskTrackerApp() {
     if (filterStatuses.length > 0) result = result.filter(task => filterStatuses.includes(task.status));
     if (filterPriority !== "all") result = result.filter(task => task.priority === filterPriority);
     if (filterDepartment !== "all") result = result.filter(task => task.department === filterDepartment);
+    if (filterOverdue) {
+      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+      result = result.filter(task => task.status !== "completed" && task.dueDate && new Date(task.dueDate).setHours(0,0,0,0) < todayStart.getTime());
+    }
+    if (filterDueSoon) {
+      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+      const sevenDays = new Date(todayStart); sevenDays.setDate(sevenDays.getDate() + 7);
+      result = result.filter(task => task.status !== "completed" && task.dueDate && new Date(task.dueDate).setHours(0,0,0,0) >= todayStart.getTime() && new Date(task.dueDate).setHours(0,0,0,0) <= sevenDays.getTime());
+    }
 
     result.sort((a, b) => {
       let aVal: string | number = "";
@@ -1728,7 +1775,7 @@ export default function TaskTrackerApp() {
     });
 
     return result;
-  }, [tasks, searchQuery, filterStatuses, filterPriority, filterDepartment, sortBy, sortOrder]);
+  }, [tasks, searchQuery, filterStatuses, filterPriority, filterDepartment, filterOverdue, filterDueSoon, sortBy, sortOrder]);
 
   const handleCreateTask = async (taskData: Partial<Task>) => {
     try {
@@ -2036,7 +2083,29 @@ export default function TaskTrackerApp() {
       <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsContent value="dashboard" className="mt-0">
-            <DashboardContent stats={stats} />
+            <DashboardContent
+              stats={stats}
+              onNavigateToDepartment={(dept) => {
+                setFilterDepartment(dept);
+                setFilterOverdue(false);
+                setFilterDueSoon(false);
+                setActiveTab("tasks");
+              }}
+              onNavigateToOverdue={() => {
+                setFilterOverdue(true);
+                setFilterDueSoon(false);
+                setFilterDepartment("all");
+                setFilterStatuses(() => []);
+                setActiveTab("tasks");
+              }}
+              onNavigateToDueSoon={() => {
+                setFilterDueSoon(true);
+                setFilterOverdue(false);
+                setFilterDepartment("all");
+                setFilterStatuses(() => []);
+                setActiveTab("tasks");
+              }}
+            />
           </TabsContent>
           <TabsContent value="tasks" className="mt-0">
             <TaskListContent
@@ -2051,6 +2120,10 @@ export default function TaskTrackerApp() {
               setFilterPriority={setFilterPriority}
               filterDepartment={filterDepartment}
               setFilterDepartment={setFilterDepartment}
+              filterOverdue={filterOverdue}
+              setFilterOverdue={setFilterOverdue}
+              filterDueSoon={filterDueSoon}
+              setFilterDueSoon={setFilterDueSoon}
               deptFilterOptions={deptFilterOptions}
               viewMode={viewMode}
               setViewMode={setViewMode}
