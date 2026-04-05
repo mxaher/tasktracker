@@ -62,6 +62,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
     const { id } = await params;
     const data = await request.json();
     const currentTask = await d1First<BaseTaskRow>(
