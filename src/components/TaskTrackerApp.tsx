@@ -1,4 +1,4 @@
-ll"use client";
+"use client";
 
 import ContactsTab from "@/components/settings/ContactsTab";
 import { useState, useEffect, useMemo, useRef, memo } from "react";
