@@ -63,6 +63,12 @@ type SettingsRow = {
   updatedAt: string;
 };
 
+type TableInfoRow = {
+  name: string;
+};
+
+const tableColumnsCache = new Map<string, string[]>();
+
 function getDatabase(): D1DatabaseBinding {
   const context = getCloudflareContext();
   const database = (context.env as { DB?: D1DatabaseBinding }).DB;
@@ -95,6 +101,18 @@ export async function d1Run(sql: string, ...params: D1Value[]) {
     .prepare(sql)
     .bind(...params)
     .run();
+}
+
+export async function getTableColumns(tableName: string) {
+  const cachedColumns = tableColumnsCache.get(tableName);
+  if (cachedColumns) {
+    return cachedColumns;
+  }
+
+  const rows = await d1All<TableInfoRow>(`PRAGMA table_info("${tableName}")`);
+  const columns = rows.map((row) => row.name);
+  tableColumnsCache.set(tableName, columns);
+  return columns;
 }
 
 export function createId() {
@@ -182,38 +200,48 @@ export function mapSettingsRow(row: SettingsRow) {
   };
 }
 
-export const TASK_SELECT_SQL = `
-  SELECT
-    t.id,
-    t.taskId,
-    t.title,
-    t.description,
-    t.ownerId,
-    t.assigneeId,
-    t.department,
-    t.priority,
-    t.status,
-    t.strategicPillar,
-    t.completion,
-    t.riskIndicator,
-    t.startDate,
-    t.dueDate,
-    t.completedAt,
-    t.notes,
-    t.nextStep,
-    t.ceoNotes,
-    t.sourceMonth,
-    t.source,
-    t.dataSourceId,
-    t.createdAt,
-    t.updatedAt,
-    owner.id AS owner_user_id,
-    owner.name AS owner_name,
-    owner.email AS owner_email,
-    assignee.id AS assignee_user_id,
-    assignee.name AS assignee_name,
-    assignee.email AS assignee_email
-  FROM "Task" t
-  LEFT JOIN "User" owner ON owner.id = t.ownerId
-  LEFT JOIN "User" assignee ON assignee.id = t.assigneeId
-`;
+/**
+ * Builds a task select query that tolerates older D1 schemas by substituting
+ * missing optional columns with NULL aliases instead of failing the query.
+ */
+export async function buildTaskSelectSql() {
+  const taskColumns = new Set(await getTableColumns("Task"));
+  const selectTaskColumn = (columnName: string) =>
+    taskColumns.has(columnName) ? `t.${columnName}` : `NULL AS ${columnName}`;
+
+  return `
+    SELECT
+      t.id,
+      t.taskId,
+      t.title,
+      t.description,
+      t.ownerId,
+      t.assigneeId,
+      t.department,
+      t.priority,
+      t.status,
+      t.strategicPillar,
+      t.completion,
+      t.riskIndicator,
+      t.startDate,
+      t.dueDate,
+      t.completedAt,
+      t.notes,
+      ${selectTaskColumn("nextStep")},
+      ${selectTaskColumn("ceoNotes")},
+      ${selectTaskColumn("sourceMonth")},
+      ${selectTaskColumn("source")},
+      ${selectTaskColumn("dataSourceId")},
+      t.createdAt,
+      t.updatedAt,
+      owner.id AS owner_user_id,
+      owner.name AS owner_name,
+      owner.email AS owner_email,
+      assignee.id AS assignee_user_id,
+      assignee.name AS assignee_name,
+      assignee.email AS assignee_email
+    FROM "Task" t
+    LEFT JOIN "User" owner ON owner.id = t.ownerId
+    LEFT JOIN "User" assignee ON assignee.id = t.assigneeId
+  `;
+}

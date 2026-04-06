@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  TASK_SELECT_SQL,
+  buildTaskSelectSql,
   createId,
   d1First,
   d1Run,
@@ -37,7 +37,8 @@ type BaseTaskRow = {
 };
 
 async function getTaskRow(id: string) {
-  return d1First<TaskRow>(`${TASK_SELECT_SQL} WHERE t.id = ?`, id);
+  const taskSelectSql = await buildTaskSelectSql();
+  return d1First<TaskRow>(`${taskSelectSql} WHERE t.id = ?`, id);
 }
 
 export async function GET(
