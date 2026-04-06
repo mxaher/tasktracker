@@ -103,7 +103,7 @@ export async function PUT(
     for (const field of fieldsToCheck) {
       if (data[field] === undefined) continue;
 
-      let nextValue: string | number | null = data[field];
+      let nextValue: string | number | null = data[field] as string | number | null;
       let oldValue = currentTask[field];
 
       if (field === "startDate" || field === "dueDate") {
