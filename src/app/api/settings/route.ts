@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+export const runtime = "edge";
+
 type D1Value = string | number | null;
 type SettingsRow = {
   id: string;
@@ -16,6 +18,9 @@ type SettingsRow = {
   overdueReminderEnabled: number | boolean;
   customReminderDates: string | null;
   reminderDaysBefore: number;
+  whatsappOwnerRemindersEnabled: number | boolean;
+  whatsappReminderOffsets: string;
+  whatsappReminderTemplate: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -79,12 +84,22 @@ function mapSettingsRow(row: SettingsRow) {
     overdueReminderEnabled: fromDbBoolean(row.overdueReminderEnabled),
     customReminderDates: row.customReminderDates,
     reminderDaysBefore: row.reminderDaysBefore,
+    whatsappOwnerRemindersEnabled: fromDbBoolean(row.whatsappOwnerRemindersEnabled),
+    whatsappReminderOffsets: row.whatsappReminderOffsets,
+    whatsappReminderTemplate: row.whatsappReminderTemplate,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
 }
 
+async function ensureReminderColumns() {
+  try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappOwnerRemindersEnabled" BOOLEAN NOT NULL DEFAULT false'); } catch {}
+  try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappReminderOffsets" TEXT NOT NULL DEFAULT \'0,1\''); } catch {}
+  try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappReminderTemplate" TEXT NOT NULL DEFAULT \'Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.\''); } catch {}
+}
+
 async function ensureSettingsRow() {
+  await ensureReminderColumns();
   let settings = await d1First<SettingsRow>(
     'SELECT * FROM "AdminSettings" ORDER BY "createdAt" ASC LIMIT 1',
   );
@@ -102,9 +117,10 @@ async function ensureSettingsRow() {
         "id", "adminEmail", "dailyDigestEnabled", "dailyDigestTime", "weeklyReportEnabled",
         "weeklyReportDay", "weeklyReportTime", "inProgressReportEnabled",
         "inProgressReportFrequency", "taskReminderEnabled", "overdueReminderEnabled",
-        "customReminderDates", "reminderDaysBefore", "createdAt", "updatedAt"
+        "customReminderDates", "reminderDaysBefore", "whatsappOwnerRemindersEnabled",
+        "whatsappReminderOffsets", "whatsappReminderTemplate", "createdAt", "updatedAt"
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     id,
     process.env.ADMIN_EMAIL || "moh_zaher@msn.com",
@@ -119,6 +135,9 @@ async function ensureSettingsRow() {
     1,
     null,
     3,
+    0,
+    "0,1",
+    "Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.",
     timestamp,
     timestamp,
   );
@@ -167,6 +186,9 @@ export async function PUT(request: NextRequest) {
           "overdueReminderEnabled" = ?,
           "customReminderDates" = ?,
           "reminderDaysBefore" = ?,
+          "whatsappOwnerRemindersEnabled" = ?,
+          "whatsappReminderOffsets" = ?,
+          "whatsappReminderTemplate" = ?,
           "updatedAt" = ?
         WHERE "id" = ?
       `,
@@ -182,6 +204,9 @@ export async function PUT(request: NextRequest) {
       toDbBoolean(data.overdueReminderEnabled ?? true),
       data.customReminderDates || null,
       Number(data.reminderDaysBefore ?? 3),
+      toDbBoolean(data.whatsappOwnerRemindersEnabled ?? false),
+      data.whatsappReminderOffsets || "0,1",
+      data.whatsappReminderTemplate || current.whatsappReminderTemplate,
       updatedAt,
       current.id,
     );
