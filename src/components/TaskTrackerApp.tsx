@@ -2051,8 +2051,17 @@ export default function TaskTrackerApp() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchTasks(), fetchUsers(), fetchStats(), fetchSettings(), fetchScheduledReminders()]);
-      setLoading(false);
+      try {
+        await Promise.allSettled([
+          fetchTasks(),
+          fetchUsers(),
+          fetchStats(),
+          fetchSettings(),
+          fetchScheduledReminders(),
+        ]);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
     setMounted(true);
