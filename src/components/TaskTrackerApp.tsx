@@ -1463,7 +1463,7 @@ function TaskListContent({
                         ) : "—"}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-wrap items-center gap-1">
+                        <div className="flex items-center gap-1 whitespace-nowrap">
                           <DropdownMenu>
                             <Tooltip>
                               <TooltipTrigger asChild>
