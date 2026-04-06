@@ -1813,7 +1813,9 @@ function SettingsContent({
               value={settings.whatsappReminderTemplate}
               onChange={(e) => setSettings({ ...settings, whatsappReminderTemplate: e.target.value })}
             />
-            <p className="text-xs text-muted-foreground">Available placeholders: <code>{{ownerName}}</code>, <code>{{taskTitle}}</code>, <code>{{taskId}}</code>, <code>{{dueDate}}</code>, <code>{{priority}}</code>, <code>{{department}}</code>.</p>
+            <p className="text-xs text-muted-foreground">
+              Available placeholders: <code>{"{{ownerName}}"}</code>, <code>{"{{taskTitle}}"}</code>, <code>{"{{taskId}}"}</code>, <code>{"{{dueDate}}"}</code>, <code>{"{{priority}}"}</code>, <code>{"{{department}}"}</code>.
+            </p>
           </div>
 
           <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
