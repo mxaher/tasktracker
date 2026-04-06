@@ -65,7 +65,7 @@ export async function PUT(
   try {
     try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
     const { id } = await params;
-    const data = await request.json();
+    const data = (await request.json()) as Record<string, unknown> & { newUpdateContent?: string | null };
     const currentTask = await d1First<BaseTaskRow>(
       'SELECT * FROM "Task" WHERE "id" = ? LIMIT 1',
       id,
@@ -134,17 +134,36 @@ export async function PUT(
       paramsToBind.push(nowIso(), 1);
     }
 
-    if (updates.length === 0) {
+    const hasNewUpdateContent = typeof data.newUpdateContent === "string" && data.newUpdateContent.trim().length > 0;
+
+    if (updates.length === 0 && !hasNewUpdateContent) {
       const task = await getTaskRow(id);
       return NextResponse.json({ task: task ? mapTaskRow(task) : null });
     }
 
     updates.push('"updatedAt" = ?');
-    paramsToBind.push(nowIso(), id);
+    const updatedAt = nowIso();
+    paramsToBind.push(updatedAt, id);
 
     await d1Run(`UPDATE "Task" SET ${updates.join(", ")} WHERE "id" = ?`, ...paramsToBind);
 
-    const logTimestamp = nowIso();
+    if (hasNewUpdateContent) {
+      await d1Run(
+        `
+          INSERT INTO "TaskUpdate" (
+            "id", "taskId", "source", "content", "createdAt"
+          )
+          VALUES (?, ?, ?, ?, ?)
+        `,
+        createId(),
+        id,
+        "manual",
+        String(data.newUpdateContent).trim(),
+        updatedAt,
+      );
+    }
+
+    const logTimestamp = updatedAt;
     for (const log of auditLogs) {
       await d1Run(
         `

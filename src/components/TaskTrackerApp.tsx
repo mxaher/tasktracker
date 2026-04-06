@@ -63,6 +63,10 @@ interface Task {
   } | null;
 }
 
+type TaskMutationPayload = Partial<Task> & {
+  newUpdateContent?: string | null;
+};
+
 interface DashboardStats {
   totalTasks: number;
   completedTasks: number;
@@ -448,8 +452,8 @@ interface TaskModalProps {
   users: User[];
   departments: string[];
   strategicPillars: string[];
-  onCreateTask: (data: Partial<Task>) => void;
-  onUpdateTask: (data: Partial<Task>) => void;
+  onCreateTask: (data: TaskMutationPayload) => void;
+  onUpdateTask: (data: TaskMutationPayload) => void;
   onUserCreated: (user: User) => void;
 }
 
@@ -461,6 +465,7 @@ function TaskModal({
   const [localTask, setLocalTask] = useState<Partial<Task>>(editingTask);
   const [duplicateTitles, setDuplicateTitles] = useState<Task[]>([]);
   const [quickUpdate, setQuickUpdate] = useState("");
+  const [pendingUpdateContent, setPendingUpdateContent] = useState<string | null>(null);
 
   // Reset local state only when the modal opens — not on every parent re-render
   useEffect(() => {
@@ -468,6 +473,7 @@ function TaskModal({
       setLocalTask(editingTask);
       setDuplicateTitles([]);
       setQuickUpdate("");
+      setPendingUpdateContent(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -493,19 +499,26 @@ function TaskModal({
       toast.error("العنوان مطلوب");
       return;
     }
+    const payload: TaskMutationPayload = { ...localTask, newUpdateContent: pendingUpdateContent };
     if (selectedTask) {
-      onUpdateTask(localTask);
+      onUpdateTask(payload);
     } else {
-      onCreateTask(localTask);
+      onCreateTask(payload);
     }
   };
 
   const handleAddUpdate = () => {
     if (!quickUpdate.trim()) return;
-    const timestamp = format(new Date(), "yyyy-MM-dd HH:mm");
-    const entry = `[${timestamp}] ${quickUpdate.trim()}`;
-    const existing = localTask.notes?.trim();
-    setLocalTask({ ...localTask, notes: existing ? `${entry}\n${existing}` : entry });
+    const content = quickUpdate.trim();
+    const createdAt = new Date().toISOString();
+    setPendingUpdateContent(content);
+    setLocalTask({
+      ...localTask,
+      latestUpdate: {
+        content,
+        createdAt,
+      },
+    });
     setQuickUpdate("");
   };
 
@@ -778,6 +791,12 @@ function TaskModal({
               >
                 <Send className="h-3.5 w-3.5 me-2" /> إضافة التحديث
               </Button>
+              {pendingUpdateContent ? (
+                <div className="rounded-lg border border-dashed bg-background p-3 text-sm">
+                  <div className="mb-1 font-medium text-foreground">سيتم حفظ آخر تحديث عند تحديث المهمة</div>
+                  <div className="text-muted-foreground">{pendingUpdateContent}</div>
+                </div>
+              ) : null}
             </div>
 
             <Separator />
@@ -1418,7 +1437,6 @@ function TaskListContent({
                           <div className="space-y-1">
                             <div className="font-medium line-clamp-1">{task.title}</div>
                             {task.description ? <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div> : null}
-                            <div className="text-[11px] text-muted-foreground">اضغط على الصف لعرض آخر تحديث</div>
                           </div>
                         </div>
                       </TableCell>
@@ -2236,7 +2254,7 @@ export default function TaskTrackerApp() {
     }
   };
 
-  const handleUpdateTask = async (taskData: Partial<Task>) => {
+  const handleUpdateTask = async (taskData: TaskMutationPayload) => {
     if (!selectedTask) return;
     try {
       const response = await fetch(`/api/tasks/${selectedTask.id}`, {
@@ -2484,16 +2502,25 @@ export default function TaskTrackerApp() {
     }
   };
 
-  const handleSendSingleReminder = async (task: Task, channel: "whatsapp" | "email") => {
+  const handleSendSingleReminder = async (task: Task, channel: "whatsapp" | "email", force = false) => {
     const reminderKey = `${task.id}:${channel}`;
     setActiveReminderKey(reminderKey);
     try {
       const response = await fetch(`/api/tasks/${task.id}/reminder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel }),
+        body: JSON.stringify({ channel, force }),
       });
       const data = await response.json();
+      if (response.status === 409) {
+        const shouldResend = window.confirm(`${data.error || "تم إرسال تذكير لهذه المهمة اليوم بالفعل."}\n\nهل تريد الإرسال مرة أخرى؟`);
+        if (shouldResend) {
+          await handleSendSingleReminder(task, channel, true);
+        } else {
+          toast.message("تم الإبقاء على التذكير السابق دون إعادة الإرسال.");
+        }
+        return;
+      }
       if (!response.ok) throw new Error(data.error || "تعذر إرسال التذكير");
 
       toast.success(

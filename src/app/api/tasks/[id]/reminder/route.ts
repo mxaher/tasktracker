@@ -20,8 +20,29 @@ export async function POST(
     return NextResponse.json({ result });
   } catch (error) {
     console.error("Error sending task reminder:", error);
+    const message = error instanceof Error ? error.message : "تعذر إرسال التذكير.";
+
+    if (message.includes("already sent today")) {
+      return NextResponse.json(
+        { error: "تم إرسال تذكير لهذه المهمة اليوم بالفعل." },
+        { status: 409 },
+      );
+    }
+
+    if (message.includes("Task not found")) {
+      return NextResponse.json({ error: "المهمة غير موجودة." }, { status: 404 });
+    }
+
+    if (message.includes("No WhatsApp phone number found")) {
+      return NextResponse.json({ error: "لا يوجد رقم واتساب محفوظ لصاحب المهمة." }, { status: 400 });
+    }
+
+    if (message.includes("No email address found")) {
+      return NextResponse.json({ error: "لا يوجد بريد إلكتروني محفوظ لصاحب المهمة." }, { status: 400 });
+    }
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to send reminder." },
+      { error: message },
       { status: 500 },
     );
   }
