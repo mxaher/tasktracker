@@ -76,15 +76,15 @@ function normalizePhone(value: string) {
 
 function validateForm(form: ContactFormState) {
   if (!form.name.trim()) {
-    return "Name is required.";
+    return "الاسم مطلوب.";
   }
 
   if (form.phone.trim() && !PHONE_REGEX.test(normalizePhone(form.phone.trim()))) {
-    return "Phone must be in valid international format like +966xxxxxxxxx.";
+    return "يجب إدخال رقم الهاتف بصيغة دولية صحيحة مثل +966xxxxxxxxx.";
   }
 
   if (form.email.trim() && !EMAIL_REGEX.test(form.email.trim())) {
-    return "Email must be a valid email address.";
+    return "يرجى إدخال بريد إلكتروني صحيح.";
   }
 
   return null;
@@ -149,11 +149,11 @@ export default function ContactsTab() {
       ]);
 
       if (!contactsResponse.ok) {
-        throw new Error("Failed to fetch contacts");
+        throw new Error("تعذر تحميل جهات الاتصال");
       }
 
       if (!usersResponse.ok) {
-        throw new Error("Failed to fetch users");
+        throw new Error("تعذر تحميل المستخدمين");
       }
 
       const contactsData = (await contactsResponse.json()) as { contacts?: ContactRecord[] };
@@ -163,7 +163,7 @@ export default function ContactsTab() {
       setUsers(usersData.users || []);
     } catch (loadError) {
       console.error("Failed to load contacts tab data:", loadError);
-      setError(loadError instanceof Error ? loadError.message : "Failed to load contacts");
+      setError(loadError instanceof Error ? loadError.message : "تعذر تحميل جهات الاتصال");
     } finally {
       setLoading(false);
     }
@@ -227,15 +227,15 @@ export default function ContactsTab() {
       const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save contact");
+        throw new Error(data.error || "تعذر حفظ جهة الاتصال");
       }
 
       await loadData();
       closeEditor();
-      toast.success(editingContact ? "Contact updated successfully." : "Contact added successfully.");
+      toast.success(editingContact ? "تم تحديث جهة الاتصال بنجاح." : "تمت إضافة جهة الاتصال بنجاح.");
     } catch (saveError) {
       console.error("Failed to save contact:", saveError);
-      toast.error(saveError instanceof Error ? saveError.message : "Failed to save contact");
+      toast.error(saveError instanceof Error ? saveError.message : "تعذر حفظ جهة الاتصال");
     } finally {
       setSaving(false);
     }
@@ -256,51 +256,51 @@ export default function ContactsTab() {
       const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to delete contact");
+        throw new Error(data.error || "تعذر حذف جهة الاتصال");
       }
 
       await loadData();
       setIsDeleteDialogOpen(false);
       setContactToDelete(null);
-      toast.success("Contact deleted successfully.");
+      toast.success("تم حذف جهة الاتصال بنجاح.");
     } catch (deleteError) {
       console.error("Failed to delete contact:", deleteError);
-      toast.error(deleteError instanceof Error ? deleteError.message : "Failed to delete contact");
+      toast.error(deleteError instanceof Error ? deleteError.message : "تعذر حذف جهة الاتصال");
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search contacts by name, phone, or email"
-            className="pl-9"
+            placeholder="ابحث في جهات الاتصال بالاسم أو الهاتف أو البريد"
+            className="pr-9"
           />
         </div>
 
         <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Contact
+          <Plus className="ml-2 h-4 w-4" />
+          إضافة جهة اتصال
         </Button>
       </div>
 
       {isDialogOpen ? (
         <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle>{editingContact ? "Edit Contact" : "Add Contact"}</CardTitle>
+            <CardTitle>{editingContact ? "تعديل جهة الاتصال" : "إضافة جهة اتصال"}</CardTitle>
             <CardDescription>
-              Store a contact that can receive WhatsApp reminders and email notifications.
+              أضف جهة اتصال يمكنها استقبال رسائل واتساب التذكيرية والإشعارات البريدية.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="inline-contact-name">Name</Label>
+              <Label htmlFor="inline-contact-name">الاسم</Label>
               <Input
                 id="inline-contact-name"
                 value={form.name}
@@ -309,7 +309,7 @@ export default function ContactsTab() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="inline-contact-phone">Phone</Label>
+              <Label htmlFor="inline-contact-phone">رقم الهاتف</Label>
               <Input
                 id="inline-contact-phone"
                 value={form.phone}
@@ -319,7 +319,7 @@ export default function ContactsTab() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="inline-contact-email">Email</Label>
+              <Label htmlFor="inline-contact-email">البريد الإلكتروني</Label>
               <Input
                 id="inline-contact-email"
                 type="email"
@@ -329,16 +329,16 @@ export default function ContactsTab() {
             </div>
 
             <div className="space-y-2">
-              <Label>Linked User</Label>
+              <Label>المستخدم المرتبط</Label>
               <Select
                 value={form.userId}
                 onValueChange={(value) => setForm((current) => ({ ...current, userId: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a user" />
+                  <SelectValue placeholder="اختر مستخدمًا" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No linked user</SelectItem>
+                  <SelectItem value="none">بدون مستخدم مرتبط</SelectItem>
                   {users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {getLinkedUserLabel(user)}
@@ -350,10 +350,10 @@ export default function ContactsTab() {
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={closeEditor}>
-                Cancel
+                إلغاء
               </Button>
               <Button onClick={handleSubmit} disabled={saving}>
-                {saving ? "Saving..." : editingContact ? "Save Changes" : "Add Contact"}
+                {saving ? "جارٍ الحفظ..." : editingContact ? "حفظ التعديلات" : "إضافة جهة الاتصال"}
               </Button>
             </div>
           </CardContent>
@@ -363,11 +363,11 @@ export default function ContactsTab() {
       {error ? (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Unable to load contacts</AlertTitle>
+          <AlertTitle>تعذر تحميل جهات الاتصال</AlertTitle>
           <AlertDescription className="flex items-center justify-between gap-4">
             <span>{error}</span>
             <Button variant="outline" size="sm" onClick={() => void loadData()}>
-              Retry
+              إعادة المحاولة
             </Button>
           </AlertDescription>
         </Alert>
@@ -375,25 +375,25 @@ export default function ContactsTab() {
 
       {!loading && !error && contacts.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">
-          <h3 className="text-lg font-semibold">No contacts yet.</h3>
+          <h3 className="text-lg font-semibold">لا توجد جهات اتصال بعد.</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Add your first contact to enable WhatsApp and email notifications.
+            أضف أول جهة اتصال لتفعيل إشعارات واتساب والبريد الإلكتروني.
           </p>
           <Button className="mt-4" onClick={openCreateDialog}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Contact
+            <Plus className="ml-2 h-4 w-4" />
+            إضافة جهة اتصال
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
+        <div className="overflow-x-auto rounded-lg border">
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Linked User</TableHead>
-                <TableHead className="w-[120px]">Actions</TableHead>
+                <TableHead>الاسم</TableHead>
+                <TableHead>رقم الهاتف</TableHead>
+                <TableHead>البريد الإلكتروني</TableHead>
+                <TableHead>المستخدم المرتبط</TableHead>
+                <TableHead className="w-[120px]">الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -402,15 +402,15 @@ export default function ContactsTab() {
               ) : filteredContacts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
-                    No contacts match your search.
+                    لا توجد جهات اتصال مطابقة لبحثك.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredContacts.map((contact) => (
                   <TableRow key={contact.id}>
                     <TableCell className="font-medium">{contact.name}</TableCell>
-                    <TableCell>{contact.phone || "—"}</TableCell>
-                    <TableCell>{contact.email || "—"}</TableCell>
+                    <TableCell dir="ltr">{contact.phone || "—"}</TableCell>
+                    <TableCell dir="ltr">{contact.email || "—"}</TableCell>
                     <TableCell>
                       {contact.user ? (
                         <div className="flex flex-col">
@@ -449,17 +449,17 @@ export default function ContactsTab() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete contact?</AlertDialogTitle>
+            <AlertDialogTitle>حذف جهة الاتصال؟</AlertDialogTitle>
             <AlertDialogDescription>
               {contactToDelete
-                ? `This will permanently delete ${contactToDelete.name}.`
-                : "This action cannot be undone."}
+                ? `سيتم حذف ${contactToDelete.name} نهائيًا.`
+                : "لا يمكن التراجع عن هذا الإجراء."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>إلغاء</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete"}
+              {deleting ? "جارٍ الحذف..." : "حذف"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

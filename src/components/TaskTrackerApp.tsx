@@ -1,7 +1,7 @@
 "use client";
 
 import ContactsTab from "@/components/settings/ContactsTab";
-import { useState, useEffect, useMemo, useRef, memo } from "react";
+import { Fragment, useState, useEffect, useMemo, useRef, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +57,10 @@ interface Task {
   source: string | null;
   createdAt: string;
   updatedAt: string;
+  latestUpdate: {
+    content: string;
+    createdAt: string;
+  } | null;
 }
 
 interface DashboardStats {
@@ -101,6 +105,33 @@ const priorityConfig: Record<string, { label: string; color: string; bgColor: st
 // SearchableSelect — searchable dropdown for departments,
 // strategic pillars, owners and assignees
 // ─────────────────────────────────────────────────────────────
+const arabicDateFormatter = new Intl.DateTimeFormat("ar-SA", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const arabicDateTimeFormatter = new Intl.DateTimeFormat("ar-SA", {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+function formatArabicDate(value: string | null) {
+  if (!value) return "—";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "—" : arabicDateFormatter.format(parsed);
+}
+
+function formatArabicDateTime(value: string | null) {
+  if (!value) return "—";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "—" : arabicDateTimeFormatter.format(parsed);
+}
+
 interface SearchableSelectOption {
   value: string;
   label: string;
@@ -340,7 +371,7 @@ const TaskCard = memo(function TaskCard({
 
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Progress</span>
+            <span className="text-muted-foreground">نسبة الإنجاز</span>
             <span className="font-medium">{Math.round(task.completion * 100)}%</span>
           </div>
           <Progress value={task.completion * 100} className="h-2" />
@@ -1080,6 +1111,7 @@ function TaskListContent({
   const allFilteredSelected =
     filteredTasks.length > 0 &&
     filteredTasks.every(t => selectedTaskIds.has(t.id));
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   const toggleSelectAll = () => {
     if (allFilteredSelected) {
@@ -1098,10 +1130,14 @@ function TaskListContent({
     });
   };
 
+  const toggleExpandedRow = (taskId: string) => {
+    setExpandedTaskId((current) => (current === taskId ? null : taskId));
+  };
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-1 gap-2 flex-wrap">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1173,7 +1209,7 @@ function TaskListContent({
             </div>
           )}
           <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="الأولوية" />
             </SelectTrigger>
             <SelectContent>
@@ -1184,7 +1220,7 @@ function TaskListContent({
               <SelectItem value="low">منخفض</SelectItem>
             </SelectContent>
           </Select>
-          <div className="w-[180px]">
+          <div className="w-full sm:w-[180px]">
             <SearchableSelect
               value={filterDepartment}
               onChange={setFilterDepartment}
@@ -1192,7 +1228,7 @@ function TaskListContent({
               placeholder="كل الأقسام"
             />
           </div>
-          <div className="w-[180px]">
+          <div className="w-full sm:w-[180px]">
             <SearchableSelect
               value={filterSource}
               onChange={setFilterSource}
@@ -1202,20 +1238,20 @@ function TaskListContent({
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 xl:justify-end">
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <Button variant="outline" size="sm" onClick={onSendBulkWhatsApp} disabled={selectedTaskIds.size === 0 || bulkWhatsAppSending}>
+                <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={onSendBulkWhatsApp} disabled={selectedTaskIds.size === 0 || bulkWhatsAppSending}>
                   {bulkWhatsAppSending ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : <MessageSquare className="h-4 w-4 ml-1" />}
-                  Send Group Message
+                  إرسال رسالة جماعية
                 </Button>
               </span>
             </TooltipTrigger>
             <TooltipContent>
               {selectedTaskIds.size === 0
-                ? "Select one or more tasks to send grouped WhatsApp reminders."
-                : "Tasks with the same owner will be grouped into one WhatsApp message."}
+                ? "حدّد مهمة واحدة أو أكثر لإرسال رسالة واتساب مجمعة."
+                : "سيتم جمع المهام ذات المسؤول نفسه داخل رسالة واتساب واحدة."}
             </TooltipContent>
           </Tooltip>
           <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
@@ -1224,7 +1260,7 @@ function TaskListContent({
           <Button variant={viewMode === "card" ? "default" : "outline"} size="sm" onClick={() => setViewMode("card")}>
             <Grid3X3 className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={onExport}>
+          <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={onExport}>
             <Download className="h-4 w-4 ml-1" />
             تصدير
           </Button>
@@ -1233,10 +1269,10 @@ function TaskListContent({
 
       {/* Bulk action bar */}
       {selectedTaskIds.size > 0 && viewMode === "table" && (
-        <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/10 px-4 py-2">
           <span className="text-sm font-medium text-primary">{selectedTaskIds.size} مهمة محددة</span>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onSendBulkWhatsApp} disabled={bulkWhatsAppSending}>
-            {bulkWhatsAppSending ? <Loader2 className="h-3 w-3 ml-1 animate-spin" /> : <MessageSquare className="h-3 w-3 ml-1" />} Send Group Message
+            {bulkWhatsAppSending ? <Loader2 className="h-3 w-3 ml-1 animate-spin" /> : <MessageSquare className="h-3 w-3 ml-1" />} إرسال رسالة جماعية
           </Button>
           <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => setIsBulkDeleteDialogOpen(true)}>
             <Trash2 className="h-3 w-3 ml-1" /> حذف المحدد
@@ -1288,8 +1324,9 @@ function TaskListContent({
         </div>
       ) : (
         <Card className="w-full overflow-hidden">
-          <ScrollArea className="h-[calc(100vh-400px)]" dir="rtl">
-            <Table className="w-full" dir="rtl">
+          <ScrollArea className="h-[calc(100vh-400px)] w-full" dir="rtl">
+            <div className="w-full overflow-x-auto">
+            <Table className="w-full min-w-[1120px]" dir="rtl">
               <TableHeader>
                 <TableRow className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
                   <TableHead className="w-[40px] pr-4 text-center">
@@ -1358,12 +1395,14 @@ function TaskListContent({
                   const StatusIcon = statusConfig[task.status]?.icon || Clock;
                   const daysRemaining = getDaysRemaining(task.dueDate);
                   const isSelected = selectedTaskIds.has(task.id);
+                  const isExpanded = expandedTaskId === task.id;
 
                   return (
+                    <Fragment key={task.id}>
                     <TableRow
-                      key={task.id}
-                      className={`cursor-pointer hover:bg-muted/50 ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""}`}
-                      onClick={() => onOpenTaskModal(task)}
+                      className={`cursor-pointer transition-colors hover:bg-muted/50 ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""} ${isExpanded ? "border-b-0 bg-muted/30" : ""}`}
+                      onClick={() => toggleExpandedRow(task.id)}
+                      aria-expanded={isExpanded}
                     >
                       <TableCell className="pr-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-center items-center">
@@ -1372,16 +1411,24 @@ function TaskListContent({
                       </TableCell>
                       <TableCell className="text-center text-sm font-medium text-muted-foreground">{index + 1}</TableCell>
                       <TableCell>
-                        <div className="font-medium line-clamp-1">{task.title}</div>
-                        {task.description && <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div>}
+                        <div className="flex items-start gap-2">
+                          <div className="mt-0.5 text-muted-foreground">
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium line-clamp-1">{task.title}</div>
+                            {task.description ? <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div> : null}
+                            <div className="text-[11px] text-muted-foreground">اضغط على الصف لعرض آخر تحديث</div>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         {task.source ? (
                           <Badge variant="outline" className="text-xs whitespace-nowrap">{task.source}</Badge>
-                        ) : "-"}
+                        ) : "—"}
                       </TableCell>
-                      <TableCell>{task.department || "-"}</TableCell>
-                      <TableCell>{task.owner?.name || "-"}</TableCell>
+                      <TableCell>{task.department || "—"}</TableCell>
+                      <TableCell>{task.owner?.name || "—"}</TableCell>
                       <TableCell>
                         <Badge className={`${priorityConfig[task.priority]?.bgColor} ${priorityConfig[task.priority]?.color}`}>
                           {priorityConfig[task.priority]?.label}
@@ -1389,7 +1436,7 @@ function TaskListContent({
                       </TableCell>
                       <TableCell>
                         <Badge className={`${statusConfig[task.status]?.bgColor} ${statusConfig[task.status]?.color}`}>
-                          <StatusIcon className="h-3 w-3 mr-1" />
+                          <StatusIcon className="mr-1 h-3 w-3" />
                           {statusConfig[task.status]?.label}
                         </Badge>
                       </TableCell>
@@ -1402,17 +1449,21 @@ function TaskListContent({
                       <TableCell>
                         {task.dueDate ? (
                           <div className={getRiskColor(task)}>
-                            <div className="text-sm">{format(new Date(task.dueDate), "MMM d, yyyy")}</div>
+                            <div className="text-sm">{formatArabicDate(task.dueDate)}</div>
                             {daysRemaining !== null && task.status !== "completed" && (
                               <div className="text-xs">
-                                {daysRemaining < 0 ? `${Math.abs(daysRemaining)}d overdue` : daysRemaining === 0 ? "Today" : `${daysRemaining}d left`}
+                                {daysRemaining < 0
+                                  ? `متأخرة ${Math.abs(daysRemaining)} يوم`
+                                  : daysRemaining === 0
+                                    ? "تستحق اليوم"
+                                    : `متبقي ${daysRemaining} يوم`}
                               </div>
                             )}
                           </div>
-                        ) : "-"}
+                        ) : "—"}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           <DropdownMenu>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -1421,22 +1472,22 @@ function TaskListContent({
                                     {activeReminderKey?.startsWith(`${task.id}:`)
                                       ? <Loader2 className="h-3 w-3 ml-1 animate-spin" />
                                       : <Bell className="h-3 w-3 ml-1" />}
-                                    Send Reminder
+                                    إرسال تذكير
                                   </Button>
                                 </DropdownMenuTrigger>
                               </TooltipTrigger>
-                              <TooltipContent>Send a WhatsApp or email reminder to the task owner.</TooltipContent>
+                              <TooltipContent>أرسل تذكيرًا إلى مسؤول المهمة عبر واتساب أو البريد الإلكتروني.</TooltipContent>
                             </Tooltip>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Reminder Channel</DropdownMenuLabel>
+                              <DropdownMenuLabel>قناة التذكير</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => onSendSingleReminder(task, "whatsapp")}>
                                 <MessageSquare className="h-4 w-4 ml-2" />
-                                Send by WhatsApp
+                                إرسال عبر واتساب
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => onSendSingleReminder(task, "email")}>
                                 <Mail className="h-4 w-4 ml-2" />
-                                Send by Email
+                                إرسال عبر البريد
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1458,10 +1509,38 @@ function TaskListContent({
                         </div>
                       </TableCell>
                     </TableRow>
+                    {isExpanded ? (
+                      <TableRow className="bg-muted/20 hover:bg-muted/20">
+                        <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
+                          <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2 text-sm font-semibold">
+                                <MessageSquare className="h-4 w-4 text-primary" />
+                                آخر تحديث
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {task.latestUpdate ? formatArabicDateTime(task.latestUpdate.createdAt) : "لا توجد تحديثات"}
+                              </span>
+                            </div>
+                            {task.latestUpdate ? (
+                              <div className="rounded-xl bg-muted/40 p-4 text-sm leading-7 text-foreground">
+                                {task.latestUpdate.content}
+                              </div>
+                            ) : (
+                              <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                                لا توجد تحديثات
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                    </Fragment>
                   );
                 })}
               </TableBody>
             </Table>
+            </div>
           </ScrollArea>
         </Card>
       )}
@@ -1782,31 +1861,31 @@ function SettingsContent({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2"><MessageSquare className="h-4 w-4" />Task Owner WhatsApp Reminders</CardTitle>
-          <CardDescription>Configure automatic WhatsApp reminders for task owners and trigger them immediately when needed.</CardDescription>
+          <CardTitle className="text-base flex items-center gap-2"><MessageSquare className="h-4 w-4" />تذكيرات واتساب لمسؤولي المهام</CardTitle>
+          <CardDescription>اضبط التذكيرات التلقائية عبر واتساب لمسؤولي المهام وشغّلها فورًا عند الحاجة.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Enable automatic WhatsApp reminders</Label>
-              <p className="text-xs text-muted-foreground">When enabled, task owners receive WhatsApp reminders based on the timing rules below.</p>
+              <Label>تفعيل تذكيرات واتساب التلقائية</Label>
+              <p className="text-xs text-muted-foreground">عند التفعيل، سيتلقى مسؤولو المهام تذكيرات واتساب بناءً على قواعد التوقيت أدناه.</p>
             </div>
             <Switch checked={settings.whatsappOwnerRemindersEnabled} onCheckedChange={(checked) => setSettings({ ...settings, whatsappOwnerRemindersEnabled: checked })} />
           </div>
 
           <div className="grid gap-2 pt-4 border-t">
-            <Label htmlFor="whatsappReminderOffsets">Reminder timing</Label>
+            <Label htmlFor="whatsappReminderOffsets">توقيت التذكير</Label>
             <Input
               id="whatsappReminderOffsets"
               value={settings.whatsappReminderOffsets}
               onChange={(e) => setSettings({ ...settings, whatsappReminderOffsets: e.target.value })}
               placeholder="0,1,2"
             />
-            <p className="text-xs text-muted-foreground">Comma-separated day offsets like <code>0,1,2</code> for due date, 1 day before, and 2 days before.</p>
+            <p className="text-xs text-muted-foreground">أدخل الأيام مفصولة بفواصل مثل <code>0,1,2</code> ليوم الاستحقاق، وقبل يوم، وقبل يومين.</p>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="whatsappReminderTemplate">Message template</Label>
+            <Label htmlFor="whatsappReminderTemplate">قالب الرسالة</Label>
             <Textarea
               id="whatsappReminderTemplate"
               rows={4}
@@ -1814,32 +1893,32 @@ function SettingsContent({
               onChange={(e) => setSettings({ ...settings, whatsappReminderTemplate: e.target.value })}
             />
             <p className="text-xs text-muted-foreground">
-              Available placeholders: <code>{"{{ownerName}}"}</code>, <code>{"{{taskTitle}}"}</code>, <code>{"{{taskId}}"}</code>, <code>{"{{dueDate}}"}</code>, <code>{"{{priority}}"}</code>, <code>{"{{department}}"}</code>.
+              المتغيرات المتاحة: <code>{"{{ownerName}}"}</code>، <code>{"{{taskTitle}}"}</code>، <code>{"{{taskId}}"}</code>، <code>{"{{dueDate}}"}</code>، <code>{"{{priority}}"}</code>، <code>{"{{department}}"}</code>.
             </p>
           </div>
 
           <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
             <div className="space-y-1">
-              <Label>Send Now</Label>
-              <p className="text-xs text-muted-foreground">Immediately send WhatsApp reminders for all eligible owner tasks.</p>
+              <Label>إرسال الآن</Label>
+              <p className="text-xs text-muted-foreground">أرسل تذكيرات واتساب فورًا لجميع المهام المؤهلة الخاصة بالمسؤولين.</p>
             </div>
             <Button variant="outline" onClick={onSendOwnerReminderNow} disabled={sendingOwnerRemindersNow}>
               {sendingOwnerRemindersNow ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Send className="h-4 w-4 ml-2" />}
-              Send Now
+              إرسال الآن
             </Button>
           </div>
 
           {ownerReminderSummary ? (
             <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
               <div className="grid gap-2 md:grid-cols-4">
-                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Owners Contacted</p><p className="text-lg font-semibold">{ownerReminderSummary.sentOwners.length}</p></div>
-                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Owners Failed</p><p className="text-lg font-semibold">{ownerReminderSummary.failedOwners.length}</p></div>
-                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Tasks Included</p><p className="text-lg font-semibold">{ownerReminderSummary.includedTasks.length}</p></div>
-                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Tasks Skipped</p><p className="text-lg font-semibold">{ownerReminderSummary.skippedTasks.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">المسؤولون الذين تم التواصل معهم</p><p className="text-lg font-semibold">{ownerReminderSummary.sentOwners.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">المسؤولون الذين فشل الإرسال لهم</p><p className="text-lg font-semibold">{ownerReminderSummary.failedOwners.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">المهام المشمولة</p><p className="text-lg font-semibold">{ownerReminderSummary.includedTasks.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">المهام المتخطاة</p><p className="text-lg font-semibold">{ownerReminderSummary.skippedTasks.length}</p></div>
               </div>
               {ownerReminderSummary.skippedTasks.length > 0 ? (
                 <div className="space-y-2">
-                  <Label>Skipped Tasks</Label>
+                  <Label>المهام المتخطاة</Label>
                   <div className="space-y-1 text-sm text-muted-foreground">
                     {ownerReminderSummary.skippedTasks.slice(0, 8).map((task) => (
                       <p key={`${task.taskId}-${task.reason}`}>{task.title} - {task.ownerName} - {task.reason}</p>
@@ -1849,7 +1928,7 @@ function SettingsContent({
               ) : null}
               {ownerReminderSummary.failedOwners.length > 0 ? (
                 <div className="space-y-2">
-                  <Label>Failed Owners</Label>
+                  <Label>المسؤولون الذين فشل الإرسال لهم</Label>
                   <div className="space-y-1 text-sm text-destructive">
                     {ownerReminderSummary.failedOwners.map((owner) => (
                       <p key={`${owner.ownerId}-${owner.reason}`}>{owner.ownerName} - {owner.reason}</p>
@@ -1949,7 +2028,7 @@ export default function TaskTrackerApp() {
     reminderDaysBefore: 3,
     whatsappOwnerRemindersEnabled: false,
     whatsappReminderOffsets: "0,1",
-    whatsappReminderTemplate: "Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.",
+    whatsappReminderTemplate: "مرحبًا {{ownerName}}، هذا تذكير بخصوص المهمة {{taskTitle}} (رقم المهمة {{taskId}}). تاريخ الاستحقاق: {{dueDate}}. الأولوية: {{priority}}.",
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
@@ -1977,12 +2056,12 @@ export default function TaskTrackerApp() {
   const fetchTasks = async () => {
     try {
       const response = await fetch("/api/tasks");
-      if (!response.ok) throw new Error("Failed to fetch tasks");
+      if (!response.ok) throw new Error("تعذر تحميل المهام");
       const data = await response.json();
       setTasks(data.tasks || []);
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      toast.error("Failed to load tasks");
+      toast.error("تعذر تحميل المهام");
     }
   };
 
@@ -2029,7 +2108,7 @@ export default function TaskTrackerApp() {
           reminderDaysBefore: data.settings.reminderDaysBefore ?? 3,
           whatsappOwnerRemindersEnabled: data.settings.whatsappOwnerRemindersEnabled ?? false,
           whatsappReminderOffsets: data.settings.whatsappReminderOffsets || "0,1",
-          whatsappReminderTemplate: data.settings.whatsappReminderTemplate || "Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.",
+          whatsappReminderTemplate: data.settings.whatsappReminderTemplate || "مرحبًا {{ownerName}}، هذا تذكير بخصوص المهمة {{taskTitle}} (رقم المهمة {{taskId}}). تاريخ الاستحقاق: {{dueDate}}. الأولوية: {{priority}}.",
         });
       }
     } catch (error) {
@@ -2145,15 +2224,15 @@ export default function TaskTrackerApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
       });
-      if (!response.ok) throw new Error("Failed to create task");
-      toast.success("Task created successfully");
+      if (!response.ok) throw new Error("تعذر إنشاء المهمة");
+      toast.success("تم إنشاء المهمة بنجاح");
       await fetchTasks();
       await fetchStats();
       setIsTaskModalOpen(false);
       setEditingTask({});
     } catch (error) {
       console.error("Error creating task:", error);
-      toast.error("Failed to create task");
+      toast.error("تعذر إنشاء المهمة");
     }
   };
 
@@ -2165,7 +2244,7 @@ export default function TaskTrackerApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
       });
-      if (!response.ok) throw new Error("Failed to update task");
+      if (!response.ok) throw new Error("تعذر تحديث المهمة");
       toast.success("Task updated successfully");
       await fetchTasks();
       await fetchStats();
@@ -2174,7 +2253,7 @@ export default function TaskTrackerApp() {
       setEditingTask({});
     } catch (error) {
       console.error("Error updating task:", error);
-      toast.error("Failed to update task");
+      toast.error("تعذر تحديث المهمة");
     }
   };
 
@@ -2182,7 +2261,7 @@ export default function TaskTrackerApp() {
     if (!taskToDelete) return;
     try {
       const response = await fetch(`/api/tasks/${taskToDelete.id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to delete task");
+      if (!response.ok) throw new Error("تعذر حذف المهمة");
       toast.success("Task deleted successfully");
       await fetchTasks();
       await fetchStats();
@@ -2190,7 +2269,7 @@ export default function TaskTrackerApp() {
       setTaskToDelete(null);
     } catch (error) {
       console.error("Error deleting task:", error);
-      toast.error("Failed to delete task");
+      toast.error("تعذر حذف المهمة");
     }
   };
 
@@ -2217,7 +2296,7 @@ export default function TaskTrackerApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Failed to update task");
+      if (!response.ok) throw new Error("تعذر تحديث المهمة");
       toast.success("تم التحديث بنجاح");
       await fetchTasks();
       await fetchStats();
@@ -2240,11 +2319,11 @@ export default function TaskTrackerApp() {
       setUploadProgress(50);
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to upload file");
+        throw new Error(error.message || "تعذر رفع الملف");
       }
       const result = await response.json();
       setUploadProgress(100);
-      toast.success(`Successfully imported ${result.imported} tasks`);
+      toast.success(`تم استيراد ${result.imported} مهمة بنجاح`);
       await fetchTasks();
       await fetchStats();
       setIsUploadModalOpen(false);
@@ -2252,7 +2331,7 @@ export default function TaskTrackerApp() {
       setUploadProgress(0);
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to upload file");
+      toast.error(error instanceof Error ? error.message : "تعذر رفع الملف");
       setUploadProgress(0);
     }
   };
@@ -2260,7 +2339,7 @@ export default function TaskTrackerApp() {
   const handleExport = async () => {
     try {
       const response = await fetch("/api/tasks/export");
-      if (!response.ok) throw new Error("Failed to export tasks");
+      if (!response.ok) throw new Error("تعذر تصدير المهام");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -2270,10 +2349,10 @@ export default function TaskTrackerApp() {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
-      toast.success("Tasks exported successfully");
+      toast.success("تم تصدير المهام بنجاح");
     } catch (error) {
       console.error("Error exporting tasks:", error);
-      toast.error("Failed to export tasks");
+      toast.error("تعذر تصدير المهام");
     }
   };
 
@@ -2320,18 +2399,18 @@ export default function TaskTrackerApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-      if (!response.ok) throw new Error("Failed to save settings");
-      toast.success("Settings saved successfully");
+      if (!response.ok) throw new Error("تعذر حفظ الإعدادات");
+      toast.success("تم حفظ الإعدادات بنجاح");
     } catch (error) {
       console.error("Error saving settings:", error);
-      toast.error("Failed to save settings");
+      toast.error("تعذر حفظ الإعدادات");
     } finally {
       setSavingSettings(false);
     }
   };
 
   const handleSendTestEmail = async () => {
-    if (!settings.adminEmail) { toast.error("Please enter an admin email first"); return; }
+    if (!settings.adminEmail) { toast.error("يرجى إدخال البريد الإلكتروني للمشرف أولًا"); return; }
     setSendingTest(true);
     try {
       const response = await fetch("/api/notifications", {
@@ -2339,11 +2418,11 @@ export default function TaskTrackerApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "in-progress-report", reportType: "daily" }),
       });
-      if (!response.ok) throw new Error("Failed to send test email");
-      toast.success("Test email sent successfully");
+      if (!response.ok) throw new Error("تعذر إرسال رسالة الاختبار");
+      toast.success("تم إرسال رسالة الاختبار بنجاح");
     } catch (error) {
       console.error("Error sending test email:", error);
-      toast.error("Failed to send test email");
+      toast.error("تعذر إرسال رسالة الاختبار");
     } finally {
       setSendingTest(false);
     }
@@ -2357,20 +2436,20 @@ export default function TaskTrackerApp() {
         body: JSON.stringify({ type: "overdue-all" }),
       });
       const data = await response.json();
-      toast.success(`Sent ${data.sent} reminders, ${data.failed} failed`);
+      toast.success(`تم إرسال ${data.sent} تذكير، وفشل ${data.failed}`);
     } catch (error) {
       console.error("Error sending reminders:", error);
-      toast.error("Failed to send reminders");
+      toast.error("تعذر إرسال التذكيرات");
     }
   };
 
   const handleSendBulkWhatsApp = async () => {
     if (selectedTaskIds.size === 0) {
-      toast.error("Select one or more tasks first.");
+      toast.error("حدّد مهمة واحدة أو أكثر أولًا.");
       return;
     }
 
-    if (!window.confirm("Send grouped WhatsApp reminders to the owners of the selected tasks?")) {
+    if (!window.confirm("هل تريد إرسال رسالة واتساب مجمعة إلى مسؤولي المهام المحددة؟")) {
       return;
     }
 
@@ -2382,24 +2461,24 @@ export default function TaskTrackerApp() {
         body: JSON.stringify({ taskIds: Array.from(selectedTaskIds) }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to send grouped WhatsApp reminders");
+      if (!response.ok) throw new Error(data.error || "تعذر إرسال رسائل واتساب المجمعة");
 
       const result = data.result as ReminderRunSummary;
       const skippedOwners = new Set(result.skippedTasks.map((task) => task.ownerName));
       const failedOwners = result.failedOwners.map((owner) => owner.ownerName).join(", ");
 
       toast.success(
-        `Sent ${result.sentOwners.length} owner message(s). Skipped ${result.skippedTasks.length} task(s).${failedOwners ? ` Failed owners: ${failedOwners}` : ""}`,
+        `تم إرسال ${result.sentOwners.length} رسالة للمسؤولين. تم تخطي ${result.skippedTasks.length} مهمة.${failedOwners ? ` المسؤولون الذين فشل الإرسال لهم: ${failedOwners}` : ""}`,
       );
 
       if (skippedOwners.size > 0) {
-        toast.error(`Missing or skipped contacts: ${Array.from(skippedOwners).join(", ")}`);
+        toast.error(`تعذر الوصول إلى جهات الاتصال التالية أو تم تخطيها: ${Array.from(skippedOwners).join("، ")}`);
       }
 
       setOwnerReminderSummary(result);
     } catch (error) {
       console.error("Error sending grouped reminders:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to send grouped WhatsApp reminders");
+      toast.error(error instanceof Error ? error.message : "تعذر إرسال رسائل واتساب المجمعة");
     } finally {
       setSendingBulkWhatsApp(false);
     }
@@ -2415,23 +2494,23 @@ export default function TaskTrackerApp() {
         body: JSON.stringify({ channel }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to send reminder");
+      if (!response.ok) throw new Error(data.error || "تعذر إرسال التذكير");
 
       toast.success(
         channel === "whatsapp"
-          ? "WhatsApp reminder sent successfully."
-          : "Email reminder sent successfully.",
+          ? "تم إرسال تذكير واتساب بنجاح."
+          : "تم إرسال تذكير البريد الإلكتروني بنجاح.",
       );
     } catch (error) {
       console.error("Error sending single reminder:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to send reminder");
+      toast.error(error instanceof Error ? error.message : "تعذر إرسال التذكير");
     } finally {
       setActiveReminderKey(null);
     }
   };
 
   const handleSendOwnerReminderNow = async () => {
-    if (!window.confirm("Run WhatsApp reminders now for all eligible task owners?")) {
+    if (!window.confirm("هل تريد تشغيل تذكيرات واتساب الآن لجميع مسؤولي المهام المؤهلين؟")) {
       return;
     }
 
@@ -2443,16 +2522,16 @@ export default function TaskTrackerApp() {
         body: JSON.stringify({ force: false }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to run WhatsApp reminders");
+      if (!response.ok) throw new Error(data.error || "تعذر تشغيل تذكيرات واتساب");
 
       const result = data.result as ReminderRunSummary;
       setOwnerReminderSummary(result);
       toast.success(
-        `Send Now completed: ${result.sentOwners.length} owner(s) contacted, ${result.skippedTasks.length} task(s) skipped, ${result.failedOwners.length} owner(s) failed.`,
+        `اكتمل الإرسال الفوري: تم التواصل مع ${result.sentOwners.length} مسؤول، وتخطي ${result.skippedTasks.length} مهمة، وفشل ${result.failedOwners.length} مسؤول.`,
       );
     } catch (error) {
       console.error("Error sending owner reminders now:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to run owner reminders");
+      toast.error(error instanceof Error ? error.message : "تعذر تشغيل تذكيرات المسؤولين");
     } finally {
       setSendingOwnerRemindersNow(false);
     }
@@ -2652,13 +2731,13 @@ export default function TaskTrackerApp() {
         </Tabs>
       </main>
 
-      <footer className="border-t py-4 mt-auto">
-        <div className="w-full px-4 md:px-6 lg:px-8 flex items-center justify-between text-sm text-muted-foreground">
-          <span>TaskTracker © {new Date().getFullYear()}</span>
-          <div className="flex items-center gap-4">
-            <span>{tasks.length} tasks</span>
+      <footer className="mt-auto border-t py-4">
+        <div className="flex w-full flex-col gap-2 px-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-6 lg:px-8">
+          <span>متتبع المهام © {new Date().getFullYear()}</span>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+            <span>{tasks.length} مهمة</span>
             <span>•</span>
-            <span>Last updated: {mounted ? format(new Date(), "MMM d, yyyy h:mm a") : "--"}</span>
+            <span>آخر تحديث: {mounted ? formatArabicDateTime(new Date().toISOString()) : "--"}</span>
           </div>
         </div>
       </footer>

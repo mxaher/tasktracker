@@ -10,17 +10,17 @@ const tajawal = Tajawal({
 });
 
 export const metadata: Metadata = {
-  title: "TaskTracker - Task Management System",
-  description: "A comprehensive task tracking web application for managing tasks, tracking progress, and team collaboration.",
-  keywords: ["TaskTracker", "Task Management", "Project Management", "Next.js", "TypeScript", "React"],
-  authors: [{ name: "TaskTracker Team" }],
+  title: "متتبع المهام - نظام إدارة المهام",
+  description: "تطبيق عربي متكامل لإدارة المهام ومتابعة التقدم والتعاون بين أعضاء الفريق.",
+  keywords: ["متتبع المهام", "إدارة المهام", "إدارة المشاريع", "نكست جي إس", "تايب سكريبت", "ريأكت"],
+  authors: [{ name: "فريق متتبع المهام" }],
   icons: {
     icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
     shortcut: "/logo.svg",
   },
   openGraph: {
-    title: "TaskTracker - Task Management System",
-    description: "Manage tasks, track progress, and collaborate with your team",
+    title: "متتبع المهام - نظام إدارة المهام",
+    description: "أدر المهام وتابع التقدم وتعاون مع فريقك من واجهة عربية كاملة",
     type: "website",
   },
 };

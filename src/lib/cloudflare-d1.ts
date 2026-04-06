@@ -43,6 +43,8 @@ type TaskRow = {
   assignee_user_id: string | null;
   assignee_name: string | null;
   assignee_email: string | null;
+  latest_update_content: string | null;
+  latest_update_created_at: string | null;
 };
 
 type SettingsRow = {
@@ -161,6 +163,13 @@ export function mapTaskRow(row: TaskRow) {
     source: row.source,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    latestUpdate:
+      row.latest_update_content && row.latest_update_created_at
+        ? {
+            content: row.latest_update_content,
+            createdAt: row.latest_update_created_at,
+          }
+        : null,
     owner:
       row.owner_user_id && row.owner_email
         ? {
@@ -206,8 +215,29 @@ export function mapSettingsRow(row: SettingsRow) {
  */
 export async function buildTaskSelectSql() {
   const taskColumns = new Set(await getTableColumns("Task"));
+  const taskUpdateColumns = new Set(await getTableColumns("TaskUpdate").catch(() => [] as string[]));
   const selectTaskColumn = (columnName: string) =>
     taskColumns.has(columnName) ? `t.${columnName}` : `NULL AS ${columnName}`;
+  const latestUpdateContentSql =
+    taskUpdateColumns.size > 0
+      ? `(
+          SELECT tu.content
+          FROM "TaskUpdate" tu
+          WHERE tu.taskId = t.id
+          ORDER BY tu.createdAt DESC
+          LIMIT 1
+        ) AS latest_update_content`
+      : `NULL AS latest_update_content`;
+  const latestUpdateCreatedAtSql =
+    taskUpdateColumns.size > 0
+      ? `(
+          SELECT tu.createdAt
+          FROM "TaskUpdate" tu
+          WHERE tu.taskId = t.id
+          ORDER BY tu.createdAt DESC
+          LIMIT 1
+        ) AS latest_update_created_at`
+      : `NULL AS latest_update_created_at`;
 
   return `
     SELECT
@@ -239,7 +269,9 @@ export async function buildTaskSelectSql() {
       owner.email AS owner_email,
       assignee.id AS assignee_user_id,
       assignee.name AS assignee_name,
-      assignee.email AS assignee_email
+      assignee.email AS assignee_email,
+      ${latestUpdateContentSql},
+      ${latestUpdateCreatedAtSql}
     FROM "Task" t
     LEFT JOIN "User" owner ON owner.id = t.ownerId
     LEFT JOIN "User" assignee ON assignee.id = t.assigneeId
