@@ -1,8 +1,6 @@
 import { sendConfiguredOwnerWhatsAppReminders } from "@/lib/notifications/ownerReminderService";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 /**
  * Triggers WhatsApp reminders immediately for tasks matching the configured owner reminder rules.
  */

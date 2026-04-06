@@ -1,8 +1,6 @@
 import { sendGroupedOwnerWhatsAppReminders } from "@/lib/notifications/ownerReminderService";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 /**
  * Sends grouped WhatsApp reminders for selected tasks, grouped by owner.
  */

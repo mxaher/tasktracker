@@ -10,8 +10,6 @@ import {
   toIsoDate,
 } from "@/lib/cloudflare-d1";
 
-export const runtime = "edge";
-
 type TaskRow = Parameters<typeof mapTaskRow>[0];
 
 export async function GET(request: NextRequest) {

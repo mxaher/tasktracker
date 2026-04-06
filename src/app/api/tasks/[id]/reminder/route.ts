@@ -1,8 +1,6 @@
 import { sendSingleOwnerTaskReminder } from "@/lib/notifications/ownerReminderService";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 /**
  * Sends a reminder for a single task using the selected channel.
  */
