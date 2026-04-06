@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
     try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
+    const statuses = searchParams
+      .getAll("status")
+      .flatMap((value) => value.split(","))
+      .map((value) => value.trim())
+      .filter(Boolean);
     const priority = searchParams.get("priority");
     const department = searchParams.get("department");
     const search = searchParams.get("search");
@@ -27,9 +31,9 @@ export async function GET(request: NextRequest) {
     const clauses: string[] = [];
     const params: Array<string | number | null> = [];
 
-    if (status && status !== "all") {
-      clauses.push("t.status = ?");
-      params.push(status);
+    if (statuses.length > 0 && !statuses.includes("all")) {
+      clauses.push(`t.status IN (${statuses.map(() => "?").join(", ")})`);
+      params.push(...statuses);
     }
 
     if (priority && priority !== "all") {

@@ -98,6 +98,17 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
   completed: { label: "مكتمل", color: "text-emerald-600", bgColor: "bg-emerald-100", icon: CheckCircle2 },
 };
 
+const RUNNING_TASK_STATUSES = ["not_started", "pending", "in_progress", "delayed"] as const;
+const COMPLETED_TASK_STATUSES = ["completed"] as const;
+
+function matchesStatusGroup(currentStatuses: string[], groupStatuses: readonly string[]) {
+  if (currentStatuses.length !== groupStatuses.length) {
+    return false;
+  }
+
+  return groupStatuses.every((status) => currentStatuses.includes(status));
+}
+
 const priorityConfig: Record<string, { label: string; color: string; bgColor: string }> = {
   low: { label: "منخفض", color: "text-slate-600", bgColor: "bg-slate-100" },
   medium: { label: "متوسط", color: "text-amber-600", bgColor: "bg-amber-100" },
@@ -1131,6 +1142,9 @@ function TaskListContent({
     filteredTasks.length > 0 &&
     filteredTasks.every(t => selectedTaskIds.has(t.id));
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const isRunningTasksFilterActive = matchesStatusGroup(filterStatuses, RUNNING_TASK_STATUSES);
+  const isCompletedTasksFilterActive = matchesStatusGroup(filterStatuses, COMPLETED_TASK_STATUSES);
+  const isAllTasksFilterActive = filterStatuses.length === 0 && !filterOverdue && !filterDueSoon;
 
   const toggleSelectAll = () => {
     if (allFilteredSelected) {
@@ -1153,6 +1167,18 @@ function TaskListContent({
     setExpandedTaskId((current) => (current === taskId ? null : taskId));
   };
 
+  const applyStatusFilterGroup = (statuses: readonly string[]) => {
+    setFilterOverdue(false);
+    setFilterDueSoon(false);
+    setFilterStatuses(() => [...statuses]);
+  };
+
+  const clearStatusFilterGroup = () => {
+    setFilterOverdue(false);
+    setFilterDueSoon(false);
+    setFilterStatuses(() => []);
+  };
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -1167,11 +1193,43 @@ function TaskListContent({
               className="pr-9"
             />
           </div>
+          <div className="flex w-full flex-wrap gap-2 xl:w-auto">
+            <Button
+              variant={isRunningTasksFilterActive ? "default" : "outline"}
+              size="sm"
+              className="h-9"
+              onClick={() => applyStatusFilterGroup(RUNNING_TASK_STATUSES)}
+            >
+              المهام الجارية
+            </Button>
+            <Button
+              variant={isAllTasksFilterActive ? "default" : "outline"}
+              size="sm"
+              className="h-9"
+              onClick={clearStatusFilterGroup}
+            >
+              كل المهام
+            </Button>
+            <Button
+              variant={isCompletedTasksFilterActive ? "default" : "outline"}
+              size="sm"
+              className="h-9"
+              onClick={() => applyStatusFilterGroup(COMPLETED_TASK_STATUSES)}
+            >
+              المهام المكتملة
+            </Button>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2 h-9">
                 <Filter className="size-4" />
-                {filterStatuses.length === 0 ? "كل الحالات" : `${filterStatuses.length} حالات`}
+                {isRunningTasksFilterActive
+                  ? "المهام الجارية"
+                  : isCompletedTasksFilterActive
+                    ? "المهام المكتملة"
+                    : filterStatuses.length === 0
+                      ? "كل الحالات"
+                      : `${filterStatuses.length} حالات`}
                 <ChevronDown className="size-4 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -2012,7 +2070,7 @@ export default function TaskTrackerApp() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
+  const [filterStatuses, setFilterStatuses] = useState<string[]>([...RUNNING_TASK_STATUSES]);
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [filterDepartment, setFilterDepartment] = useState<string>("all");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
