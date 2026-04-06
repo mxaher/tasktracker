@@ -1,7 +1,7 @@
 "use client";
 
 import ContactsTab from "@/components/settings/ContactsTab";
-import { Fragment, useState, useEffect, useMemo, useRef, memo } from "react";
+import { Fragment, useState, useEffect, useMemo, useRef, memo, useDeferredValue } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -30,6 +29,7 @@ import {
 } from "lucide-react";
 import { format, differenceInDays, isPast, isToday, addDays } from "date-fns";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Types
 interface Task {
@@ -61,6 +61,12 @@ interface Task {
     content: string;
     createdAt: string;
   } | null;
+  taskUpdates?: Array<{
+    id: string;
+    content: string;
+    source: string;
+    createdAt: string;
+  }>;
 }
 
 type TaskMutationPayload = Partial<Task> & {
@@ -87,6 +93,16 @@ interface User {
   name: string | null;
   department: string | null;
   role: string;
+}
+
+function normalizeTaskUpdates(task: Partial<Task> | null | undefined) {
+  if (!task?.taskUpdates) {
+    return [];
+  }
+
+  return [...task.taskUpdates].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 // Status configurations
@@ -145,6 +161,25 @@ function formatArabicDateTime(value: string | null) {
   if (!value) return "—";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? "—" : arabicDateTimeFormatter.format(parsed);
+}
+
+function useMobileViewport(breakpoint = 768) {
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const update = () => setIsMobileViewport(mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, [breakpoint]);
+
+  return isMobileViewport;
 }
 
 interface SearchableSelectOption {
@@ -299,7 +334,7 @@ function KPICard({ title, value, subtitle, icon: Icon, trend }: {
   color?: string;
 }) {
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden border-border/70 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -321,6 +356,58 @@ function KPICard({ title, value, subtitle, icon: Icon, trend }: {
 // ─────────────────────────────────────────────────────────────
 // TaskCard — memoized module-level component
 // ─────────────────────────────────────────────────────────────
+function TaskListSkeleton({ cardMode }: { cardMode: boolean }) {
+  if (cardMode) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Card key={index} className="overflow-hidden border-border/70">
+            <CardHeader className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </div>
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-2 w-full" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            </CardContent>
+            <CardFooter className="grid grid-cols-2 gap-2 border-t bg-muted/20">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <Card className="overflow-hidden border-border/70">
+      <div className="space-y-3 p-4">
+        <div className="grid grid-cols-[40px_60px_2fr_1.2fr_1.2fr_1fr_1fr_1.2fr_1.3fr_1.5fr] gap-3">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <Skeleton key={index} className="h-10 w-full" />
+          ))}
+        </div>
+        {Array.from({ length: 6 }).map((_, rowIndex) => (
+          <div key={rowIndex} className="grid grid-cols-[40px_60px_2fr_1.2fr_1.2fr_1fr_1fr_1.2fr_1.3fr_1.5fr] gap-3">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton key={`${rowIndex}-${index}`} className="h-12 w-full" />
+            ))}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
@@ -328,19 +415,22 @@ interface TaskCardProps {
   onComplete: (task: Task) => void;
   onDateClick: (task: Task) => void;
   onProgressClick: (task: Task) => void;
-    onSendReminder?: (task: Task) => void;
+  onSendSingleReminder: (task: Task, channel: "whatsapp" | "email") => void;
+  activeReminderKey: string | null;
+  isSelected: boolean;
+  onToggleSelect: (taskId: string) => void;
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
 }
 const TaskCard = memo(function TaskCard({
   task, onEdit, onDelete, onComplete,
-  onSendReminder, onDateClick, onProgressClick, getDaysRemaining, getRiskColor
+  onSendSingleReminder, activeReminderKey, isSelected, onToggleSelect, onDateClick, onProgressClick, getDaysRemaining, getRiskColor
 }: TaskCardProps) {  const StatusIcon = statusConfig[task.status]?.icon || Clock;
   const daysRemaining = getDaysRemaining(task.dueDate);
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md transition-shadow"
+      className="cursor-pointer border-border/70 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none"
       onClick={() => onEdit(task)}
     >
       <CardHeader className="pb-3">
@@ -358,14 +448,23 @@ const TaskCard = memo(function TaskCard({
             </div>
             <CardTitle className="text-base line-clamp-2">{task.title}</CardTitle>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={(e) => { e.stopPropagation(); onDelete(task); }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <div onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => onToggleSelect(task.id)}
+                aria-label={`تحديد ${task.title}`}
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => { e.stopPropagation(); onDelete(task); }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -410,11 +509,36 @@ const TaskCard = memo(function TaskCard({
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-0 pb-3 px-4 gap-2 flex-wrap border-t">
+      <CardFooter className="grid grid-cols-2 gap-2 border-t bg-muted/10 p-4 sm:flex sm:flex-wrap">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9 w-full text-xs"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {activeReminderKey?.startsWith(`${task.id}:`)
+                ? <Loader2 className="h-3 w-3 ml-1 animate-spin" />
+                : <Bell className="h-3 w-3 ml-1" />}
+              إرسال تذكير
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onSendSingleReminder(task, "whatsapp"); }}>
+              <MessageSquare className="h-4 w-4 ml-2" />
+              واتساب
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onSendSingleReminder(task, "email"); }}>
+              <Mail className="h-4 w-4 ml-2" />
+              بريد إلكتروني
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 text-xs h-8"
+          className="h-9 w-full text-xs sm:flex-1"
           disabled={task.status === "completed"}
           onClick={(e) => { e.stopPropagation(); onComplete(task); }}
         >
@@ -423,7 +547,7 @@ const TaskCard = memo(function TaskCard({
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 text-xs h-8"
+          className="h-9 w-full text-xs sm:flex-1"
           onClick={(e) => { e.stopPropagation(); onEdit(task); }}
         >
           <Edit className="h-3 w-3 ml-1" /> تحديث
@@ -431,7 +555,7 @@ const TaskCard = memo(function TaskCard({
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 text-xs h-8"
+          className="h-9 w-full text-xs sm:flex-1"
           onClick={(e) => { e.stopPropagation(); onDateClick(task); }}
         >
           <Calendar className="h-3 w-3 ml-1" /> التاريخ
@@ -439,7 +563,7 @@ const TaskCard = memo(function TaskCard({
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 text-xs h-8"
+          className="h-9 w-full text-xs sm:flex-1"
           onClick={(e) => { e.stopPropagation(); onProgressClick(task); }}
         >
           <BarChart3 className="h-3 w-3 ml-1" /> التقدم
@@ -463,8 +587,8 @@ interface TaskModalProps {
   users: User[];
   departments: string[];
   strategicPillars: string[];
-  onCreateTask: (data: TaskMutationPayload) => void;
-  onUpdateTask: (data: TaskMutationPayload) => void;
+  onCreateTask: (data: TaskMutationPayload) => Promise<void>;
+  onUpdateTask: (data: TaskMutationPayload) => Promise<void>;
   onUserCreated: (user: User) => void;
 }
 
@@ -477,6 +601,8 @@ function TaskModal({
   const [duplicateTitles, setDuplicateTitles] = useState<Task[]>([]);
   const [quickUpdate, setQuickUpdate] = useState("");
   const [pendingUpdateContent, setPendingUpdateContent] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const updatesHistory = normalizeTaskUpdates(localTask);
 
   // Reset local state only when the modal opens — not on every parent re-render
   useEffect(() => {
@@ -485,6 +611,7 @@ function TaskModal({
       setDuplicateTitles([]);
       setQuickUpdate("");
       setPendingUpdateContent(null);
+      setIsSubmitting(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -1077,6 +1204,7 @@ interface TaskListContentProps {
   setFilterSource: (s: string) => void;
   sourceFilterOptions: SearchableSelectOption[];
   deptFilterOptions: SearchableSelectOption[];
+  isMobileViewport: boolean;
   viewMode: "table" | "card";
   setViewMode: (m: "table" | "card") => void;
   selectedTaskIds: Set<string>;
@@ -1109,7 +1237,7 @@ function TaskListContent({
   filterOverdue, setFilterOverdue,
   filterDueSoon, setFilterDueSoon,
   filterSource, setFilterSource, sourceFilterOptions,
-  deptFilterOptions, viewMode, setViewMode,
+  deptFilterOptions, isMobileViewport, viewMode, setViewMode,
   selectedTaskIds, setSelectedTaskIds,
   setIsBulkDeleteDialogOpen,
   onOpenTaskModal, onDeleteTask, onSendBulkWhatsApp, bulkWhatsAppSending, onSendSingleReminder, activeReminderKey, onCompleteTask,
@@ -1142,9 +1270,20 @@ function TaskListContent({
     filteredTasks.length > 0 &&
     filteredTasks.every(t => selectedTaskIds.has(t.id));
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(isMobileViewport ? 12 : 25);
   const isRunningTasksFilterActive = matchesStatusGroup(filterStatuses, RUNNING_TASK_STATUSES);
   const isCompletedTasksFilterActive = matchesStatusGroup(filterStatuses, COMPLETED_TASK_STATUSES);
   const isAllTasksFilterActive = filterStatuses.length === 0 && !filterOverdue && !filterDueSoon;
+  const effectiveViewMode = isMobileViewport ? "card" : viewMode;
+  const visibleTasks = useMemo(
+    () => filteredTasks.slice(0, visibleCount),
+    [filteredTasks, visibleCount],
+  );
+  const hasMoreTasks = visibleTasks.length < filteredTasks.length;
+
+  useEffect(() => {
+    setVisibleCount(isMobileViewport ? 12 : 25);
+  }, [searchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon, sortBy, sortOrder, isMobileViewport]);
 
   const toggleSelectAll = () => {
     if (allFilteredSelected) {
@@ -1180,7 +1319,7 @@ function TaskListContent({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-in fade-in-0 duration-200 motion-reduce:animate-none">
       {/* Toolbar */}
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-1 gap-2 flex-wrap">
@@ -1331,10 +1470,10 @@ function TaskListContent({
                 : "سيتم جمع المهام ذات المسؤول نفسه داخل رسالة واتساب واحدة."}
             </TooltipContent>
           </Tooltip>
-          <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
+          <Button variant={effectiveViewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")} disabled={isMobileViewport}>
             <List className="h-4 w-4" />
           </Button>
-          <Button variant={viewMode === "card" ? "default" : "outline"} size="sm" onClick={() => setViewMode("card")}>
+          <Button variant={effectiveViewMode === "card" ? "default" : "outline"} size="sm" onClick={() => setViewMode("card")}>
             <Grid3X3 className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={onExport}>
@@ -1345,8 +1484,8 @@ function TaskListContent({
       </div>
 
       {/* Bulk action bar */}
-      {selectedTaskIds.size > 0 && viewMode === "table" && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/10 px-4 py-2">
+      {selectedTaskIds.size > 0 && (
+        <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/10 px-4 py-2">
           <span className="text-sm font-medium text-primary">{selectedTaskIds.size} مهمة محددة</span>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onSendBulkWhatsApp} disabled={bulkWhatsAppSending}>
             {bulkWhatsAppSending ? <Loader2 className="h-3 w-3 ml-1 animate-spin" /> : <MessageSquare className="h-3 w-3 ml-1" />} إرسال رسالة جماعية
@@ -1368,9 +1507,7 @@ function TaskListContent({
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <TaskListSkeleton cardMode={effectiveViewMode === "card"} />
       ) : filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64 text-muted-foreground">
@@ -1382,28 +1519,38 @@ function TaskListContent({
             </Button>
           </CardContent>
         </Card>
-      ) : viewMode === "card" ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredTasks.map(task => (
+      ) : effectiveViewMode === "card" ? (
+        <div className="grid animate-in fade-in-0 duration-200 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {visibleTasks.map(task => (
             <TaskCard
               key={task.id}
               task={task}
               onEdit={onOpenTaskModal}
               onDelete={onDeleteTask}
               onComplete={onCompleteTask}
+              onSendSingleReminder={onSendSingleReminder}
+              activeReminderKey={activeReminderKey}
+              isSelected={selectedTaskIds.has(task.id)}
+              onToggleSelect={toggleSelectTask}
               onDateClick={onDateClick}
               onProgressClick={onProgressClick}
-                            
               getDaysRemaining={getDaysRemaining}
               getRiskColor={getRiskColor}
             />
           ))}
         </div>
       ) : (
-        <Card className="w-full overflow-hidden">
-          <ScrollArea className="h-[calc(100vh-400px)] w-full" dir="rtl">
-            <div className="w-full overflow-x-auto">
-            <Table className="w-full min-w-[1120px]" dir="rtl">
+        <Card className="w-full overflow-hidden border-border/70">
+          <div className="border-b bg-muted/20 px-4 py-2 text-xs text-muted-foreground">
+            اسحب أفقيًا لعرض جميع الأعمدة والإجراءات
+          </div>
+          <div
+            className="max-h-[calc(100vh-400px)] overflow-auto overscroll-contain"
+            dir="rtl"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="min-w-max overflow-x-auto">
+            <Table className="w-full min-w-[1120px] animate-in fade-in-0 duration-200" dir="rtl">
               <TableHeader>
                 <TableRow className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
                   <TableHead className="w-[40px] pr-4 text-center">
@@ -1468,7 +1615,7 @@ function TaskListContent({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTasks.map((task, index) => {
+                {visibleTasks.map((task, index) => {
                   const StatusIcon = statusConfig[task.status]?.icon || Clock;
                   const daysRemaining = getDaysRemaining(task.dueDate);
                   const isSelected = selectedTaskIds.has(task.id);
@@ -1477,7 +1624,7 @@ function TaskListContent({
                   return (
                     <Fragment key={task.id}>
                     <TableRow
-                      className={`cursor-pointer transition-colors hover:bg-muted/50 ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""} ${isExpanded ? "border-b-0 bg-muted/30" : ""}`}
+                      className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""} ${isExpanded ? "border-b-0 bg-muted/30" : ""}`}
                       onClick={() => toggleExpandedRow(task.id)}
                       aria-expanded={isExpanded}
                     >
@@ -1538,7 +1685,7 @@ function TaskListContent({
                           </div>
                         ) : "—"}
                       </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1 whitespace-nowrap">
                           <DropdownMenu>
                             <Tooltip>
@@ -1588,7 +1735,7 @@ function TaskListContent({
                     {isExpanded ? (
                       <TableRow className="bg-muted/20 hover:bg-muted/20">
                         <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
-                          <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
+                          <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 text-sm font-semibold">
                                 <MessageSquare className="h-4 w-4 text-primary" />
@@ -1617,9 +1764,20 @@ function TaskListContent({
               </TableBody>
             </Table>
             </div>
-          </ScrollArea>
+          </div>
         </Card>
       )}
+      {hasMoreTasks ? (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            className="min-w-40 transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transform-none"
+            onClick={() => setVisibleCount((current) => current + (isMobileViewport ? 12 : 25))}
+          >
+            عرض المزيد
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2070,6 +2228,8 @@ export default function TaskTrackerApp() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const isMobileViewport = useMobileViewport();
   const [filterStatuses, setFilterStatuses] = useState<string[]>([...RUNNING_TASK_STATUSES]);
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [filterDepartment, setFilterDepartment] = useState<string>("all");
@@ -2128,6 +2288,7 @@ export default function TaskTrackerApp() {
     sendToOwners: true,
   });
   const [showReminderForm, setShowReminderForm] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   const fetchTasks = async () => {
     try {
@@ -2209,10 +2370,7 @@ export default function TaskTrackerApp() {
       try {
         await Promise.allSettled([
           fetchTasks(),
-          fetchUsers(),
           fetchStats(),
-          fetchSettings(),
-          fetchScheduledReminders(),
         ]);
       } finally {
         setLoading(false);
@@ -2223,8 +2381,21 @@ export default function TaskTrackerApp() {
   }, []);
 
   useEffect(() => {
+    if (activeTab !== "settings" || settingsLoaded) {
+      return;
+    }
+
+    const loadSettingsData = async () => {
+      await Promise.allSettled([fetchSettings(), fetchScheduledReminders()]);
+      setSettingsLoaded(true);
+    };
+
+    loadSettingsData();
+  }, [activeTab, settingsLoaded]);
+
+  useEffect(() => {
     setSelectedTaskIds(new Set());
-  }, [searchQuery, filterStatuses, filterPriority, filterDepartment]);
+  }, [searchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon]);
 
   const departments = useMemo(() => {
     const depts = new Set(tasks.map(t => t.department).filter(Boolean));
@@ -2238,8 +2409,8 @@ export default function TaskTrackerApp() {
 
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (deferredSearchQuery) {
+      const query = deferredSearchQuery.toLowerCase();
       result = result.filter(task =>
         task.title.toLowerCase().includes(query) ||
         task.description?.toLowerCase().includes(query) ||
@@ -2291,7 +2462,7 @@ export default function TaskTrackerApp() {
     });
 
     return result;
-  }, [tasks, searchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon, sortBy, sortOrder]);
+  }, [tasks, deferredSearchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon, sortBy, sortOrder]);
 
   const handleCreateTask = async (taskData: Partial<Task>) => {
     try {
@@ -2432,7 +2603,11 @@ export default function TaskTrackerApp() {
     }
   };
 
-  const openTaskModal = (task?: Task) => {
+  const openTaskModal = async (task?: Task) => {
+    if (users.length === 0) {
+      void fetchUsers();
+    }
+
     if (task) {
       setSelectedTask(task);
       setEditingTask(task);
@@ -2693,34 +2868,34 @@ export default function TaskTrackerApp() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="w-full px-4 md:px-6 lg:px-8 flex h-14 items-center">
-          <div className="flex items-center gap-2 ml-6">
+        <div className="flex min-h-14 w-full flex-wrap items-center gap-3 px-4 py-3 md:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl">متتبع المهام</span>
           </div>
-          <nav className="flex items-center gap-1 flex-1">
-            <Button variant={activeTab === "dashboard" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("dashboard")}>
+          <nav className="order-3 flex w-full items-center gap-1 overflow-x-auto sm:order-2 sm:flex-1">
+            <Button variant={activeTab === "dashboard" ? "secondary" : "ghost"} size="sm" className="shrink-0" onClick={() => setActiveTab("dashboard")}>
               <LayoutDashboard className="h-4 w-4 ml-2" /> لوحة التحكم
             </Button>
-            <Button variant={activeTab === "tasks" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("tasks")}>
+            <Button variant={activeTab === "tasks" ? "secondary" : "ghost"} size="sm" className="shrink-0" onClick={() => setActiveTab("tasks")}>
               <List className="h-4 w-4 ml-2" /> المهام
             </Button>
-            <Button variant={activeTab === "settings" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("settings")}>
+            <Button variant={activeTab === "settings" ? "secondary" : "ghost"} size="sm" className="shrink-0" onClick={() => setActiveTab("settings")}>
               <Settings className="h-4 w-4 ml-2" /> الإعدادات
             </Button>
           </nav>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsUploadModalOpen(true)}>
+          <div className="order-2 ms-auto flex items-center gap-2 sm:order-3">
+            <Button variant="outline" size="sm" className="h-9" onClick={() => setIsUploadModalOpen(true)}>
               <Upload className="h-4 w-4 ml-2" /> استيراد
             </Button>
-            <Button size="sm" onClick={() => openTaskModal()}>
+            <Button size="sm" className="h-9" onClick={() => openTaskModal()}>
               <Plus className="h-4 w-4 ml-2" /> مهمة جديدة
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full px-4 py-6 md:px-6 lg:px-8 animate-in fade-in-0 duration-300 motion-reduce:animate-none">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsContent value="dashboard" className="mt-0">
             <DashboardContent
@@ -2762,14 +2937,15 @@ export default function TaskTrackerApp() {
               setFilterDepartment={setFilterDepartment}
               filterOverdue={filterOverdue}
               setFilterOverdue={setFilterOverdue}
-              filterDueSoon={filterDueSoon}
-              setFilterDueSoon={setFilterDueSoon}
-              filterSource={filterSource}
-              setFilterSource={setFilterSource}
-              sourceFilterOptions={sourceFilterOptions}
-              deptFilterOptions={deptFilterOptions}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
+                filterDueSoon={filterDueSoon}
+                setFilterDueSoon={setFilterDueSoon}
+                filterSource={filterSource}
+                setFilterSource={setFilterSource}
+                sourceFilterOptions={sourceFilterOptions}
+                deptFilterOptions={deptFilterOptions}
+                isMobileViewport={isMobileViewport}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
               selectedTaskIds={selectedTaskIds}
               setSelectedTaskIds={setSelectedTaskIds}
               setIsBulkDeleteDialogOpen={setIsBulkDeleteDialogOpen}

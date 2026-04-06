@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   buildTaskSelectSql,
   createId,
+  d1All,
   d1First,
   d1Run,
   mapTaskRow,
@@ -10,6 +11,12 @@ import {
 } from "@/lib/cloudflare-d1";
 
 type TaskRow = Parameters<typeof mapTaskRow>[0];
+type TaskUpdateRow = {
+  id: string;
+  content: string;
+  source: string;
+  createdAt: string;
+};
 
 type BaseTaskRow = {
   id: string;
@@ -39,19 +46,46 @@ async function getTaskRow(id: string) {
   return d1First<TaskRow>(`${taskSelectSql} WHERE t.id = ?`, id);
 }
 
+async function getTaskUpdates(taskId: string) {
+  return d1All<TaskUpdateRow>(
+    `
+      SELECT "id", "content", "source", "createdAt"
+      FROM "TaskUpdate"
+      WHERE "taskId" = ?
+      ORDER BY "createdAt" DESC
+    `,
+    taskId,
+  );
+}
+
+async function buildTaskResponse(taskId: string) {
+  const task = await getTaskRow(taskId);
+
+  if (!task) {
+    return null;
+  }
+
+  const taskUpdates = await getTaskUpdates(taskId).catch(() => [] as TaskUpdateRow[]);
+
+  return {
+    ...mapTaskRow(task),
+    taskUpdates,
+  };
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    const task = await getTaskRow(id);
+    const task = await buildTaskResponse(id);
 
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ task: mapTaskRow(task) });
+    return NextResponse.json({ task });
   } catch (error) {
     console.error("Error fetching task:", error);
     return NextResponse.json({ error: "Failed to fetch task" }, { status: 500 });
@@ -137,8 +171,8 @@ export async function PUT(
     const hasNewUpdateContent = typeof data.newUpdateContent === "string" && data.newUpdateContent.trim().length > 0;
 
     if (updates.length === 0 && !hasNewUpdateContent) {
-      const task = await getTaskRow(id);
-      return NextResponse.json({ task: task ? mapTaskRow(task) : null });
+      const task = await buildTaskResponse(id);
+      return NextResponse.json({ task });
     }
 
     updates.push('"updatedAt" = ?');
@@ -183,8 +217,8 @@ export async function PUT(
       );
     }
 
-    const task = await getTaskRow(id);
-    return NextResponse.json({ task: task ? mapTaskRow(task) : null });
+    const task = await buildTaskResponse(id);
+    return NextResponse.json({ task });
   } catch (error) {
     console.error("Error updating task:", error);
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
