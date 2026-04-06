@@ -9,8 +9,6 @@ import {
   toIsoDate,
 } from "@/lib/cloudflare-d1";
 
-export const runtime = "edge";
-
 type ScheduledReminderRow = {
   id: string;
   title: string;
