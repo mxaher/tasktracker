@@ -230,6 +230,9 @@ model AdminSettings {
   
   // Days before due date for automatic reminders
   reminderDaysBefore    Int      @default(3)
+  whatsappOwnerRemindersEnabled Boolean @default(false)
+  whatsappReminderOffsets String @default("0,1")
+  whatsappReminderTemplate String @default("Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.")
   
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt

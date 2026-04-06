@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
   LayoutDashboard, List, Grid3X3, Upload, Plus, Search, Filter,
@@ -1022,6 +1023,10 @@ interface TaskListContentProps {
   setIsBulkDeleteDialogOpen: (open: boolean) => void;
   onOpenTaskModal: (task?: Task) => void;
   onDeleteTask: (task: Task) => void;
+  onSendBulkWhatsApp: () => void;
+  bulkWhatsAppSending: boolean;
+  onSendSingleReminder: (task: Task, channel: "whatsapp" | "email") => void;
+  activeReminderKey: string | null;
   onCompleteTask: (task: Task) => void;
   onDateClick: (task: Task) => void;
   onProgressClick: (task: Task) => void;
@@ -1046,7 +1051,7 @@ function TaskListContent({
   deptFilterOptions, viewMode, setViewMode,
   selectedTaskIds, setSelectedTaskIds,
   setIsBulkDeleteDialogOpen,
-  onOpenTaskModal, onDeleteTask, onCompleteTask,
+  onOpenTaskModal, onDeleteTask, onSendBulkWhatsApp, bulkWhatsAppSending, onSendSingleReminder, activeReminderKey, onCompleteTask,
   onDateClick, onProgressClick, onExport,
   sortBy, setSortBy, sortOrder, setSortOrder,
   getDaysRemaining, getRiskColor,
@@ -1198,6 +1203,21 @@ function TaskListContent({
         </div>
 
         <div className="flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button variant="outline" size="sm" onClick={onSendBulkWhatsApp} disabled={selectedTaskIds.size === 0 || bulkWhatsAppSending}>
+                  {bulkWhatsAppSending ? <Loader2 className="h-4 w-4 ml-1 animate-spin" /> : <MessageSquare className="h-4 w-4 ml-1" />}
+                  Send Group Message
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {selectedTaskIds.size === 0
+                ? "Select one or more tasks to send grouped WhatsApp reminders."
+                : "Tasks with the same owner will be grouped into one WhatsApp message."}
+            </TooltipContent>
+          </Tooltip>
           <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
             <List className="h-4 w-4" />
           </Button>
@@ -1215,6 +1235,9 @@ function TaskListContent({
       {selectedTaskIds.size > 0 && viewMode === "table" && (
         <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
           <span className="text-sm font-medium text-primary">{selectedTaskIds.size} مهمة محددة</span>
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onSendBulkWhatsApp} disabled={bulkWhatsAppSending}>
+            {bulkWhatsAppSending ? <Loader2 className="h-3 w-3 ml-1 animate-spin" /> : <MessageSquare className="h-3 w-3 ml-1" />} Send Group Message
+          </Button>
           <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => setIsBulkDeleteDialogOpen(true)}>
             <Trash2 className="h-3 w-3 ml-1" /> حذف المحدد
           </Button>
@@ -1390,6 +1413,33 @@ function TaskListContent({
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
+                          <DropdownMenu>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+                                    {activeReminderKey?.startsWith(`${task.id}:`)
+                                      ? <Loader2 className="h-3 w-3 ml-1 animate-spin" />
+                                      : <Bell className="h-3 w-3 ml-1" />}
+                                    Send Reminder
+                                  </Button>
+                                </DropdownMenuTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>Send a WhatsApp or email reminder to the task owner.</TooltipContent>
+                            </Tooltip>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Reminder Channel</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => onSendSingleReminder(task, "whatsapp")}>
+                                <MessageSquare className="h-4 w-4 ml-2" />
+                                Send by WhatsApp
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => onSendSingleReminder(task, "email")}>
+                                <Mail className="h-4 w-4 ml-2" />
+                                Send by Email
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <Button size="sm" variant="outline" className="text-xs h-7 px-2" disabled={task.status === "completed"} onClick={() => onCompleteTask(task)}>
                             <CheckCircle2 className="h-3 w-3 ml-1" /> مكتمل
                           </Button>
@@ -1435,6 +1485,17 @@ interface SettingsState {
   overdueReminderEnabled: boolean;
   customReminderDates: string;
   reminderDaysBefore: number;
+  whatsappOwnerRemindersEnabled: boolean;
+  whatsappReminderOffsets: string;
+  whatsappReminderTemplate: string;
+}
+
+interface ReminderRunSummary {
+  sentOwners: { ownerId: string; ownerName: string; taskCount: number }[];
+  skippedOwners: { ownerId: string; ownerName: string; reason: string }[];
+  failedOwners: { ownerId: string; ownerName: string; reason: string }[];
+  includedTasks: { taskId: string; title: string; ownerName: string }[];
+  skippedTasks: { taskId: string; title: string; ownerName: string; reason: string }[];
 }
 
 interface ScheduledReminder {
@@ -1464,17 +1525,21 @@ interface SettingsContentProps {
   onSaveSettings: () => void;
   onSendTestEmail: () => void;
   onSendTaskReminders: () => void;
+  onSendOwnerReminderNow: () => void;
   onCreateReminder: () => void;
   onDeleteReminder: (id: string) => void;
   onTriggerCron: () => void;
+  sendingOwnerRemindersNow: boolean;
+  ownerReminderSummary: ReminderRunSummary | null;
 }
 
 function SettingsContent({
   settings, setSettings, savingSettings, sendingTest,
   scheduledReminders, newReminder, setNewReminder,
   showReminderForm, setShowReminderForm,
-  onSaveSettings, onSendTestEmail, onSendTaskReminders,
+  onSaveSettings, onSendTestEmail, onSendTaskReminders, onSendOwnerReminderNow,
   onCreateReminder, onDeleteReminder, onTriggerCron,
+  sendingOwnerRemindersNow, ownerReminderSummary,
 }: SettingsContentProps) {
   const [settingsTab, setSettingsTab] = useState("notifications");
 
@@ -1715,6 +1780,88 @@ function SettingsContent({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2"><MessageSquare className="h-4 w-4" />Task Owner WhatsApp Reminders</CardTitle>
+          <CardDescription>Configure automatic WhatsApp reminders for task owners and trigger them immediately when needed.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Enable automatic WhatsApp reminders</Label>
+              <p className="text-xs text-muted-foreground">When enabled, task owners receive WhatsApp reminders based on the timing rules below.</p>
+            </div>
+            <Switch checked={settings.whatsappOwnerRemindersEnabled} onCheckedChange={(checked) => setSettings({ ...settings, whatsappOwnerRemindersEnabled: checked })} />
+          </div>
+
+          <div className="grid gap-2 pt-4 border-t">
+            <Label htmlFor="whatsappReminderOffsets">Reminder timing</Label>
+            <Input
+              id="whatsappReminderOffsets"
+              value={settings.whatsappReminderOffsets}
+              onChange={(e) => setSettings({ ...settings, whatsappReminderOffsets: e.target.value })}
+              placeholder="0,1,2"
+            />
+            <p className="text-xs text-muted-foreground">Comma-separated day offsets like <code>0,1,2</code> for due date, 1 day before, and 2 days before.</p>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="whatsappReminderTemplate">Message template</Label>
+            <Textarea
+              id="whatsappReminderTemplate"
+              rows={4}
+              value={settings.whatsappReminderTemplate}
+              onChange={(e) => setSettings({ ...settings, whatsappReminderTemplate: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">
+              Available placeholders: <code>{"{{ownerName}}"}</code>, <code>{"{{taskTitle}}"}</code>, <code>{"{{taskId}}"}</code>, <code>{"{{dueDate}}"}</code>, <code>{"{{priority}}"}</code>, <code>{"{{department}}"}</code>.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+            <div className="space-y-1">
+              <Label>Send Now</Label>
+              <p className="text-xs text-muted-foreground">Immediately send WhatsApp reminders for all eligible owner tasks.</p>
+            </div>
+            <Button variant="outline" onClick={onSendOwnerReminderNow} disabled={sendingOwnerRemindersNow}>
+              {sendingOwnerRemindersNow ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Send className="h-4 w-4 ml-2" />}
+              Send Now
+            </Button>
+          </div>
+
+          {ownerReminderSummary ? (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <div className="grid gap-2 md:grid-cols-4">
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Owners Contacted</p><p className="text-lg font-semibold">{ownerReminderSummary.sentOwners.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Owners Failed</p><p className="text-lg font-semibold">{ownerReminderSummary.failedOwners.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Tasks Included</p><p className="text-lg font-semibold">{ownerReminderSummary.includedTasks.length}</p></div>
+                <div className="rounded-md bg-background p-3 border"><p className="text-xs text-muted-foreground">Tasks Skipped</p><p className="text-lg font-semibold">{ownerReminderSummary.skippedTasks.length}</p></div>
+              </div>
+              {ownerReminderSummary.skippedTasks.length > 0 ? (
+                <div className="space-y-2">
+                  <Label>Skipped Tasks</Label>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    {ownerReminderSummary.skippedTasks.slice(0, 8).map((task) => (
+                      <p key={`${task.taskId}-${task.reason}`}>{task.title} - {task.ownerName} - {task.reason}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {ownerReminderSummary.failedOwners.length > 0 ? (
+                <div className="space-y-2">
+                  <Label>Failed Owners</Label>
+                  <div className="space-y-1 text-sm text-destructive">
+                    {ownerReminderSummary.failedOwners.map((owner) => (
+                      <p key={`${owner.ownerId}-${owner.reason}`}>{owner.ownerName} - {owner.reason}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+
       <Card className="border-amber-200 bg-amber-50/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2 text-amber-700"><AlertTriangle className="h-4 w-4" />إعداد البريد الإلكتروني مطلوب</CardTitle>
@@ -1800,9 +1947,16 @@ export default function TaskTrackerApp() {
     overdueReminderEnabled: true,
     customReminderDates: "",
     reminderDaysBefore: 3,
+    whatsappOwnerRemindersEnabled: false,
+    whatsappReminderOffsets: "0,1",
+    whatsappReminderTemplate: "Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.",
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
+  const [sendingBulkWhatsApp, setSendingBulkWhatsApp] = useState(false);
+  const [activeReminderKey, setActiveReminderKey] = useState<string | null>(null);
+  const [sendingOwnerRemindersNow, setSendingOwnerRemindersNow] = useState(false);
+  const [ownerReminderSummary, setOwnerReminderSummary] = useState<ReminderRunSummary | null>(null);
 
   const [quickDateTask, setQuickDateTask] = useState<Task | null>(null);
   const [quickDateValue, setQuickDateValue] = useState("");
@@ -1873,6 +2027,9 @@ export default function TaskTrackerApp() {
           overdueReminderEnabled: data.settings.overdueReminderEnabled ?? true,
           customReminderDates: data.settings.customReminderDates || "",
           reminderDaysBefore: data.settings.reminderDaysBefore ?? 3,
+          whatsappOwnerRemindersEnabled: data.settings.whatsappOwnerRemindersEnabled ?? false,
+          whatsappReminderOffsets: data.settings.whatsappReminderOffsets || "0,1",
+          whatsappReminderTemplate: data.settings.whatsappReminderTemplate || "Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.",
         });
       }
     } catch (error) {
@@ -1894,8 +2051,17 @@ export default function TaskTrackerApp() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchTasks(), fetchUsers(), fetchStats(), fetchSettings(), fetchScheduledReminders()]);
-      setLoading(false);
+      try {
+        await Promise.allSettled([
+          fetchTasks(),
+          fetchUsers(),
+          fetchStats(),
+          fetchSettings(),
+          fetchScheduledReminders(),
+        ]);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
     setMounted(true);
@@ -2198,6 +2364,100 @@ export default function TaskTrackerApp() {
     }
   };
 
+  const handleSendBulkWhatsApp = async () => {
+    if (selectedTaskIds.size === 0) {
+      toast.error("Select one or more tasks first.");
+      return;
+    }
+
+    if (!window.confirm("Send grouped WhatsApp reminders to the owners of the selected tasks?")) {
+      return;
+    }
+
+    setSendingBulkWhatsApp(true);
+    try {
+      const response = await fetch("/api/tasks/reminders/bulk-whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskIds: Array.from(selectedTaskIds) }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send grouped WhatsApp reminders");
+
+      const result = data.result as ReminderRunSummary;
+      const skippedOwners = new Set(result.skippedTasks.map((task) => task.ownerName));
+      const failedOwners = result.failedOwners.map((owner) => owner.ownerName).join(", ");
+
+      toast.success(
+        `Sent ${result.sentOwners.length} owner message(s). Skipped ${result.skippedTasks.length} task(s).${failedOwners ? ` Failed owners: ${failedOwners}` : ""}`,
+      );
+
+      if (skippedOwners.size > 0) {
+        toast.error(`Missing or skipped contacts: ${Array.from(skippedOwners).join(", ")}`);
+      }
+
+      setOwnerReminderSummary(result);
+    } catch (error) {
+      console.error("Error sending grouped reminders:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to send grouped WhatsApp reminders");
+    } finally {
+      setSendingBulkWhatsApp(false);
+    }
+  };
+
+  const handleSendSingleReminder = async (task: Task, channel: "whatsapp" | "email") => {
+    const reminderKey = `${task.id}:${channel}`;
+    setActiveReminderKey(reminderKey);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/reminder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send reminder");
+
+      toast.success(
+        channel === "whatsapp"
+          ? "WhatsApp reminder sent successfully."
+          : "Email reminder sent successfully.",
+      );
+    } catch (error) {
+      console.error("Error sending single reminder:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to send reminder");
+    } finally {
+      setActiveReminderKey(null);
+    }
+  };
+
+  const handleSendOwnerReminderNow = async () => {
+    if (!window.confirm("Run WhatsApp reminders now for all eligible task owners?")) {
+      return;
+    }
+
+    setSendingOwnerRemindersNow(true);
+    try {
+      const response = await fetch("/api/settings/reminders/send-now", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: false }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to run WhatsApp reminders");
+
+      const result = data.result as ReminderRunSummary;
+      setOwnerReminderSummary(result);
+      toast.success(
+        `Send Now completed: ${result.sentOwners.length} owner(s) contacted, ${result.skippedTasks.length} task(s) skipped, ${result.failedOwners.length} owner(s) failed.`,
+      );
+    } catch (error) {
+      console.error("Error sending owner reminders now:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to run owner reminders");
+    } finally {
+      setSendingOwnerRemindersNow(false);
+    }
+  };
+
   const handleCreateReminder = async () => {
     if (!newReminder.title || !newReminder.reminderDate) { toast.error("Title and date are required"); return; }
     try {
@@ -2351,6 +2611,10 @@ export default function TaskTrackerApp() {
               setIsBulkDeleteDialogOpen={setIsBulkDeleteDialogOpen}
               onOpenTaskModal={openTaskModal}
               onDeleteTask={(task) => { setTaskToDelete(task); setIsDeleteDialogOpen(true); }}
+              onSendBulkWhatsApp={handleSendBulkWhatsApp}
+              bulkWhatsAppSending={sendingBulkWhatsApp}
+              onSendSingleReminder={handleSendSingleReminder}
+              activeReminderKey={activeReminderKey}
               onCompleteTask={handleMarkComplete}
               onDateClick={(task) => { setQuickDateTask(task); setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : ""); }}
               onProgressClick={(task) => { setQuickProgressTask(task); setQuickProgressValue(Math.round(task.completion * 100)); }}
@@ -2377,9 +2641,12 @@ export default function TaskTrackerApp() {
               onSaveSettings={handleSaveSettings}
               onSendTestEmail={handleSendTestEmail}
               onSendTaskReminders={handleSendTaskReminders}
+              onSendOwnerReminderNow={handleSendOwnerReminderNow}
               onCreateReminder={handleCreateReminder}
               onDeleteReminder={handleDeleteReminder}
               onTriggerCron={handleTriggerCron}
+              sendingOwnerRemindersNow={sendingOwnerRemindersNow}
+              ownerReminderSummary={ownerReminderSummary}
             />
           </TabsContent>
         </Tabs>

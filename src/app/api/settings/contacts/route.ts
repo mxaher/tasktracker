@@ -1,8 +1,8 @@
-import { parseContactCreateInput } from "@/lib/contacts";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { parseContactCreateInput } from "@/lib/contact-validation";
+import { createId, d1All, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import { NextRequest, NextResponse } from "next/server";
 
-type D1Value = string | number | null;
+export const runtime = "edge";
 
 type ContactRow = {
   id: string;
@@ -12,81 +12,61 @@ type ContactRow = {
   userId: string | null;
   createdAt: string;
   updatedAt: string;
-  u_id: string | null;
-  u_name: string | null;
-  u_email: string | null;
-  u_username: string | null;
+  user_id: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  user_username: string | null;
 };
 
-function getDb() {
-  const context = getCloudflareContext();
-  const env = context.env as {
-    DB?: {
-      prepare: (sql: string) => {
-        bind: (...params: D1Value[]) => {
-          all: <T>() => Promise<{ results?: T[] }>;
-          first: <T>() => Promise<T | null>;
-          run: () => Promise<unknown>;
-        };
-      };
-    };
-  };
-
-  if (!env.DB) {
-    throw new Error("Cloudflare D1 binding is not available.");
-  }
-
-  return env.DB;
-}
-
-async function d1All<T>(sql: string, ...params: D1Value[]) {
-  const result = await getDb().prepare(sql).bind(...params).all<T>();
-  return result.results ?? [];
-}
-
-async function d1First<T>(sql: string, ...params: D1Value[]) {
-  return getDb().prepare(sql).bind(...params).first<T>();
-}
-
-async function d1Run(sql: string, ...params: D1Value[]) {
-  return getDb().prepare(sql).bind(...params).run();
-}
-
-function mapContactRow(row: ContactRow) {
+function mapContactRow(contact: ContactRow) {
   return {
-    id: row.id,
-    name: row.name,
-    phone: row.phone,
-    email: row.email,
-    userId: row.userId,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    user: row.u_id
-      ? {
-          id: row.u_id,
-          name: row.u_name,
-          email: row.u_email ?? "",
-          username: row.u_username,
-        }
-      : null,
+    id: contact.id,
+    name: contact.name,
+    phone: contact.phone,
+    email: contact.email,
+    userId: contact.userId,
+    createdAt: contact.createdAt,
+    updatedAt: contact.updatedAt,
+    user:
+      contact.user_id && contact.user_email
+        ? {
+            id: contact.user_id,
+            name: contact.user_name,
+            email: contact.user_email,
+            username: contact.user_username,
+          }
+        : null,
   };
 }
+
+const CONTACT_SELECT_SQL = `
+  SELECT
+    c.id,
+    c.name,
+    c.phone,
+    c.email,
+    c.userId,
+    c.createdAt,
+    c.updatedAt,
+    u.id AS user_id,
+    u.name AS user_name,
+    u.email AS user_email,
+    u.username AS user_username
+  FROM "Contact" c
+  LEFT JOIN "User" u ON u.id = c.userId
+`;
 
 /** Returns all contacts ordered by name. */
 export async function GET() {
   try {
-    const rows = await d1All<ContactRow>(
-      `
-        SELECT
-          c."id", c."name", c."phone", c."email", c."userId", c."createdAt", c."updatedAt",
-          u."id" AS "u_id", u."name" AS "u_name", u."email" AS "u_email", u."username" AS "u_username"
-        FROM "Contact" c
-        LEFT JOIN "User" u ON c."userId" = u."id"
-        ORDER BY c."name" ASC
-      `,
+    const contacts = await d1All<ContactRow>(
+      `${CONTACT_SELECT_SQL}
+       ORDER BY COALESCE(c.name, '') ASC, c.createdAt ASC`,
     );
 
-    return NextResponse.json({ contacts: rows.map(mapContactRow) });
+    return NextResponse.json({
+      contacts: contacts.map(mapContactRow),
+    });
   } catch (error) {
     console.error("Error fetching contacts:", error);
     return NextResponse.json({ error: "Failed to fetch contacts" }, { status: 500 });
@@ -103,13 +83,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    // Enforce userId uniqueness
     if (parsed.data.userId) {
-      const existing = await d1First<{ id: string }>(
+      const linkedUser = await d1First<{ id: string }>(
+        'SELECT "id" FROM "User" WHERE "id" = ? LIMIT 1',
+        parsed.data.userId,
+      );
+
+      if (!linkedUser) {
+        return NextResponse.json({ error: "Linked user was not found." }, { status: 400 });
+      }
+
+      const existingContactForUser = await d1First<{ id: string }>(
         'SELECT "id" FROM "Contact" WHERE "userId" = ? LIMIT 1',
         parsed.data.userId,
       );
-      if (existing) {
+
+      if (existingContactForUser) {
         return NextResponse.json(
           { error: "That user is already linked to another contact." },
           { status: 400 },
@@ -117,8 +106,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const id = crypto.randomUUID();
-    const now = new Date().toISOString();
+    const id = createId();
+    const timestamp = nowIso();
 
     await d1Run(
       `
@@ -130,26 +119,18 @@ export async function POST(request: NextRequest) {
       parsed.data.phone,
       parsed.data.email,
       parsed.data.userId,
-      now,
-      now,
+      timestamp,
+      timestamp,
     );
 
-    const row = await d1First<ContactRow>(
-      `
-        SELECT
-          c."id", c."name", c."phone", c."email", c."userId", c."createdAt", c."updatedAt",
-          u."id" AS "u_id", u."name" AS "u_name", u."email" AS "u_email", u."username" AS "u_username"
-        FROM "Contact" c
-        LEFT JOIN "User" u ON c."userId" = u."id"
-        WHERE c."id" = ?
-      `,
+    const contact = await d1First<ContactRow>(
+      `${CONTACT_SELECT_SQL}
+       WHERE c.id = ?
+       LIMIT 1`,
       id,
     );
 
-    return NextResponse.json(
-      { contact: row ? mapContactRow(row) : null },
-      { status: 201 },
-    );
+    return NextResponse.json({ contact: contact ? mapContactRow(contact) : null }, { status: 201 });
   } catch (error) {
     console.error("Error creating contact:", error);
     return NextResponse.json({ error: "Failed to create contact" }, { status: 500 });

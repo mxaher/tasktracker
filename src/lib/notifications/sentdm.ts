@@ -1,4 +1,5 @@
-import { normalizePhoneNumber } from "@/lib/contacts";
+import { normalizePhoneNumber } from "@/lib/contact-validation";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 type SentDmResponse = {
   id?: string;
@@ -18,7 +19,13 @@ export async function sendWhatsAppMessage(
   phone: string,
   message: string,
 ): Promise<string | null> {
-  const apiKey = process.env.SENTDM_API_KEY;
+  let apiKey = process.env.SENTDM_API_KEY;
+
+  try {
+    const context = getCloudflareContext();
+    const env = context.env as { SENTDM_API_KEY?: string };
+    apiKey = env.SENTDM_API_KEY || apiKey;
+  } catch {}
 
   if (!apiKey) {
     console.error("[sent.dm] SENTDM_API_KEY is not configured.");
