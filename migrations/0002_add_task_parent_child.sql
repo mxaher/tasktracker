@@ -1,6 +1,6 @@
--- Migration: add_task_parent_child
--- Adds self-referential parent-child hierarchy to the Task table.
--- Uses SET NULL on delete so orphaning (not cascading deletes) is the default.
+-- Migration: add parent-child hierarchy to Task table
+-- Run: npx prisma migrate dev --name add_task_parent_child
+-- Or apply manually against your D1 database
 
 ALTER TABLE "Task" ADD COLUMN "parentId" TEXT REFERENCES "Task"("id") ON DELETE SET NULL;
 
