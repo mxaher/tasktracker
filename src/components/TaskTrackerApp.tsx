@@ -1479,10 +1479,10 @@ function TaskListContent({
                 {daysRemaining !== null && task.status !== "completed" && (
                   <div className="text-xs">
                     {daysRemaining < 0
-                      ? `Ù…ØªØ£Ø®Ø±Ø© ${Math.abs(daysRemaining)} ÙŠÙˆÙ…`
+                      ? `\u0645\u062a\u0623\u062e\u0631\u0629 ${Math.abs(daysRemaining)} \u064a\u0648\u0645`
                       : daysRemaining === 0
-                        ? "ØªØ³ØªØ­Ù‚ Ø§Ù„ÙŠÙˆÙ…"
-                        : `Ù…ØªØ¨Ù‚ÙŠ ${daysRemaining} ÙŠÙˆÙ…`}
+                        ? "\u062a\u0633\u062a\u062d\u0642 \u0627\u0644\u064a\u0648\u0645"
+                        : `\u0645\u062a\u0628\u0642\u064a ${daysRemaining} \u064a\u0648\u0645`}
                   </div>
                 )}
               </div>
@@ -1498,36 +1498,36 @@ function TaskListContent({
                         {activeReminderKey?.startsWith(`${task.id}:`)
                           ? <Loader2 className="h-3 w-3 ml-1 animate-spin" />
                           : <Bell className="h-3 w-3 ml-1" />}
-                        Ø¥Ø±Ø³Ø§Ù„ ØªØ°ÙƒÙŠØ±
+                        {"\u0625\u0631\u0633\u0627\u0644 \u062a\u0630\u0643\u064a\u0631"}
                       </Button>
                     </DropdownMenuTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>Ø£Ø±Ø³Ù„ ØªØ°ÙƒÙŠØ±Ù‹Ø§ Ø¥Ù„Ù‰ Ù…Ø³Ø¤ÙˆÙ„ Ø§Ù„Ù…Ù‡Ù…Ø© Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨ Ø£Ùˆ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ.</TooltipContent>
+                  <TooltipContent>{"\u0623\u0631\u0633\u0644 \u062a\u0630\u0643\u064a\u0631\u064b\u0627 \u0625\u0644\u0649 \u0645\u0633\u0624\u0648\u0644 \u0627\u0644\u0645\u0647\u0645\u0629 \u0639\u0628\u0631 \u0648\u0627\u062a\u0633\u0627\u0628 \u0623\u0648 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a."}</TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Ù‚Ù†Ø§Ø© Ø§Ù„ØªØ°ÙƒÙŠØ±</DropdownMenuLabel>
+                  <DropdownMenuLabel>{"\u0642\u0646\u0627\u0629 \u0627\u0644\u062a\u0630\u0643\u064a\u0631"}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => onSendSingleReminder(task, "whatsapp")}>
                     <MessageSquare className="h-4 w-4 ml-2" />
-                    Ø¥Ø±Ø³Ø§Ù„ Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨
+                    {"\u0625\u0631\u0633\u0627\u0644 \u0639\u0628\u0631 \u0648\u0627\u062a\u0633\u0627\u0628"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onSendSingleReminder(task, "email")}>
                     <Mail className="h-4 w-4 ml-2" />
-                    Ø¥Ø±Ø³Ø§Ù„ Ø¹Ø¨Ø± Ø§Ù„Ø¨Ø±ÙŠØ¯
+                    {"\u0625\u0631\u0633\u0627\u0644 \u0639\u0628\u0631 \u0627\u0644\u0628\u0631\u064a\u062f"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button size="sm" variant="outline" className="text-xs h-7 px-2" disabled={task.status === "completed"} onClick={() => onCompleteTask(task)}>
-                <CheckCircle2 className="h-3 w-3 ml-1" /> Ù…ÙƒØªÙ…Ù„
+                <CheckCircle2 className="h-3 w-3 ml-1" /> {"\u0645\u0643\u062a\u0645\u0644"}
               </Button>
               <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => onOpenTaskModal(task)}>
-                <Edit className="h-3 w-3 ml-1" /> ØªØ­Ø¯ÙŠØ«
+                <Edit className="h-3 w-3 ml-1" /> {"\u062a\u062d\u062f\u064a\u062b"}
               </Button>
               <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => onDateClick(task)}>
-                <Calendar className="h-3 w-3 ml-1" /> Ø§Ù„ØªØ§Ø±ÙŠØ®
+                <Calendar className="h-3 w-3 ml-1" /> {"\u0627\u0644\u062a\u0627\u0631\u064a\u062e"}
               </Button>
               <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => onProgressClick(task)}>
-                <BarChart3 className="h-3 w-3 ml-1" /> Ø§Ù„ØªÙ‚Ø¯Ù…
+                <BarChart3 className="h-3 w-3 ml-1" /> {"\u0627\u0644\u062a\u0642\u062f\u0645"}
               </Button>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => onDeleteTask(task)}>
                 <Trash2 className="h-4 w-4" />
@@ -1553,25 +1553,6 @@ function TaskListContent({
           <TableRow className="bg-muted/20 hover:bg-muted/20">
             <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
               <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-xl bg-muted/40 p-3">
-                    <div className="text-xs text-muted-foreground">الحالة</div>
-                    <div className="mt-1 font-medium">{statusConfig[detailTask.status]?.label || detailTask.status}</div>
-                  </div>
-                  <div className="rounded-xl bg-muted/40 p-3">
-                    <div className="text-xs text-muted-foreground">الأولوية</div>
-                    <div className="mt-1 font-medium">{priorityConfig[detailTask.priority]?.label || detailTask.priority}</div>
-                  </div>
-                  <div className="rounded-xl bg-muted/40 p-3">
-                    <div className="text-xs text-muted-foreground">المالك</div>
-                    <div className="mt-1 font-medium">{detailTask.owner?.name || "—"}</div>
-                  </div>
-                  <div className="rounded-xl bg-muted/40 p-3">
-                    <div className="text-xs text-muted-foreground">المكلّف</div>
-                    <div className="mt-1 font-medium">{detailTask.assignee?.name || "—"}</div>
-                  </div>
-                </div>
-
                 {loadingTaskDetailId === task.id && !taskDetailsById[task.id] ? (
                   <div className="flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -1579,6 +1560,26 @@ function TaskListContent({
                   </div>
                 ) : (
                   <>
+                    <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-sm font-semibold">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          {"\u0622\u062e\u0631 \u062a\u062d\u062f\u064a\u062b"}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {detailTask.latestUpdate ? formatArabicDateTime(detailTask.latestUpdate.createdAt) : "\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u062d\u062f\u064a\u062b\u0627\u062a"}
+                        </span>
+                      </div>
+                      {detailTask.latestUpdate ? (
+                        <div className="rounded-xl bg-muted/40 p-4 text-sm leading-7 text-foreground">
+                          {detailTask.latestUpdate.content}
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                          {"\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u062d\u062f\u064a\u062b\u0627\u062a"}
+                        </div>
+                      )}
+                    </div>
                     <div className="rounded-2xl border border-border/60 bg-muted/10 p-4">
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <div className="text-sm font-semibold">التسلسل الهرمي</div>
@@ -1637,26 +1638,6 @@ function TaskListContent({
                       </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 text-sm font-semibold">
-                          <MessageSquare className="h-4 w-4 text-primary" />
-                          Ø¢Ø®Ø± ØªØ­Ø¯ÙŠØ«
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {detailTask.latestUpdate ? formatArabicDateTime(detailTask.latestUpdate.createdAt) : "Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ­Ø¯ÙŠØ«Ø§Øª"}
-                        </span>
-                      </div>
-                      {detailTask.latestUpdate ? (
-                        <div className="rounded-xl bg-muted/40 p-4 text-sm leading-7 text-foreground">
-                          {detailTask.latestUpdate.content}
-                        </div>
-                      ) : (
-                        <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                          Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ­Ø¯ÙŠØ«Ø§Øª
-                        </div>
-                      )}
-                    </div>
                   </>
                 )}
               </div>
