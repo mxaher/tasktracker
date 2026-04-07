@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -43,37 +44,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-html, body, * {
-  font-family: var(--font-tajawal), 'Tajawal', sans-serif !important;
-}
-
-/* ── RTL global baseline ────────────────────────────────── */
-[dir="rtl"] {
-  direction: rtl;
-  text-align: right;
-}
-[dir="rtl"] input,
-[dir="rtl"] textarea,
-[dir="rtl"] select {
-  text-align: right;
-  direction: rtl;
-}
-/* Tables: force RTL column order */
-[dir="rtl"] table {
-  direction: rtl;
-}
-[dir="rtl"] th,
-[dir="rtl"] td {
-  text-align: right;
-}
-/* Placeholder alignment */
-[dir="rtl"] input::placeholder,
-[dir="rtl"] textarea::placeholder {
-  text-align: right;
-  direction: rtl;
-}
-
 :root {
+  --font-tajawal: 'Tajawal', sans-serif;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -106,6 +78,36 @@ html, body, * {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+html, body, * {
+  font-family: 'Tajawal', var(--font-tajawal), sans-serif !important;
+}
+
+/* ── RTL global baseline ────────────────────────────────── */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+  direction: rtl;
+}
+/* Tables: force RTL column order */
+[dir="rtl"] table {
+  direction: rtl;
+}
+[dir="rtl"] th,
+[dir="rtl"] td {
+  text-align: right;
+}
+/* Placeholder alignment */
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
+  direction: rtl;
 }
 
 .dark {
