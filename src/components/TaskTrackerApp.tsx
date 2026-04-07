@@ -61,6 +61,21 @@ interface Task {
     content: string;
     createdAt: string;
   } | null;
+  parentId?: string | null;
+  parent?: {
+    id: string;
+    title: string;
+    status: string;
+  } | null;
+  children?: Array<{
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    completion: number;
+    assigneeId: string | null;
+  }>;
+  childrenCount?: number;
   taskUpdates?: Array<{
     id: string;
     content: string;
@@ -93,6 +108,16 @@ interface User {
   name: string | null;
   department: string | null;
   role: string;
+}
+
+function createEmptyTaskDraft(overrides: Partial<Task> = {}): Partial<Task> {
+  return {
+    status: "pending",
+    priority: "medium",
+    completion: 0,
+    parentId: null,
+    ...overrides,
+  };
 }
 
 function normalizeTaskUpdates(task: Partial<Task> | null | undefined) {
@@ -637,7 +662,11 @@ function TaskModal({
       toast.error("العنوان مطلوب");
       return;
     }
-    const payload: TaskMutationPayload = { ...localTask, newUpdateContent: pendingUpdateContent };
+    const payload: TaskMutationPayload = {
+      ...localTask,
+      parentId: localTask.parentId ?? null,
+      newUpdateContent: pendingUpdateContent,
+    };
     if (selectedTask) {
       onUpdateTask(payload);
     } else {
@@ -696,6 +725,12 @@ function TaskModal({
   const deptOptions = departments.map(d => ({ value: d, label: d }));
   const pillarOptions = strategicPillars.map(p => ({ value: p, label: p }));
   const sourceOptions = DEFAULT_SOURCES.map(s => ({ value: s, label: s }));
+  const parentTaskOptions: SearchableSelectOption[] = [
+    { value: "none", label: "بدون مهمة رئيسية" },
+    ...tasks
+      .filter((task) => task.id !== selectedTask?.id)
+      .map((task) => ({ value: task.id, label: task.title })),
+  ];
   const ownerOptions: SearchableSelectOption[] = [
     { value: "none", label: "لا يوجد مالك" },
     ...users.map(u => ({ value: u.id, label: u.name || u.email })),
@@ -750,6 +785,16 @@ function TaskModal({
                 onChange={(e) => setLocalTask({ ...localTask, description: e.target.value })}
                 placeholder="أدخل وصف المهمة"
                 rows={3}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>المهمة الرئيسية</Label>
+              <SearchableSelect
+                value={localTask.parentId || "none"}
+                onChange={(val) => setLocalTask({ ...localTask, parentId: val === "none" ? null : val })}
+                options={parentTaskOptions}
+                placeholder="اختر المهمة الرئيسية"
               />
             </div>
 
@@ -1217,6 +1262,8 @@ interface TaskListContentProps {
   onSendSingleReminder: (task: Task, channel: "whatsapp" | "email") => void;
   activeReminderKey: string | null;
   onCompleteTask: (task: Task) => void;
+  onOpenCreateDialog: (options?: { parentId?: string | null }) => void;
+  onOpenTaskDetail: (taskId: string) => void;
   onDateClick: (task: Task) => void;
   onProgressClick: (task: Task) => void;
   sortBy: string;
@@ -1224,6 +1271,10 @@ interface TaskListContentProps {
   sortOrder: "asc" | "desc";
   setSortOrder: (o: "asc" | "desc") => void;
   onExport: () => void;
+  taskDetailsById: Record<string, Task>;
+  loadingTaskDetailId: string | null;
+  childTasksByParent: Record<string, Task[]>;
+  loadingChildrenByParent: Record<string, boolean>;
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
 }
@@ -1241,8 +1292,10 @@ function TaskListContent({
   selectedTaskIds, setSelectedTaskIds,
   setIsBulkDeleteDialogOpen,
   onOpenTaskModal, onDeleteTask, onSendBulkWhatsApp, bulkWhatsAppSending, onSendSingleReminder, activeReminderKey, onCompleteTask,
+  onOpenCreateDialog, onOpenTaskDetail,
   onDateClick, onProgressClick, onExport,
   sortBy, setSortBy, sortOrder, setSortOrder,
+  taskDetailsById, loadingTaskDetailId, childTasksByParent, loadingChildrenByParent,
   getDaysRemaining, getRiskColor,
 }: TaskListContentProps) {
   const handleSort = (field: string) => {
@@ -1270,6 +1323,7 @@ function TaskListContent({
     filteredTasks.length > 0 &&
     filteredTasks.every(t => selectedTaskIds.has(t.id));
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
   const [visibleCount, setVisibleCount] = useState(isMobileViewport ? 12 : 25);
   const isRunningTasksFilterActive = matchesStatusGroup(filterStatuses, RUNNING_TASK_STATUSES);
   const isCompletedTasksFilterActive = matchesStatusGroup(filterStatuses, COMPLETED_TASK_STATUSES);
@@ -1303,7 +1357,26 @@ function TaskListContent({
   };
 
   const toggleExpandedRow = (taskId: string) => {
-    setExpandedTaskId((current) => (current === taskId ? null : taskId));
+    setExpandedTaskId((current) => {
+      const next = current === taskId ? null : taskId;
+      if (next) {
+        onOpenTaskDetail(next);
+      }
+      return next;
+    });
+  };
+
+  const toggleParentChildren = (taskId: string) => {
+    setExpandedParents((current) => {
+      const next = new Set(current);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+        onOpenTaskDetail(taskId);
+      }
+      return next;
+    });
   };
 
   const applyStatusFilterGroup = (statuses: readonly string[]) => {
@@ -1316,6 +1389,282 @@ function TaskListContent({
     setFilterOverdue(false);
     setFilterDueSoon(false);
     setFilterStatuses(() => []);
+  };
+
+  const renderTaskRow = (task: Task, rowNumber: string | number, options?: { isInlineChild?: boolean }) => {
+    const detailTask = taskDetailsById[task.id] ?? task;
+    const StatusIcon = statusConfig[task.status]?.icon || Clock;
+    const daysRemaining = getDaysRemaining(task.dueDate);
+    const isSelected = selectedTaskIds.has(task.id);
+    const isExpanded = expandedTaskId === task.id;
+    const isParentExpanded = expandedParents.has(task.id);
+    const childRows = childTasksByParent[task.id] ?? [];
+    const childrenLoading = loadingChildrenByParent[task.id];
+    const isInlineChild = options?.isInlineChild ?? false;
+
+    return (
+      <Fragment key={`${options?.isInlineChild ? "child" : "task"}-${task.id}`}>
+        <TableRow
+          className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""} ${isExpanded ? "border-b-0 bg-muted/30" : ""}`}
+          onClick={() => toggleExpandedRow(task.id)}
+          aria-expanded={isExpanded}
+        >
+          <TableCell className="pr-4 text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center items-center">
+              <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
+            </div>
+          </TableCell>
+          <TableCell className="text-center text-sm font-medium text-muted-foreground">{rowNumber}</TableCell>
+          <TableCell>
+            <div className="flex items-start gap-2">
+              <button
+                type="button"
+                className={`mt-0.5 text-muted-foreground ${task.childrenCount ? "hover:text-foreground" : "opacity-40 cursor-default"}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (task.childrenCount) {
+                    toggleParentChildren(task.id);
+                  }
+                }}
+                aria-label={task.childrenCount ? (isParentExpanded ? "إخفاء المهام الفرعية" : "إظهار المهام الفرعية") : "لا توجد مهام فرعية"}
+              >
+                {task.childrenCount ? (
+                  isParentExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <span className="block h-4 w-4" />
+                )}
+              </button>
+              <div className="space-y-1">
+                <div className="font-medium line-clamp-1">
+                  <span className={isInlineChild || task.parentId ? "pl-4 border-l-2 border-muted ml-2" : ""}>
+                    {task.title}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {task.childrenCount ? <span>↳ {task.childrenCount} sub-tasks</span> : null}
+                  {task.parent ? <span>{task.parent.title}</span> : null}
+                </div>
+                {task.description ? <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div> : null}
+              </div>
+            </div>
+          </TableCell>
+          <TableCell className="text-center">
+            {task.source ? (
+              <Badge variant="outline" className="text-xs whitespace-nowrap">{task.source}</Badge>
+            ) : "—"}
+          </TableCell>
+          <TableCell>{task.department || "—"}</TableCell>
+          <TableCell>{task.owner?.name || "—"}</TableCell>
+          <TableCell>
+            <Badge className={`${priorityConfig[task.priority]?.bgColor} ${priorityConfig[task.priority]?.color}`}>
+              {priorityConfig[task.priority]?.label}
+            </Badge>
+          </TableCell>
+          <TableCell>
+            <Badge className={`${statusConfig[task.status]?.bgColor} ${statusConfig[task.status]?.color}`}>
+              <StatusIcon className="mr-1 h-3 w-3" />
+              {statusConfig[task.status]?.label}
+            </Badge>
+          </TableCell>
+          <TableCell>
+            <div className="flex items-center gap-2">
+              <Progress value={task.completion * 100} className="h-2 flex-1" />
+              <span className="text-xs font-medium w-8">{Math.round(task.completion * 100)}%</span>
+            </div>
+          </TableCell>
+          <TableCell>
+            {task.dueDate ? (
+              <div className={getRiskColor(task)}>
+                <div className="text-sm">{formatArabicDate(task.dueDate)}</div>
+                {daysRemaining !== null && task.status !== "completed" && (
+                  <div className="text-xs">
+                    {daysRemaining < 0
+                      ? `Ù…ØªØ£Ø®Ø±Ø© ${Math.abs(daysRemaining)} ÙŠÙˆÙ…`
+                      : daysRemaining === 0
+                        ? "ØªØ³ØªØ­Ù‚ Ø§Ù„ÙŠÙˆÙ…"
+                        : `Ù…ØªØ¨Ù‚ÙŠ ${daysRemaining} ÙŠÙˆÙ…`}
+                  </div>
+                )}
+              </div>
+            ) : "—"}
+          </TableCell>
+          <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <DropdownMenu>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+                        {activeReminderKey?.startsWith(`${task.id}:`)
+                          ? <Loader2 className="h-3 w-3 ml-1 animate-spin" />
+                          : <Bell className="h-3 w-3 ml-1" />}
+                        Ø¥Ø±Ø³Ø§Ù„ ØªØ°ÙƒÙŠØ±
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Ø£Ø±Ø³Ù„ ØªØ°ÙƒÙŠØ±Ù‹Ø§ Ø¥Ù„Ù‰ Ù…Ø³Ø¤ÙˆÙ„ Ø§Ù„Ù…Ù‡Ù…Ø© Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨ Ø£Ùˆ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ.</TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Ù‚Ù†Ø§Ø© Ø§Ù„ØªØ°ÙƒÙŠØ±</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onSendSingleReminder(task, "whatsapp")}>
+                    <MessageSquare className="h-4 w-4 ml-2" />
+                    Ø¥Ø±Ø³Ø§Ù„ Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onSendSingleReminder(task, "email")}>
+                    <Mail className="h-4 w-4 ml-2" />
+                    Ø¥Ø±Ø³Ø§Ù„ Ø¹Ø¨Ø± Ø§Ù„Ø¨Ø±ÙŠØ¯
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button size="sm" variant="outline" className="text-xs h-7 px-2" disabled={task.status === "completed"} onClick={() => onCompleteTask(task)}>
+                <CheckCircle2 className="h-3 w-3 ml-1" /> Ù…ÙƒØªÙ…Ù„
+              </Button>
+              <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => onOpenTaskModal(task)}>
+                <Edit className="h-3 w-3 ml-1" /> ØªØ­Ø¯ÙŠØ«
+              </Button>
+              <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => onDateClick(task)}>
+                <Calendar className="h-3 w-3 ml-1" /> Ø§Ù„ØªØ§Ø±ÙŠØ®
+              </Button>
+              <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => onProgressClick(task)}>
+                <BarChart3 className="h-3 w-3 ml-1" /> Ø§Ù„ØªÙ‚Ø¯Ù…
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => onDeleteTask(task)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+        {isParentExpanded ? (
+          childrenLoading ? (
+            <TableRow className="bg-muted/10 hover:bg-muted/10">
+              <TableCell colSpan={11} className="px-6 py-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>جارٍ تحميل المهام الفرعية...</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            childRows.map((childTask, childIndex) => renderTaskRow(childTask, `${rowNumber}.${childIndex + 1}`, { isInlineChild: true }))
+          )
+        ) : null}
+        {isExpanded ? (
+          <TableRow className="bg-muted/20 hover:bg-muted/20">
+            <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
+              <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-xl bg-muted/40 p-3">
+                    <div className="text-xs text-muted-foreground">الحالة</div>
+                    <div className="mt-1 font-medium">{statusConfig[detailTask.status]?.label || detailTask.status}</div>
+                  </div>
+                  <div className="rounded-xl bg-muted/40 p-3">
+                    <div className="text-xs text-muted-foreground">الأولوية</div>
+                    <div className="mt-1 font-medium">{priorityConfig[detailTask.priority]?.label || detailTask.priority}</div>
+                  </div>
+                  <div className="rounded-xl bg-muted/40 p-3">
+                    <div className="text-xs text-muted-foreground">المالك</div>
+                    <div className="mt-1 font-medium">{detailTask.owner?.name || "—"}</div>
+                  </div>
+                  <div className="rounded-xl bg-muted/40 p-3">
+                    <div className="text-xs text-muted-foreground">المكلّف</div>
+                    <div className="mt-1 font-medium">{detailTask.assignee?.name || "—"}</div>
+                  </div>
+                </div>
+
+                {loadingTaskDetailId === task.id && !taskDetailsById[task.id] ? (
+                  <div className="flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>جارٍ تحميل تفاصيل المهمة...</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="rounded-2xl border border-border/60 bg-muted/10 p-4">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold">التسلسل الهرمي</div>
+                        <Button size="sm" variant="outline" onClick={() => onOpenCreateDialog({ parentId: task.id })}>
+                          <Plus className="h-4 w-4 ml-1" />
+                          إضافة مهمة فرعية
+                        </Button>
+                      </div>
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <div className="text-xs text-muted-foreground">المهمة الرئيسية</div>
+                          {detailTask.parent ? (
+                            <button
+                              type="button"
+                              className="mt-1 text-primary hover:underline"
+                              onClick={() => {
+                                setExpandedTaskId(detailTask.parent!.id);
+                                onOpenTaskDetail(detailTask.parent!.id);
+                              }}
+                            >
+                              {detailTask.parent.title}
+                            </button>
+                          ) : (
+                            <div className="mt-1 text-muted-foreground">هذه مهمة رئيسية</div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">المهام الفرعية</div>
+                          {detailTask.children && detailTask.children.length > 0 ? (
+                            <div className="mt-2 space-y-2">
+                              {detailTask.children.map((child) => (
+                                <div key={child.id} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                                  <button
+                                    type="button"
+                                    className="text-right text-primary hover:underline"
+                                    onClick={() => {
+                                      setExpandedTaskId(child.id);
+                                      onOpenTaskDetail(child.id);
+                                    }}
+                                  >
+                                    {child.title}
+                                  </button>
+                                  <div className="flex items-center gap-2">
+                                    <Badge className={`${statusConfig[child.status]?.bgColor} ${statusConfig[child.status]?.color}`}>
+                                      {statusConfig[child.status]?.label || child.status}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">{Math.round(child.completion * 100)}%</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-muted-foreground">لا توجد مهام فرعية بعد</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-sm font-semibold">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          Ø¢Ø®Ø± ØªØ­Ø¯ÙŠØ«
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {detailTask.latestUpdate ? formatArabicDateTime(detailTask.latestUpdate.createdAt) : "Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ­Ø¯ÙŠØ«Ø§Øª"}
+                        </span>
+                      </div>
+                      {detailTask.latestUpdate ? (
+                        <div className="rounded-xl bg-muted/40 p-4 text-sm leading-7 text-foreground">
+                          {detailTask.latestUpdate.content}
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                          Ù„Ø§ ØªÙˆØ¬Ø¯ ØªØ­Ø¯ÙŠØ«Ø§Øª
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </TableCell>
+          </TableRow>
+        ) : null}
+      </Fragment>
+    );
   };
 
   return (
@@ -1615,7 +1964,7 @@ function TaskListContent({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visibleTasks.map((task, index) => {
+                {false ? visibleTasks.map((task, index) => {
                   const StatusIcon = statusConfig[task.status]?.icon || Clock;
                   const daysRemaining = getDaysRemaining(task.dueDate);
                   const isSelected = selectedTaskIds.has(task.id);
@@ -1760,7 +2109,7 @@ function TaskListContent({
                     ) : null}
                     </Fragment>
                   );
-                })}
+                }) : visibleTasks.map((task, index) => renderTaskRow(task, index + 1))}
               </TableBody>
             </Table>
             </div>
@@ -2248,6 +2597,10 @@ export default function TaskTrackerApp() {
   const [filterOverdue, setFilterOverdue] = useState(false);
   const [filterDueSoon, setFilterDueSoon] = useState(false);
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [taskDetailsById, setTaskDetailsById] = useState<Record<string, Task>>({});
+  const [loadingTaskDetailId, setLoadingTaskDetailId] = useState<string | null>(null);
+  const [childTasksByParent, setChildTasksByParent] = useState<Record<string, Task[]>>({});
+  const [loadingChildrenByParent, setLoadingChildrenByParent] = useState<Record<string, boolean>>({});
 
   const [settings, setSettings] = useState<SettingsState>({
     adminEmail: "",
@@ -2299,6 +2652,36 @@ export default function TaskTrackerApp() {
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast.error("تعذر تحميل المهام");
+    }
+  };
+
+  const fetchTaskDetail = async (taskId: string) => {
+    setLoadingTaskDetailId(taskId);
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`);
+      if (!response.ok) throw new Error("تعذر تحميل تفاصيل المهمة");
+      const data = await response.json();
+      setTaskDetailsById((prev) => ({ ...prev, [taskId]: data.task }));
+    } catch (error) {
+      console.error("Error fetching task detail:", error);
+      toast.error("تعذر تحميل تفاصيل المهمة");
+    } finally {
+      setLoadingTaskDetailId((current) => (current === taskId ? null : current));
+    }
+  };
+
+  const fetchChildTasks = async (parentId: string) => {
+    setLoadingChildrenByParent((prev) => ({ ...prev, [parentId]: true }));
+    try {
+      const response = await fetch(`/api/tasks?parentId=${encodeURIComponent(parentId)}`);
+      if (!response.ok) throw new Error("تعذر تحميل المهام الفرعية");
+      const data = await response.json();
+      setChildTasksByParent((prev) => ({ ...prev, [parentId]: data.tasks || [] }));
+    } catch (error) {
+      console.error("Error fetching child tasks:", error);
+      toast.error("تعذر تحميل المهام الفرعية");
+    } finally {
+      setLoadingChildrenByParent((prev) => ({ ...prev, [parentId]: false }));
     }
   };
 
@@ -2475,6 +2858,8 @@ export default function TaskTrackerApp() {
       toast.success("تم إنشاء المهمة بنجاح");
       await fetchTasks();
       await fetchStats();
+      setTaskDetailsById({});
+      setChildTasksByParent({});
       setIsTaskModalOpen(false);
       setEditingTask({});
     } catch (error) {
@@ -2495,6 +2880,8 @@ export default function TaskTrackerApp() {
       toast.success("Task updated successfully");
       await fetchTasks();
       await fetchStats();
+      setTaskDetailsById({});
+      setChildTasksByParent({});
       setIsTaskModalOpen(false);
       setSelectedTask(null);
       setEditingTask({});
@@ -2512,6 +2899,8 @@ export default function TaskTrackerApp() {
       toast.success("Task deleted successfully");
       await fetchTasks();
       await fetchStats();
+      setTaskDetailsById({});
+      setChildTasksByParent({});
       setIsDeleteDialogOpen(false);
       setTaskToDelete(null);
     } catch (error) {
@@ -2603,17 +2992,30 @@ export default function TaskTrackerApp() {
     }
   };
 
-  const openTaskModal = async (task?: Task) => {
+  const openTaskDetail = async (taskId: string) => {
+    await Promise.allSettled([
+      fetchTaskDetail(taskId),
+      fetchChildTasks(taskId),
+    ]);
+  };
+
+  const openCreateDialog = (options?: { parentId?: string | null }) => {
+    setSelectedTask(null);
+    setEditingTask(createEmptyTaskDraft({ parentId: options?.parentId ?? null }));
+    setIsTaskModalOpen(true);
+  };
+
+  const openTaskModal = async (taskOrOptions?: Task | { parentId?: string | null }) => {
     if (users.length === 0) {
       void fetchUsers();
     }
 
-    if (task) {
-      setSelectedTask(task);
-      setEditingTask(task);
+    if (taskOrOptions && "id" in taskOrOptions) {
+      setSelectedTask(taskOrOptions);
+      setEditingTask(taskOrOptions);
     } else {
-      setSelectedTask(null);
-      setEditingTask({ status: "pending", priority: "medium", completion: 0 });
+      openCreateDialog(taskOrOptions);
+      return;
     }
     setIsTaskModalOpen(true);
   };
@@ -2956,6 +3358,8 @@ export default function TaskTrackerApp() {
               onSendSingleReminder={handleSendSingleReminder}
               activeReminderKey={activeReminderKey}
               onCompleteTask={handleMarkComplete}
+              onOpenCreateDialog={openCreateDialog}
+              onOpenTaskDetail={openTaskDetail}
               onDateClick={(task) => { setQuickDateTask(task); setQuickDateValue(task.dueDate ? task.dueDate.split("T")[0] : ""); }}
               onProgressClick={(task) => { setQuickProgressTask(task); setQuickProgressValue(Math.round(task.completion * 100)); }}
               sortBy={sortBy}
@@ -2963,6 +3367,10 @@ export default function TaskTrackerApp() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               onExport={handleExport}
+              taskDetailsById={taskDetailsById}
+              loadingTaskDetailId={loadingTaskDetailId}
+              childTasksByParent={childTasksByParent}
+              loadingChildrenByParent={loadingChildrenByParent}
               getDaysRemaining={getDaysRemaining}
               getRiskColor={getRiskColor}
             />
