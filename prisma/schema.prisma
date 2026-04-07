@@ -81,6 +81,11 @@ model Task {
   // Data source tracking
   dataSourceId     String?
   dataSource       DataSource? @relation(fields: [dataSourceId], references: [id])
+
+  // Parent-child hierarchy
+  parentId         String?
+  parent           Task?    @relation("TaskChildren", fields: [parentId], references: [id])
+  children         Task[]   @relation("TaskChildren")
   
   // Timestamps
   createdAt        DateTime @default(now())
@@ -90,6 +95,8 @@ model Task {
   auditLogs        TaskAuditLog[]
   notifications    Notification[]
   updates          TaskUpdate[]
+
+  @@index([parentId])
 }
 
 model Contact {
