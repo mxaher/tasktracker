@@ -35,6 +35,7 @@ type TaskRow = {
   sourceMonth: string | null;
   source: string | null;
   dataSourceId: string | null;
+  parentId: string | null;
   createdAt: string;
   updatedAt: string;
   owner_user_id: string | null;
@@ -161,6 +162,7 @@ export function mapTaskRow(row: TaskRow) {
     ceoNotes: row.ceoNotes,
     sourceMonth: row.sourceMonth,
     source: row.source,
+    parentId: row.parentId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     latestUpdate:
@@ -262,6 +264,7 @@ export async function buildTaskSelectSql() {
       ${selectTaskColumn("sourceMonth")},
       ${selectTaskColumn("source")},
       ${selectTaskColumn("dataSourceId")},
+      ${selectTaskColumn("parentId")},
       t.createdAt,
       t.updatedAt,
       owner.id AS owner_user_id,
@@ -276,4 +279,53 @@ export async function buildTaskSelectSql() {
     LEFT JOIN "User" owner ON owner.id = t.ownerId
     LEFT JOIN "User" assignee ON assignee.id = t.assigneeId
   `;
+}
+
+/**
+ * Calculate the depth of a task in the hierarchy.
+ * Returns 1 for root tasks, 2 for children, 3 for grandchildren, etc.
+ */
+export async function getTaskDepth(taskId: string): Promise<number> {
+  let depth = 1;
+  let currentId: string | null = taskId;
+  const visited = new Set<string>();
+
+  while (currentId) {
+    if (visited.has(currentId)) break; // circular reference guard
+    visited.add(currentId);
+    const row = await d1First<{ parentId: string | null }>(
+      'SELECT "parentId" FROM "Task" WHERE "id" = ?',
+      currentId,
+    );
+    if (!row || !row.parentId) break;
+    depth++;
+    currentId = row.parentId;
+  }
+
+  return depth;
+}
+
+/**
+ * Collect all descendant IDs of a task (children, grandchildren, etc.)
+ * Used to prevent circular references.
+ */
+export async function getAllDescendantIds(taskId: string): Promise<Set<string>> {
+  const descendants = new Set<string>();
+  const queue = [taskId];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const children = await d1All<{ id: string }>(
+      'SELECT "id" FROM "Task" WHERE "parentId" = ?',
+      current,
+    );
+    for (const child of children) {
+      if (!descendants.has(child.id)) {
+        descendants.add(child.id);
+        queue.push(child.id);
+      }
+    }
+  }
+
+  return descendants;
 }
