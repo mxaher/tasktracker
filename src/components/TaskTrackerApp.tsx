@@ -1582,7 +1582,7 @@ function TaskListContent({
                     </div>
                     <div className="rounded-2xl border border-border/60 bg-muted/10 p-4">
                       <div className="mb-3 flex items-center justify-between gap-3">
-                        <div className="text-sm font-semibold">التسلسل الهرمي</div>
+                        {detailTask.children && detailTask.children.length > 0 && (<div className="text-sm font-semibold">التسلسل الهرمي</div>)}
                         <Button size="sm" variant="outline" onClick={() => onOpenCreateDialog({ parentId: task.id })}>
                           <Plus className="h-4 w-4 ml-1" />
                           إضافة مهمة فرعية
