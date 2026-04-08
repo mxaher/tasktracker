@@ -1,3 +1,4 @@
+
 "use client";
 
 import ContactsTab from "@/components/settings/ContactsTab";
@@ -1588,6 +1589,7 @@ function TaskListContent({
                           إضافة مهمة فرعية
                         </Button>
                       </div>
+                                {detailTask.children && detailTask.children.length > 0 && (
                       <div className="space-y-3 text-sm">
                         <div>
                           <div className="text-xs text-muted-foreground">المهمة الرئيسية</div>
@@ -1636,6 +1638,7 @@ function TaskListContent({
                           )}
                         </div>
                       </div>
+                                )}
                     </div>
 
                   </>
