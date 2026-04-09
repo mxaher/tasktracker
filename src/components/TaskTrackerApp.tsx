@@ -1398,6 +1398,7 @@ function TaskListContent({
     const daysRemaining = getDaysRemaining(task.dueDate);
     const isSelected = selectedTaskIds.has(task.id);
     const isExpanded = expandedTaskId === task.id;
+    const hasHierarchy = !!(detailTask.parent || (detailTask.children && detailTask.children.length > 0));
     const isParentExpanded = expandedParents.has(task.id);
     const childRows = childTasksByParent[task.id] ?? [];
     const childrenLoading = loadingChildrenByParent[task.id];
@@ -1567,9 +1568,15 @@ function TaskListContent({
                           <MessageSquare className="h-4 w-4 text-primary" />
                           {"\u0622\u062e\u0631 \u062a\u062d\u062f\u064a\u062b"}
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          {detailTask.latestUpdate ? formatArabicDateTime(detailTask.latestUpdate.createdAt) : "\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u062d\u062f\u064a\u062b\u0627\u062a"}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <Button size="sm" variant="outline" onClick={() => onOpenCreateDialog({ parentId: task.id })}>
+                            <Plus className="h-4 w-4 ml-1" />
+                            إضافة مهمة فرعية
+                          </Button>
+                          <span className="text-xs text-muted-foreground">
+                            {detailTask.latestUpdate ? formatArabicDateTime(detailTask.latestUpdate.createdAt) : "\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u062d\u062f\u064a\u062b\u0627\u062a"}
+                          </span>
+                        </div>
                       </div>
                       {detailTask.latestUpdate ? (
                         <div className="rounded-xl bg-muted/40 p-4 text-sm leading-7 text-foreground">
@@ -1580,66 +1587,87 @@ function TaskListContent({
                           {"\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u062d\u062f\u064a\u062b\u0627\u062a"}
                         </div>
                       )}
-                    </div>
-                    <div className="rounded-2xl border border-border/60 bg-muted/10 p-4">
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        {detailTask.children && detailTask.children.length > 0 && (<div className="text-sm font-semibold">التسلسل الهرمي</div>)}
-                        <Button size="sm" variant="outline" onClick={() => onOpenCreateDialog({ parentId: task.id })}>
-                          <Plus className="h-4 w-4 ml-1" />
-                          إضافة مهمة فرعية
-                        </Button>
-                      </div>
-                                {detailTask.children && detailTask.children.length > 0 && (
-                      <div className="space-y-3 text-sm">
-                        <div>
-                          <div className="text-xs text-muted-foreground">المهمة الرئيسية</div>
-                          {detailTask.parent ? (
-                            <button
-                              type="button"
-                              className="mt-1 text-primary hover:underline"
-                              onClick={() => {
-                                setExpandedTaskId(detailTask.parent!.id);
-                                onOpenTaskDetail(detailTask.parent!.id);
-                              }}
-                            >
-                              {detailTask.parent.title}
-                            </button>
-                          ) : (
-                            <div className="mt-1 text-muted-foreground">هذه مهمة رئيسية</div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">المهام الفرعية</div>
-                          {detailTask.children && detailTask.children.length > 0 ? (
-                            <div className="mt-2 space-y-2">
-                              {detailTask.children.map((child) => (
-                                <div key={child.id} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
-                                  <button
-                                    type="button"
-                                    className="text-right text-primary hover:underline"
-                                    onClick={() => {
-                                      setExpandedTaskId(child.id);
-                                      onOpenTaskDetail(child.id);
-                                    }}
-                                  >
-                                    {child.title}
-                                  </button>
-                                  <div className="flex items-center gap-2">
-                                    <Badge className={`${statusConfig[child.status]?.bgColor} ${statusConfig[child.status]?.color}`}>
-                                      {statusConfig[child.status]?.label || child.status}
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground">{Math.round(child.completion * 100)}%</span>
-                                  </div>
-                                </div>
-                              ))}
+                      {(() => {
+                        const emailLogs = (detailTask.taskUpdates ?? []).filter(
+                          (u) => u.source === "email_reminder"
+                        );
+                        if (emailLogs.length === 0) return null;
+                        return (
+                          <div className="mt-3 space-y-1.5">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">
+                              سجل التذكيرات
                             </div>
-                          ) : (
-                            <div className="mt-1 text-muted-foreground">لا توجد مهام فرعية بعد</div>
-                          )}
+                            {emailLogs.map((log) => (
+                              <div
+                                key={log.id}
+                                className="flex items-center gap-2 rounded-lg border border-dashed bg-muted/30 px-3 py-2 text-xs text-muted-foreground"
+                              >
+                                <Mail className="h-3.5 w-3.5 flex-shrink-0 text-primary/60" />
+                                <span className="flex-1">{log.content}</span>
+                                <span className="whitespace-nowrap text-muted-foreground/70">
+                                  {formatArabicDateTime(log.createdAt)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    {hasHierarchy && (
+                      <div className="rounded-2xl border border-border/60 bg-muted/10 p-4">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <div className="text-sm font-semibold">التسلسل الهرمي</div>
+                        </div>
+                        <div className="space-y-3 text-sm">
+                          <div>
+                            <div className="text-xs text-muted-foreground">المهمة الرئيسية</div>
+                            {detailTask.parent ? (
+                              <button
+                                type="button"
+                                className="mt-1 text-primary hover:underline"
+                                onClick={() => {
+                                  setExpandedTaskId(detailTask.parent!.id);
+                                  onOpenTaskDetail(detailTask.parent!.id);
+                                }}
+                              >
+                                {detailTask.parent.title}
+                              </button>
+                            ) : (
+                              <div className="mt-1 text-muted-foreground">هذه مهمة رئيسية</div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">المهام الفرعية</div>
+                            {detailTask.children && detailTask.children.length > 0 ? (
+                              <div className="mt-2 space-y-2">
+                                {detailTask.children.map((child) => (
+                                  <div key={child.id} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                                    <button
+                                      type="button"
+                                      className="text-right text-primary hover:underline"
+                                      onClick={() => {
+                                        setExpandedTaskId(child.id);
+                                        onOpenTaskDetail(child.id);
+                                      }}
+                                    >
+                                      {child.title}
+                                    </button>
+                                    <div className="flex items-center gap-2">
+                                      <Badge className={`${statusConfig[child.status]?.bgColor} ${statusConfig[child.status]?.color}`}>
+                                        {statusConfig[child.status]?.label || child.status}
+                                      </Badge>
+                                      <span className="text-xs text-muted-foreground">{Math.round(child.completion * 100)}%</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="mt-1 text-muted-foreground">لا توجد مهام فرعية بعد</div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                                )}
-                    </div>
+                    )}
 
                   </>
                 )}
@@ -3125,6 +3153,41 @@ export default function TaskTrackerApp() {
     const reminderKey = `${task.id}:${channel}`;
     setActiveReminderKey(reminderKey);
     try {
+      if (channel === "email") {
+        const recipientEmail = task.owner?.email ?? task.assignee?.email ?? null;
+        if (!recipientEmail) {
+          toast.error("لا يوجد بريد إلكتروني مسجّل للمسؤول عن هذه المهمة");
+          return;
+        }
+
+        const response = await fetch("/api/send-reminder-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            taskId: task.id,
+            recipientEmail,
+            recipientName: task.owner?.name ?? task.assignee?.name ?? recipientEmail,
+            taskTitle: task.title,
+            startDate: task.startDate
+              ? new Intl.DateTimeFormat("ar-SA", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }).format(new Date(task.startDate))
+              : "غير محدد",
+            latestUpdate: task.latestUpdate?.content ?? null,
+          }),
+        });
+
+        if (!response.ok) {
+          toast.error("فشل إرسال البريد الإلكتروني");
+        } else {
+          toast.success("تم إرسال التذكير بالبريد الإلكتروني بنجاح");
+          onOpenTaskDetail(task.id);
+        }
+        return;
+      }
+
       const response = await fetch(`/api/tasks/${task.id}/reminder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
