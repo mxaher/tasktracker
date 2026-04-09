@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildReminderEmailHtml } from "@/lib/reminder-email-template";
 import { createId, d1Run, nowIso } from "@/lib/cloudflare-d1";
 
-export const runtime = "edge";
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
