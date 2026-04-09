@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getDeliverableEmails } from "@/lib/email-address";
 import { format } from "date-fns";
 
 type D1Value = string | number | null;
@@ -81,6 +82,14 @@ async function sendEmail(payload: {
     return { success: false as const, error: "RESEND_API_KEY is not configured." };
   }
 
+  const recipients = getDeliverableEmails(
+    Array.isArray(payload.to) ? payload.to : [payload.to]
+  );
+
+  if (recipients.length === 0) {
+    return { success: false as const, error: "No deliverable recipient email addresses were found." };
+  }
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -89,7 +98,7 @@ async function sendEmail(payload: {
     },
     body: JSON.stringify({
       from: fromEmail,
-      to: Array.isArray(payload.to) ? payload.to : [payload.to],
+      to: recipients,
       subject: payload.subject,
       html: payload.html,
       text: payload.text,
@@ -153,12 +162,9 @@ function buildReminderEmail(task: TaskRow, message: string | null, adminEmail: s
   ].filter(Boolean).join("\n");
 
   // Collect recipient emails
-  const recipients = new Set<string>();
-  recipients.add(adminEmail);
-  if (task.owner_email) recipients.add(task.owner_email);
-  if (task.assignee_email) recipients.add(task.assignee_email);
+  const recipients = getDeliverableEmails([adminEmail, task.owner_email, task.assignee_email]);
 
-  return { subject, html, text, recipients: Array.from(recipients) };
+  return { subject, html, text, recipients };
 }
 
 // POST /api/tasks/[id]/remind — Send a manual reminder for a specific task
@@ -202,17 +208,17 @@ export async function POST(
     const { subject, html, text, recipients: allRecipients } = buildReminderEmail(task, message, adminEmail);
 
     // Filter recipients based on options
-    const recipients: string[] = [];
-    if (sendToAdmin) recipients.push(adminEmail);
-    if (sendToOwner && task.owner_email && !recipients.includes(task.owner_email)) {
-      recipients.push(task.owner_email);
-    }
-    if (sendToOwner && task.assignee_email && !recipients.includes(task.assignee_email)) {
-      recipients.push(task.assignee_email);
-    }
+    const recipients = getDeliverableEmails([
+      sendToAdmin ? adminEmail : null,
+      sendToOwner ? task.owner_email : null,
+      sendToOwner ? task.assignee_email : null,
+    ]);
 
     if (recipients.length === 0) {
-      return NextResponse.json({ error: "No recipients found" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No deliverable recipient email addresses were found" },
+        { status: 400 }
+      );
     }
 
     // Send the email

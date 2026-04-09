@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getDeliverableEmails } from "@/lib/email-address";
 import { format, isPast } from "date-fns";
 
 type D1Value = string | number | null;
@@ -106,6 +107,17 @@ async function sendEmail(payload: {
     };
   }
 
+  const recipients = getDeliverableEmails(
+    Array.isArray(payload.to) ? payload.to : [payload.to]
+  );
+
+  if (recipients.length === 0) {
+    return {
+      success: false as const,
+      error: "No deliverable recipient email addresses were found.",
+    };
+  }
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -114,7 +126,7 @@ async function sendEmail(payload: {
     },
     body: JSON.stringify({
       from: fromEmail,
-      to: Array.isArray(payload.to) ? payload.to : [payload.to],
+      to: recipients,
       subject: payload.subject,
       html: payload.html,
       text: payload.text,

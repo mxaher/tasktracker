@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
       // Create new user
       const newUser = await db.user.create({
         data: {
-          email: `${trimmedName.toLowerCase().replace(/\s+/g, ".")}@tasktracker.local`,
+          email: `user-${crypto.randomUUID().slice(0, 12)}@tasktracker.local`,
           name: trimmedName,
           role: "viewer",
         },

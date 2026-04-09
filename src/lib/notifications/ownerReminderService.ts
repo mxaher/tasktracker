@@ -1,5 +1,6 @@
 import { normalizePhoneNumber } from "@/lib/contact-validation";
 import { createId, d1All, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
+import { getDeliverableEmails } from "@/lib/email-address";
 import { sendWhatsAppMessage } from "@/lib/notifications/sentdm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { differenceInCalendarDays, format, startOfDay } from "date-fns";
@@ -126,6 +127,15 @@ async function sendEmailMessage(to: string, subject: string, text: string, html:
     return { success: false as const, error: "RESEND_API_KEY is not configured." };
   }
 
+  const recipients = getDeliverableEmails([to]);
+
+  if (recipients.length === 0) {
+    return {
+      success: false as const,
+      error: "No deliverable recipient email addresses were found.",
+    };
+  }
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -134,7 +144,7 @@ async function sendEmailMessage(to: string, subject: string, text: string, html:
     },
     body: JSON.stringify({
       from: fromEmail,
-      to: [to],
+      to: recipients,
       subject,
       text,
       html,

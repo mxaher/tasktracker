@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getDeliverableEmails } from "@/lib/email-address";
 import { format, differenceInDays, isPast } from "date-fns";
 
 // Email configuration - using Resend API
@@ -16,13 +17,22 @@ async function sendEmailWithResend(payload: EmailPayload): Promise<{ success: bo
     // Read env vars lazily for Cloudflare Workers compatibility
   const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
   const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@wealix.app";
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "tasks@wealix.app";
-
   if (!RESEND_API_KEY) {
     console.error("[Email] RESEND_API_KEY is not configured. Cannot send email.");
     console.error(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
     console.error(`  Subject: ${payload.subject}`);
     return { success: false, error: "RESEND_API_KEY is not configured." };
+  }
+
+  const recipients = getDeliverableEmails(
+    Array.isArray(payload.to) ? payload.to : [payload.to]
+  );
+
+  if (recipients.length === 0) {
+    console.error("[Email] No deliverable recipient email addresses were found.");
+    console.error(`  To: ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to}`);
+    console.error(`  Subject: ${payload.subject}`);
+    return { success: false, error: "No deliverable recipient email addresses were found." };
   }
 
   try {
@@ -34,7 +44,7 @@ async function sendEmailWithResend(payload: EmailPayload): Promise<{ success: bo
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
-        to: Array.isArray(payload.to) ? payload.to : [payload.to],
+        to: recipients,
         subject: payload.subject,
         html: payload.html,
         text: payload.text,

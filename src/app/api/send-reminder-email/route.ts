@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildReminderEmailHtml } from "@/lib/reminder-email-template";
 import { createId, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
-
-const ASCII_EMAIL_REGEX =
-  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/;
+import {
+  getDeliverableEmails,
+  normalizeEmailAddress,
+} from "@/lib/email-address";
 
 type ReminderRecipientRow = {
   owner_name: string | null;
@@ -25,22 +26,6 @@ function encodeEmailHeader(text: string) {
   }
 
   return `=?UTF-8?B?${btoa(binary)}?=`;
-}
-
-function normalizeEmailAddress(value: string) {
-  return value
-    .normalize("NFKC")
-    .trim()
-    .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
-    .replace(/\s+/g, "");
-}
-
-function isDeliverableEmail(value: string) {
-  if (!value || !/^[\x00-\x7F]+$/.test(value) || !ASCII_EMAIL_REGEX.test(value)) {
-    return false;
-  }
-
-  return !value.toLowerCase().endsWith(".local");
 }
 
 export async function POST(request: NextRequest) {
@@ -89,11 +74,9 @@ export async function POST(request: NextRequest) {
       normalizedRequestedRecipientEmail,
       recipientRow?.owner_email,
       recipientRow?.assignee_email,
-    ]
-      .map((value) => (value ? normalizeEmailAddress(String(value)) : ""))
-      .filter(Boolean);
+    ].map((value) => (value ? normalizeEmailAddress(String(value)) : ""));
 
-    const resolvedRecipientEmail = emailCandidates.find(isDeliverableEmail);
+    const resolvedRecipientEmail = getDeliverableEmails(emailCandidates)[0];
 
     if (!resolvedRecipientEmail) {
       console.warn("send-reminder-email: no deliverable email found", {
