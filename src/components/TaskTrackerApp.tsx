@@ -3178,9 +3178,14 @@ export default function TaskTrackerApp() {
             latestUpdate: task.latestUpdate?.content ?? null,
           }),
         });
+        const data = await response.json().catch(() => null);
 
         if (!response.ok) {
-          toast.error("فشل إرسال البريد الإلكتروني");
+          toast.error(
+            typeof data?.error === "string"
+              ? data.error
+              : "فشل إرسال البريد الإلكتروني",
+          );
         } else {
           toast.success("تم إرسال التذكير بالبريد الإلكتروني بنجاح");
           openTaskDetail(task.id);
