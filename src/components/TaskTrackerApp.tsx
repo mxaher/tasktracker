@@ -3183,7 +3183,7 @@ export default function TaskTrackerApp() {
           toast.error("فشل إرسال البريد الإلكتروني");
         } else {
           toast.success("تم إرسال التذكير بالبريد الإلكتروني بنجاح");
-          onOpenTaskDetail(task.id);
+          openTaskDetail(task.id);
         }
         return;
       }
