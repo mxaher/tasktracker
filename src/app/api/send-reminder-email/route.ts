@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildReminderEmailHtml } from "@/lib/reminder-email-template";
-import { createId, d1Run, nowIso } from "@/lib/cloudflare-d1";
+import { createId, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 
 const ASCII_EMAIL_REGEX =
   /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/;
+
+type ReminderRecipientRow = {
+  owner_name: string | null;
+  owner_email: string | null;
+  assignee_name: string | null;
+  assignee_email: string | null;
+  owner_contact_name: string | null;
+  owner_contact_email: string | null;
+  assignee_contact_name: string | null;
+  assignee_contact_email: string | null;
+};
 
 function encodeEmailHeader(text: string) {
   const utf8Bytes = new TextEncoder().encode(text);
@@ -24,6 +35,14 @@ function normalizeEmailAddress(value: string) {
     .replace(/\s+/g, "");
 }
 
+function isDeliverableEmail(value: string) {
+  if (!value || !/^[\x00-\x7F]+$/.test(value) || !ASCII_EMAIL_REGEX.test(value)) {
+    return false;
+  }
+
+  return !value.toLowerCase().endsWith(".local");
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -41,26 +60,67 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "RESEND_API_KEY not configured" }, { status: 500 });
     }
 
-    const normalizedRecipientEmail = normalizeEmailAddress(String(recipientEmail));
-    if (
-      !normalizedRecipientEmail ||
-      !/^[\x00-\x7F]+$/.test(normalizedRecipientEmail) ||
-      !ASCII_EMAIL_REGEX.test(normalizedRecipientEmail)
-    ) {
+    const normalizedRequestedRecipientEmail = normalizeEmailAddress(String(recipientEmail));
+    const recipientRow = await d1First<ReminderRecipientRow>(
+      `
+        SELECT
+          owner.name AS owner_name,
+          owner.email AS owner_email,
+          assignee.name AS assignee_name,
+          assignee.email AS assignee_email,
+          owner_contact.name AS owner_contact_name,
+          owner_contact.email AS owner_contact_email,
+          assignee_contact.name AS assignee_contact_name,
+          assignee_contact.email AS assignee_contact_email
+        FROM "Task" task
+        LEFT JOIN "User" owner ON owner.id = task.ownerId
+        LEFT JOIN "User" assignee ON assignee.id = task.assigneeId
+        LEFT JOIN "Contact" owner_contact ON owner_contact.userId = owner.id
+        LEFT JOIN "Contact" assignee_contact ON assignee_contact.userId = assignee.id
+        WHERE task.id = ?
+        LIMIT 1
+      `,
+      taskId
+    );
+
+    const emailCandidates = [
+      recipientRow?.owner_contact_email,
+      recipientRow?.assignee_contact_email,
+      normalizedRequestedRecipientEmail,
+      recipientRow?.owner_email,
+      recipientRow?.assignee_email,
+    ]
+      .map((value) => (value ? normalizeEmailAddress(String(value)) : ""))
+      .filter(Boolean);
+
+    const resolvedRecipientEmail = emailCandidates.find(isDeliverableEmail);
+
+    if (!resolvedRecipientEmail) {
+      console.warn("send-reminder-email: no deliverable email found", {
+        taskId,
+        candidates: emailCandidates,
+      });
       return NextResponse.json(
         {
           error:
-            "عنوان البريد الإلكتروني للمستلم غير صالح. تأكد من عدم وجود مسافات أو أحرف عربية داخل البريد الإلكتروني.",
+            "لا يوجد بريد إلكتروني صالح قابل للإرسال لهذه المهمة. يبدو أن البريد الحالي عنوان داخلي مثل tasktracker.local أو يحتوي أحرف غير مدعومة. حدّث بريد المسؤول من جهات الاتصال أو المستخدمين ثم أعد المحاولة.",
         },
         { status: 400 }
       );
     }
 
-    const normalizedRecipientName = String(recipientName || normalizedRecipientEmail).trim();
+    const normalizedRecipientName = String(
+      recipientRow?.owner_contact_name ||
+        recipientRow?.owner_name ||
+        recipientRow?.assignee_contact_name ||
+        recipientRow?.assignee_name ||
+        recipientName ||
+        resolvedRecipientEmail
+    ).trim();
     const normalizedTaskTitle = String(taskTitle).trim();
 
     const html = buildReminderEmailHtml({
-      recipientName: normalizedRecipientName || normalizedRecipientEmail,
+      recipientName: normalizedRecipientName || resolvedRecipientEmail,
       taskTitle: normalizedTaskTitle,
       startDate: startDate || "غير محدد",
       latestUpdate: latestUpdate || null,
@@ -68,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     const emailPayload = {
       from: `${encodeEmailHeader("متتبع المهام")} <noreply@almarshad.com>`,
-      to: [normalizedRecipientEmail],
+      to: [resolvedRecipientEmail],
       cc: ["m.zaher@almarshad.com"],
       reply_to: "m.zaher@almarshad.com",
       subject: encodeEmailHeader(`تذكير: ${normalizedTaskTitle}`),
@@ -96,7 +156,7 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const sentAt = nowIso();
     const updateId = createId();
-    const updateContent = `📧 تم إرسال تذكير بالبريد الإلكتروني إلى ${normalizedRecipientName || normalizedRecipientEmail}`;
+    const updateContent = `📧 تم إرسال تذكير بالبريد الإلكتروني إلى ${normalizedRecipientName || resolvedRecipientEmail}`;
 
     await d1Run(
       `INSERT INTO "TaskUpdate" ("id", "taskId", "content", "source", "createdAt")
