@@ -1915,9 +1915,7 @@ function TaskListContent({
               <TableHeader>
                 <TableRow className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
                   <TableHead className="w-[40px] pr-4 text-center">
-                    <div className="flex justify-center items-center">
-                      <Checkbox checked={allFilteredSelected} onCheckedChange={toggleSelectAll} aria-label="تحديد الكل" />
-                    </div>
+                    <Checkbox checked={allFilteredSelected} onCheckedChange={toggleSelectAll} aria-label="تحديد الكل" />
                   </TableHead>
                   <TableHead className="w-[50px] text-center select-none">
                     <div className="flex items-center justify-center">#</div>
@@ -1990,9 +1988,7 @@ function TaskListContent({
                       aria-expanded={isExpanded}
                     >
                       <TableCell className="pr-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-center items-center">
-                          <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
-                        </div>
+                        <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
                       </TableCell>
                       <TableCell className="text-center text-sm font-medium text-muted-foreground">{index + 1}</TableCell>
                       <TableCell>
