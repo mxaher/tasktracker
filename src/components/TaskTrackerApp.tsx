@@ -360,17 +360,17 @@ function KPICard({ title, value, subtitle, icon: Icon, trend }: {
   color?: string;
 }) {
   return (
-    <Card className="relative overflow-hidden border-border/70 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+    <Card className="relative overflow-hidden border-border/70 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none" dir="rtl">
+      <CardHeader className="flex flex-row items-center justify-between pb-2" dir="rtl">
+        <CardTitle className="text-sm font-medium text-muted-foreground" dir="rtl">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" dir="rtl" />
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+      <CardContent dir="rtl">
+        <div className="text-2xl font-bold" dir="rtl">{value}</div>
+        {subtitle && <p className="text-xs text-muted-foreground mt-1" dir="rtl">{subtitle}</p>}
         {trend !== undefined && (
-          <div className={`flex items-center text-xs mt-2 ${trend >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-            {trend >= 0 ? <TrendingUp className="h-3 w-3 ml-1" /> : <AlertTriangle className="h-3 w-3 ml-1" />}
+          <div className={`flex items-center text-xs mt-2 ${trend >= 0 ? "text-emerald-600" : "text-red-600"}`} dir="rtl">
+            {trend >= 0 ? <TrendingUp className="h-3 w-3 ml-1" dir="rtl" /> : <AlertTriangle className="h-3 w-3 ml-1" dir="rtl" />}
             {Math.abs(trend)}% مقارنة بالشهر الماضي
           </div>
         )}
