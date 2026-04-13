@@ -131,6 +131,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ contact: contact ? mapContactRow(contact) : null }, { status: 201 });
   } catch (error) {
     console.error("Error creating contact:", error);
+    const message = error instanceof Error ? error.message : "";
+
+    if (message.includes("UNIQUE constraint failed: Contact.userId")) {
+      return NextResponse.json(
+        { error: "That user is already linked to another contact." },
+        { status: 400 },
+      );
+    }
+
+    if (message.includes("FOREIGN KEY constraint failed")) {
+      return NextResponse.json({ error: "Linked user was not found." }, { status: 400 });
+    }
+
     return NextResponse.json({ error: "Failed to create contact" }, { status: 500 });
   }
 }

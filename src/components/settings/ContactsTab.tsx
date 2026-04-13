@@ -18,8 +18,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { AlertCircle, Download, FileSpreadsheet, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type ContactRecord = {
@@ -125,6 +125,18 @@ export default function ContactsTab() {
   const [contactToDelete, setContactToDelete] = useState<ContactRecord | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const availableUsers = useMemo(() => {
+    return users.filter((user) => {
+      if (editingContact?.userId === user.id) {
+        return true;
+      }
+
+      return !contacts.some((contact) => contact.userId === user.id);
+    });
+  }, [contacts, editingContact?.userId, users]);
 
   const filteredContacts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -277,6 +289,52 @@ export default function ContactsTab() {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setImporting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/settings/contacts/import", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        imported?: number;
+        updated?: number;
+        skipped?: number;
+      };
+
+      if (!response.ok) {
+        throw new Error(data.error || "تعذر استيراد جهات الاتصال");
+      }
+
+      await loadData();
+      toast.success(
+        `تم استيراد ${data.imported || 0} جهة اتصال وتحديث ${data.updated || 0} وتخطي ${data.skipped || 0}.`,
+      );
+    } catch (importError) {
+      console.error("Failed to import contacts:", importError);
+      toast.error(importError instanceof Error ? importError.message : "تعذر استيراد جهات الاتصال");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4" dir="rtl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -290,10 +348,29 @@ export default function ContactsTab() {
           />
         </div>
 
-        <Button onClick={openCreateDialog}>
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة جهة اتصال
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className="hidden"
+            onChange={handleImportFileChange}
+          />
+          <Button variant="outline" asChild>
+            <a href="/contacts-import-sample.csv" download>
+              <Download className="ml-2 h-4 w-4" />
+              تحميل ملف نموذجي
+            </a>
+          </Button>
+          <Button variant="outline" onClick={handleImportClick} disabled={importing}>
+            {importing ? <FileSpreadsheet className="ml-2 h-4 w-4 animate-pulse" /> : <Upload className="ml-2 h-4 w-4" />}
+            {importing ? "جارٍ الاستيراد..." : "استيراد جهات الاتصال"}
+          </Button>
+          <Button onClick={openCreateDialog}>
+            <Plus className="ml-2 h-4 w-4" />
+            إضافة جهة اتصال
+          </Button>
+        </div>
       </div>
 
       {isDialogOpen ? (
@@ -352,7 +429,7 @@ export default function ContactsTab() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">بدون مستخدم مرتبط</SelectItem>
-                  {users.map((user) => (
+                  {availableUsers.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {getLinkedUserLabel(user)}
                     </SelectItem>
