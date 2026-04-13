@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+export async function GET() {
+  try {
+    const context = getCloudflareContext();
+    const env = context.env as {
+      DB?: {
+        prepare: (sql: string) => { first: () => Promise<unknown> };
+      };
+    };
+    const hasDb = Boolean(env.DB);
+    let dbProbe: unknown = null;
+
+    if (hasDb) {
+      const result = await env.DB!.prepare("SELECT 1 AS ok").first();
+      dbProbe = result;
+    }
+
+    return NextResponse.json({
+      message: "Hello, world!",
+      hasDb,
+      dbProbe,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "Hello, world!",
+        contextError: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tasktracker",
+  "account_id": "a76a117ad4225d384a4a2dc22ebece83",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-02",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "tasktracker"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "DATABASE_URL": "file:./dev.db",
+    "FROM_EMAIL": "noreply@wealix.app",
+    "ADMIN_EMAIL": "tasks@wealix.app"
+  },
+  "triggers": {
+    "crons": ["0 6 * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tasktracker-db",
+      "database_id": "51d5dc9e-dbcf-4039-8fee-698c9b59823a"
+    }
+  ]
+}

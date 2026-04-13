@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../src/generated/prisma"
+  engineType      = "client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and task ownership
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String?  @unique
+  name          String?
+  role          String   @default("viewer") // admin, manager, viewer
+  department    String?
+  phone         String?  // For WhatsApp notifications
+  avatar        String?
+  isActive      Boolean  @default(true)
+  
+  // Notification preferences
+  receiveTaskReminders   Boolean  @default(true)
+  receiveDailyDigest     Boolean  @default(false)
+  receiveWeeklyReport    Boolean  @default(false)
+  reminderDaysBefore     Int      @default(3) // Days before due date to send reminder
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  ownedTasks    Task[]         @relation("TaskOwner")
+  assignedTasks Task[]         @relation("TaskAssignee")
+  auditLogs     TaskAuditLog[]
+  notifications Notification[]
+  contact       Contact?
+}
+
+// Main Task model
+model Task {
+  id               String   @id @default(cuid())
+  taskId           String?  // External task ID from Excel
+  title            String
+  description      String?
+  sentdmMessageId  String?
+  lastReminderSentAt DateTime?
+  
+  // Ownership and assignment
+  ownerId          String?
+  owner            User?    @relation("TaskOwner", fields: [ownerId], references: [id])
+  assigneeId       String?
+  assignee         User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  
+  // Classification
+  department       String?
+  priority         String   @default("medium") // low, medium, high, critical
+  status           String   @default("not_started") // not_started, in_progress, delayed, completed
+  strategicPillar  String?  // Strategic pillar/Initiative
+  
+  // Progress tracking
+  completion       Float    @default(0) // 0 to 1
+  riskIndicator    String?  // on_track, at_risk, delayed
+  
+  // Dates
+  startDate        DateTime?
+  dueDate          DateTime?
+  completedAt      DateTime?
+  
+  // Notes and metadata
+  notes            String?
+  nextStep         String?
+  ceoNotes         String?
+  sourceMonth      String?
+  source           String?  // Origin of the task: CEO, Audit Committee, etc.
+  
+  // Data source tracking
+  dataSourceId     String?
+  dataSource       DataSource? @relation(fields: [dataSourceId], references: [id])
+
+  // Parent-child hierarchy
+  parentId         String?
+  parent           Task?    @relation("TaskChildren", fields: [parentId], references: [id])
+  children         Task[]   @relation("TaskChildren")
+  
+  // Timestamps
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  auditLogs        TaskAuditLog[]
+  notifications    Notification[]
+  updates          TaskUpdate[]
+
+  @@index([parentId])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([phone])
+  @@index([email])
+}
+
+model TaskUpdate {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  source    String   // "whatsapp" | "telegram" | "manual"
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+// Audit log for tracking all task changes
+model TaskAuditLog {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  action      String   // create, update, delete, status_change
+  field       String?  // Which field was changed
+  oldValue    String?
+  newValue    String?
+  
+  createdAt   DateTime @default(now())
+}
+
+// Data source for tracking uploaded files
+model DataSource {
+  id              String   @id @default(cuid())
+  fileName        String
+  originalName    String
+  fileSize        Int
+  rowCount        Int
+  columnMapping   String?  // JSON string of column mappings
+  uploadedById    String?
+  uploadedAt      DateTime @default(now())
+  
+  tasks           Task[]
+}
+
+// Notification model
+model Notification {
+  id          String   @id @default(cuid())
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  type        String   // assignment, reminder, overdue, status_change
+  channel     String   // email, whatsapp
+  subject     String
+  message     String
+  status      String   @default("pending") // pending, sent, failed
+  
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  error       String?
+  
+  createdAt   DateTime @default(now())
+}
+
+// Notification rules configuration
+model NotificationRule {
+  id              String   @id @default(cuid())
+  name            String
+  type            String   // assignment, reminder, overdue, status_change
+  channel         String   @default("email") // email, whatsapp
+  
+  // Trigger conditions
+  daysBeforeDue   Int?     // For reminders (e.g., 3 days before)
+  
+  // Recipients
+  notifyOwner     Boolean  @default(true)
+  notifyAssignee  Boolean  @default(true)
+  notifyManager   Boolean  @default(false)
+  
+  // Template
+  subjectTemplate String?
+  bodyTemplate    String?
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// System configuration
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// Admin notification settings
+model AdminSettings {
+  id                    String   @id @default(cuid())
+  
+  // Admin email for receiving reports
+  adminEmail            String
+  
+  // Daily digest settings
+  dailyDigestEnabled    Boolean  @default(false)
+  dailyDigestTime       String   @default("09:00") // HH:mm format
+  
+  // Weekly report settings
+  weeklyReportEnabled   Boolean  @default(false)
+  weeklyReportDay       Int      @default(1) // 0=Sunday, 1=Monday, etc.
+  weeklyReportTime      String   @default("09:00")
+  
+  // In-progress tasks report
+  inProgressReportEnabled Boolean @default(false)
+  inProgressReportFrequency String @default("daily") // daily, weekly
+  
+  // Reminder settings
+  taskReminderEnabled   Boolean  @default(true)
+  overdueReminderEnabled Boolean @default(true)
+  
+  // Custom reminder dates (comma-separated ISO dates)
+  customReminderDates   String?  // e.g., "2024-01-15,2024-01-20,2024-01-25"
+  
+  // Days before due date for automatic reminders
+  reminderDaysBefore    Int      @default(3)
+  whatsappOwnerRemindersEnabled Boolean @default(false)
+  whatsappReminderOffsets String @default("0,1")
+  whatsappReminderTemplate String @default("Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.")
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+// Scheduled reminders with specific dates
+model ScheduledReminder {
+  id          String   @id @default(cuid())
+  
+  // Reminder details
+  title       String
+  description String?
+  
+  // Schedule
+  reminderDate DateTime
+  reminderTime String   @default("09:00") // HH:mm format
+  
+  // Recipients
+  sendToAdmin   Boolean  @default(true)
+  sendToOwners  Boolean  @default(true)
+  
+  // Task filter (optional - if set, only remind about these tasks)
+  taskIds      String?  // Comma-separated task IDs
+  
+  // Status
+  isActive     Boolean  @default(true)
+  isSent       Boolean  @default(false)
+  sentAt       DateTime?
+  
+  // Email tracking
+  emailsSent   Int      @default(0)
+  emailsFailed Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
