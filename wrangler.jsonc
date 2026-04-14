@@ -22,8 +22,8 @@
   "vars": {
     "NEXT_TELEMETRY_DISABLED": "1",
     "DATABASE_URL": "file:./dev.db",
-    "FROM_EMAIL": "noreply@wealix.app",
-    "ADMIN_EMAIL": "tasks@wealix.app"
+    "FROM_EMAIL": "noreply@tasks.almarshad.com",
+    "ADMIN_EMAIL": "m.zaher@almarshad.com"
   },
   "triggers": {
     "crons": ["0 6 * * *"]
