@@ -2967,6 +2967,9 @@ export default function TaskTrackerApp() {
       }
       const result = await response.json();
       setUploadProgress(100);
+      if (!result.imported || result.imported <= 0) {
+        throw new Error(result.message || "لم يتم استيراد أي صف من الملف.");
+      }
       toast.success(`تم استيراد ${result.imported} مهمة بنجاح`);
       await fetchTasks();
       await fetchStats();

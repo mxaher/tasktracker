@@ -40,6 +40,30 @@ const columnMapping: Record<string, string> = {
   "strategic pillar": "strategicPillar",
 };
 
+function normalizeHeader(header: unknown): string {
+  return String(header ?? "")
+    .replace(/\uFEFF/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function mapHeaderToColumn(header: unknown): string | undefined {
+  const raw = String(header ?? "").trim();
+  if (!raw) return undefined;
+
+  const normalized = normalizeHeader(raw);
+  const compact = normalized.replace(/\s+/g, "");
+
+  return (
+    columnMapping[raw] ||
+    columnMapping[raw.toLowerCase()] ||
+    columnMapping[normalized] ||
+    columnMapping[compact]
+  );
+}
+
 // Status mapping
 const statusMapping: Record<string, string> = {
   "مكتملة": "completed",
@@ -95,41 +119,53 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Detect header row (first row with non-empty values)
-    let headerRowIndex = 0;
-    for (let i = 0; i < Math.min(5, rawData.length); i++) {
-      const row = rawData[i] as unknown[];
-      if (row && row.some(cell => cell !== null && cell !== undefined && cell !== "")) {
+    // Detect header row by best mapping score (supports templates with title/instructions rows)
+    let headerRowIndex = -1;
+    let bestScore = -1;
+
+    for (let i = 0; i < Math.min(15, rawData.length); i++) {
+      const row = rawData[i] as unknown[] | undefined;
+      if (!row || row.length === 0) continue;
+
+      const score = row.reduce((count, cell) => count + (mapHeaderToColumn(cell) ? 1 : 0), 0);
+      if (score > bestScore) {
+        bestScore = score;
         headerRowIndex = i;
-        break;
       }
     }
-    
-    const headers = rawData[headerRowIndex] as string[];
+
+    if (headerRowIndex < 0 || bestScore <= 0) {
+      return NextResponse.json(
+        {
+          error: "Could not detect valid column headers.",
+          message: "لم نتمكن من قراءة عناوين الأعمدة. يرجى استخدام ملف القالب الصحيح.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const headers = rawData[headerRowIndex] as unknown[];
     const dataRows = rawData.slice(headerRowIndex + 1);
     
     // Map columns
     const columnMap: Record<number, string> = {};
     headers.forEach((header, index) => {
-      if (header) {
-        const headerStr = String(header).trim().toLowerCase();
-        const mappedColumn = columnMapping[headerStr] || columnMapping[String(header).trim()];
-        if (mappedColumn) {
-          columnMap[index] = mappedColumn;
-        }
+      const mappedColumn = mapHeaderToColumn(header);
+      if (mappedColumn) {
+        columnMap[index] = mappedColumn;
       }
     });
-    
-    // Create data source record
-    const dataSource = await db.dataSource.create({
-      data: {
-        fileName: file.name,
-        originalName: file.name,
-        fileSize: file.size,
-        rowCount: dataRows.length,
-        columnMapping: JSON.stringify(columnMap),
-      },
-    });
+
+    const hasTitleColumn = Object.values(columnMap).includes("title");
+    if (!hasTitleColumn) {
+      return NextResponse.json(
+        {
+          error: "Missing title column.",
+          message: "لم نجد عمود عنوان المهمة (Title/المهمة)، لذلك لا يمكن الاستيراد.",
+        },
+        { status: 400 },
+      );
+    }
     
     // Get or create users for owners
     const userCache = new Map<string, string>();
@@ -177,9 +213,7 @@ export async function POST(request: NextRequest) {
     for (const row of dataRows) {
       if (!row || !Array.isArray(row)) continue;
       
-      const taskData: Record<string, unknown> = {
-        dataSourceId: dataSource.id,
-      };
+      const taskData: Record<string, unknown> = {};
       
       // Map each column
       for (const [index, fieldName] of Object.entries(columnMap)) {
@@ -284,18 +318,40 @@ export async function POST(request: NextRequest) {
         tasks.push({
           ...(taskWithoutOwnerName as Omit<Prisma.TaskCreateManyInput, "title">),
           title: String(taskData.title),
-          ownerId,
+          ownerId
         });
         imported++;
       }
     }
     
-    // Bulk create tasks
-    if (tasks.length > 0) {
-      await db.task.createMany({
-        data: tasks,
-      });
+    if (tasks.length === 0) {
+      return NextResponse.json(
+        {
+          error: "No importable rows found.",
+          message: "لم يتم العثور على صفوف صالحة للاستيراد. تأكد أن عمود العنوان يحتوي على بيانات.",
+        },
+        { status: 400 },
+      );
     }
+
+    // Create data source record after validating rows
+    const dataSource = await db.dataSource.create({
+      data: {
+        fileName: file.name,
+        originalName: file.name,
+        fileSize: file.size,
+        rowCount: dataRows.length,
+        columnMapping: JSON.stringify(columnMap),
+      },
+    });
+
+    // Bulk create tasks
+    await db.task.createMany({
+      data: tasks.map((task) => ({
+        ...task,
+        dataSourceId: dataSource.id,
+      })),
+    });
     
     return NextResponse.json({
       success: true,
