@@ -127,7 +127,10 @@ export async function POST(request: NextRequest) {
       const row = rawData[i] as unknown[] | undefined;
       if (!row || row.length === 0) continue;
 
-      const score = row.reduce((count, cell) => count + (mapHeaderToColumn(cell) ? 1 : 0), 0);
+      const score = row.reduce<number>(
+        (count, cell) => count + (mapHeaderToColumn(cell) ? 1 : 0),
+        0,
+      );
       if (score > bestScore) {
         bestScore = score;
         headerRowIndex = i;
