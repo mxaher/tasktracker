@@ -1827,8 +1827,8 @@ function TaskListContent({
             </TooltipTrigger>
             <TooltipContent>
               {selectedTaskIds.size === 0
-                ? "حدّد مهمة واحدة أو أكثر لإرسال رسالة واتساب مجمعة."
-                : "سيتم جمع المهام ذات المسؤول نفسه داخل رسالة واتساب واحدة."}
+                ? "حدّد مهمة واحدة أو أكثر لإرسال رسالة جماعية."
+                : "سيتم جمع المهام ذات المسؤول نفسه وإرسالها عبر واتساب والبريد الإلكتروني."}
             </TooltipContent>
           </Tooltip>
           <Button variant={effectiveViewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")} disabled={isMobileViewport}>
@@ -3113,36 +3113,64 @@ export default function TaskTrackerApp() {
       return;
     }
 
-    if (!window.confirm("هل تريد إرسال رسالة واتساب مجمعة إلى مسؤولي المهام المحددة؟")) {
+    if (!window.confirm("هل تريد إرسال رسالة جماعية عبر واتساب والبريد الإلكتروني إلى مسؤولي المهام المحددة؟")) {
       return;
     }
 
     setSendingBulkWhatsApp(true);
     try {
-      const response = await fetch("/api/tasks/reminders/bulk-whatsapp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskIds: Array.from(selectedTaskIds) }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "تعذر إرسال رسائل واتساب المجمعة");
+      const taskIds = Array.from(selectedTaskIds);
+      const [whatsAppResponse, emailResponse] = await Promise.all([
+        fetch("/api/tasks/reminders/bulk-whatsapp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskIds }),
+        }),
+        fetch("/api/tasks/reminders/bulk-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskIds }),
+        }),
+      ]);
 
-      const result = data.result as ReminderRunSummary;
-      const skippedOwners = new Set(result.skippedTasks.map((task) => task.ownerName));
-      const failedOwners = result.failedOwners.map((owner) => owner.ownerName).join(", ");
+      const [whatsAppData, emailData] = await Promise.all([
+        whatsAppResponse.json().catch(() => ({ error: "تعذر قراءة استجابة واتساب." })),
+        emailResponse.json().catch(() => ({ error: "تعذر قراءة استجابة البريد الإلكتروني." })),
+      ]);
 
-      toast.success(
-        `تم إرسال ${result.sentOwners.length} رسالة للمسؤولين. تم تخطي ${result.skippedTasks.length} مهمة.${failedOwners ? ` المسؤولون الذين فشل الإرسال لهم: ${failedOwners}` : ""}`,
-      );
+      const whatsAppResult = whatsAppResponse.ok ? (whatsAppData.result as ReminderRunSummary) : null;
+      const emailResult = emailResponse.ok ? (emailData.result as ReminderRunSummary) : null;
 
-      if (skippedOwners.size > 0) {
-        toast.error(`تعذر الوصول إلى جهات الاتصال التالية أو تم تخطيها: ${Array.from(skippedOwners).join("، ")}`);
+      if (!whatsAppResponse.ok && !emailResponse.ok) {
+        throw new Error(
+          [whatsAppData?.error, emailData?.error].filter(Boolean).join(" | ") || "تعذر إرسال الرسائل الجماعية.",
+        );
       }
 
-      setOwnerReminderSummary(result);
+      if (whatsAppResult) {
+        const failedOwners = whatsAppResult.failedOwners.map((owner) => owner.ownerName).join(", ");
+        toast.success(
+          `واتساب: تم الإرسال إلى ${whatsAppResult.sentOwners.length} مسؤول. تم تخطي ${whatsAppResult.skippedTasks.length} مهمة.${failedOwners ? ` فشل الإرسال للمسؤولين: ${failedOwners}` : ""}`,
+        );
+        setOwnerReminderSummary(whatsAppResult);
+      } else {
+        toast.error(String(whatsAppData?.error || "واتساب: تعذر الإرسال."));
+      }
+
+      if (emailResult) {
+        const failedOwners = emailResult.failedOwners.map((owner) => owner.ownerName).join(", ");
+        toast.success(
+          `البريد الإلكتروني: تم الإرسال إلى ${emailResult.sentOwners.length} مسؤول. تم تخطي ${emailResult.skippedTasks.length} مهمة.${failedOwners ? ` فشل الإرسال للمسؤولين: ${failedOwners}` : ""}`,
+        );
+        if (!whatsAppResult) {
+          setOwnerReminderSummary(emailResult);
+        }
+      } else {
+        toast.error(String(emailData?.error || "البريد الإلكتروني: تعذر الإرسال."));
+      }
     } catch (error) {
       console.error("Error sending grouped reminders:", error);
-      toast.error(error instanceof Error ? error.message : "تعذر إرسال رسائل واتساب المجمعة");
+      toast.error(error instanceof Error ? error.message : "تعذر إرسال الرسائل الجماعية.");
     } finally {
       setSendingBulkWhatsApp(false);
     }

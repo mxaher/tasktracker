@@ -86,6 +86,67 @@ function buildBulkOwnerMessage(ownerName: string, tasks: ReminderTaskRow[], temp
   return [intro, "", ...lines].join("\n");
 }
 
+function buildBulkOwnerEmailContent(ownerName: string, tasks: ReminderTaskRow[]) {
+  const subject =
+    tasks.length === 1
+      ? `Task Reminder: ${tasks[0].title}`
+      : `Task Reminders: ${tasks.length} tasks`;
+
+  const taskLines = tasks.map((task, index) => {
+    const departmentSegment = task.department ? ` | Department: ${task.department}` : "";
+    return `${index + 1}. ${task.title} (Task ID: ${task.taskId || task.id}) | Due: ${formatDueDate(task.dueDate)} | Priority: ${task.priority}${departmentSegment}`;
+  });
+
+  const text = [
+    `Hello ${ownerName},`,
+    "",
+    tasks.length === 1
+      ? "This is a reminder for the following selected task:"
+      : `This is a reminder for the following ${tasks.length} selected tasks:`,
+    "",
+    ...taskLines,
+  ].join("\n");
+
+  const htmlRows = tasks
+    .map(
+      (task) => `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.taskId || task.id}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.title}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${formatDueDate(task.dueDate)}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.priority}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${task.department || "-"}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+      <p>Hello ${ownerName},</p>
+      <p>${
+        tasks.length === 1
+          ? "This is a reminder for the following selected task."
+          : `This is a reminder for the following ${tasks.length} selected tasks.`
+      }</p>
+      <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+        <thead>
+          <tr style="background:#f3f4f6; text-align:left;">
+            <th style="padding:8px;">Task ID</th>
+            <th style="padding:8px;">Task</th>
+            <th style="padding:8px;">Due Date</th>
+            <th style="padding:8px;">Priority</th>
+            <th style="padding:8px;">Department</th>
+          </tr>
+        </thead>
+        <tbody>${htmlRows}</tbody>
+      </table>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
 function buildEmailContent(task: ReminderTaskRow) {
   const ownerName = task.contact_name || task.owner_name || task.owner_email || "Task Owner";
   const subject = `Task Reminder: ${task.title}`;
@@ -465,6 +526,108 @@ export async function sendGroupedOwnerWhatsAppReminders(taskIds: string[], force
 
     if (!messageId) {
       result.failedOwners.push({ ownerId, ownerName, reason: "WhatsApp send failed." });
+      continue;
+    }
+
+    result.sentOwners.push({ ownerId, ownerName, taskCount: ownerTasks.length });
+    for (const task of ownerTasks) {
+      result.includedTasks.push({
+        taskId: task.taskId || task.id,
+        title: task.title,
+        ownerName,
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Sends grouped email reminders for selected tasks, one email per owner.
+ */
+export async function sendGroupedOwnerEmailReminders(taskIds: string[], force = false) {
+  const tasks = await getTasksByIds(taskIds);
+  const duplicateIds = force ? new Set<string>() : await getAlreadyRemindedTaskIds(taskIds, "email");
+  const byOwner = new Map<string, ReminderTaskRow[]>();
+  const result: SendNowResult = {
+    sentOwners: [],
+    skippedOwners: [],
+    failedOwners: [],
+    includedTasks: [],
+    skippedTasks: [],
+  };
+
+  for (const task of tasks) {
+    const ownerId = task.ownerId;
+    const ownerName = task.contact_name || task.owner_name || task.owner_email || "Unknown owner";
+
+    if (!ownerId) {
+      result.skippedTasks.push({
+        taskId: task.taskId || task.id,
+        title: task.title,
+        ownerName,
+        reason: "Task has no owner.",
+      });
+      continue;
+    }
+
+    if (duplicateIds.has(task.id)) {
+      result.skippedTasks.push({
+        taskId: task.taskId || task.id,
+        title: task.title,
+        ownerName,
+        reason: "An email reminder was already sent today.",
+      });
+      continue;
+    }
+
+    const email = task.contact_email || task.owner_email;
+    if (!email) {
+      result.skippedTasks.push({
+        taskId: task.taskId || task.id,
+        title: task.title,
+        ownerName,
+        reason: "Owner is missing an email address.",
+      });
+      continue;
+    }
+
+    if (!byOwner.has(ownerId)) {
+      byOwner.set(ownerId, []);
+    }
+    byOwner.get(ownerId)?.push(task);
+  }
+
+  for (const [ownerId, ownerTasks] of byOwner.entries()) {
+    const firstTask = ownerTasks[0];
+    const ownerName = firstTask.contact_name || firstTask.owner_name || firstTask.owner_email || "Task Owner";
+    const email = firstTask.contact_email || firstTask.owner_email;
+
+    if (!email) {
+      result.skippedOwners.push({ ownerId, ownerName, reason: "Owner is missing an email address." });
+      continue;
+    }
+
+    const emailContent = buildBulkOwnerEmailContent(ownerName, ownerTasks);
+    const emailResult = await sendEmailMessage(
+      email,
+      emailContent.subject,
+      emailContent.text,
+      emailContent.html,
+    );
+
+    await createReminderNotifications({
+      tasks: ownerTasks,
+      channel: "email",
+      type: "task_owner_group_reminder",
+      subject: emailContent.subject,
+      message: emailContent.text,
+      status: emailResult.success ? "sent" : "failed",
+      error: emailResult.success ? null : emailResult.error,
+    });
+
+    if (!emailResult.success) {
+      result.failedOwners.push({ ownerId, ownerName, reason: emailResult.error || "Email send failed." });
       continue;
     }
 
