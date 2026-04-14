@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { buildReminderEmailHtml } from "@/lib/reminder-email-template";
 import { createId, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import {
@@ -15,6 +16,11 @@ type ReminderRecipientRow = {
   owner_contact_email: string | null;
   assignee_contact_name: string | null;
   assignee_contact_email: string | null;
+};
+
+type WorkerEnv = {
+  RESEND_API_KEY?: string;
+  FROM_EMAIL?: string;
 };
 
 function encodeEmailHeader(text: string) {
@@ -40,9 +46,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const RESEND_API_KEY = (process.env as Record<string, string>).RESEND_API_KEY;
-    if (!RESEND_API_KEY) {
+    const runtimeEnv = (getCloudflareContext().env ?? {}) as WorkerEnv;
+    const resendApiKey = runtimeEnv.RESEND_API_KEY || process.env.RESEND_API_KEY || "";
+    const fromEmail = runtimeEnv.FROM_EMAIL || process.env.FROM_EMAIL || "";
+    if (!resendApiKey) {
       return NextResponse.json({ error: "RESEND_API_KEY not configured" }, { status: 500 });
+    }
+    if (!fromEmail) {
+      return NextResponse.json({ error: "FROM_EMAIL not configured" }, { status: 500 });
     }
 
     const normalizedRequestedRecipientEmail = normalizeEmailAddress(String(recipientEmail));
@@ -110,7 +121,7 @@ export async function POST(request: NextRequest) {
     });
 
     const emailPayload = {
-      from: `${encodeEmailHeader("متتبع المهام")} <noreply@almarshad.com>`,
+      from: `${encodeEmailHeader("متتبع المهام")} <${fromEmail}>`,
       to: [resolvedRecipientEmail],
       cc: ["m.zaher@almarshad.com"],
       reply_to: "m.zaher@almarshad.com",
@@ -121,7 +132,7 @@ export async function POST(request: NextRequest) {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${resendApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),

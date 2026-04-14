@@ -76,10 +76,13 @@ async function sendEmail(payload: {
 }) {
   const env = getWorkerEnv();
   const resendApiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY || "";
-  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@wealix.app";
+  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "";
 
   if (!resendApiKey) {
     return { success: false as const, error: "RESEND_API_KEY is not configured." };
+  }
+  if (!fromEmail) {
+    return { success: false as const, error: "FROM_EMAIL is not configured." };
   }
 
   const recipients = getDeliverableEmails(

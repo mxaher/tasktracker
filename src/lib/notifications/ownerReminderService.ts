@@ -182,10 +182,13 @@ function buildEmailContent(task: ReminderTaskRow) {
 async function sendEmailMessage(to: string, subject: string, text: string, html: string) {
   const env = getWorkerEnv();
   const apiKey = env.RESEND_API_KEY || process.env.RESEND_API_KEY || "";
-  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "noreply@wealix.app";
+  const fromEmail = env.FROM_EMAIL || process.env.FROM_EMAIL || "";
 
   if (!apiKey) {
     return { success: false as const, error: "RESEND_API_KEY is not configured." };
+  }
+  if (!fromEmail) {
+    return { success: false as const, error: "FROM_EMAIL is not configured." };
   }
 
   const recipients = getDeliverableEmails([to]);
