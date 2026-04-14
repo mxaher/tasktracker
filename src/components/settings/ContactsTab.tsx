@@ -223,7 +223,7 @@ export default function ContactsTab() {
     try {
       const payload = {
         name: form.name.trim(),
-        phone: form.phone.trim() || null,
+        phone: form.phone.trim() ? normalizePhone(form.phone.trim()) : null,
         email: form.email.trim() || null,
         userId: form.userId === "none" ? null : form.userId,
       };
