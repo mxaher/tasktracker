@@ -1,4 +1,3 @@
-```gitignore
 # Dependencies
 node_modules/
 
@@ -7,10 +6,18 @@ dist/
 build/
 *.js.map
 
+# Next.js
+.next/
+next-env.d.ts
+
+# Cloudflare / Wrangler
+.wrangler/
+
 # Environment
 .env
 .env.local
 *.env.*
+.dev.vars
 
 # Editors
 .vscode/
@@ -86,12 +93,6 @@ coverage-final.json
 
 # Gradle
 .gradle/
-build/
 
 # Rust
 target/
-
-# Go
-*.mod
-*.sum
-```
