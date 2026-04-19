@@ -8,6 +8,7 @@
  *   /task     — start guided 3-step task creation wizard
  *   /cancel   — abort any active wizard session
  *   /overdue  — list all overdue tasks across the system (admin)
+ *   /current  — list all active (in-progress & not-started) tasks (admin)
  *   /summary  — daily snapshot of task health across the system (admin)
  */
 
@@ -40,6 +41,15 @@ type OverdueTaskRow = {
   id: string;
   title: string;
   dueDate: string;
+  assignee_name: string | null;
+  assignee_email: string | null;
+  status: string;
+};
+
+type CurrentTaskRow = {
+  id: string;
+  title: string;
+  dueDate: string | null;
   assignee_name: string | null;
   assignee_email: string | null;
   status: string;
@@ -108,7 +118,6 @@ function parseDDMMYYYY(dateStr: string): string | null {
 
 function formatIsoDate(iso: string | null): string {
   if (!iso) return "—";
-  // iso is stored as full datetime, return DD/MM/YYYY
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
   const dd = String(d.getUTCDate()).padStart(2, "0");
@@ -120,10 +129,11 @@ function formatIsoDate(iso: string | null): string {
 const STATUS_LABEL: Record<string, string> = {
   not_started: "لم تبدأ",
   in_progress: "جارية",
-  on_hold: "موقوفة",
-  done: "منجزة",
-  completed: "منجزة",
-  cancelled: "ملغاة",
+  delayed:     "متأخرة",
+  on_hold:     "موقوفة",
+  done:        "منجزة",
+  completed:   "منجزة",
+  cancelled:   "ملغاة",
 };
 
 async function writeTelegramLog(
@@ -195,6 +205,55 @@ async function handleOverdue(chatId: string): Promise<void> {
   await reply(chatId, header + lines.join("\n\n"));
 }
 
+// ─── /current handler ─────────────────────────────────────────────────────────
+
+async function handleCurrent(chatId: string): Promise<void> {
+  const todayIso = new Date().toISOString();
+
+  const tasks = await d1All<CurrentTaskRow>(
+    `SELECT
+       t.id,
+       t.title,
+       t.dueDate,
+       t.status,
+       u.name  AS assignee_name,
+       u.email AS assignee_email
+     FROM "Task" t
+     LEFT JOIN "User" u ON u.id = t.assigneeId
+     WHERE
+       t.status IN ('in_progress', 'not_started', 'delayed')
+       AND (t.dueDate IS NULL OR t.dueDate >= ?)
+     ORDER BY t.dueDate ASC NULLS LAST
+     LIMIT 25`,
+    todayIso,
+  ).catch(() => [] as CurrentTaskRow[]);
+
+  if (tasks.length === 0) {
+    await reply(chatId, "✅ لا توجد مهام جارية حالياً.");
+    return;
+  }
+
+  const lines = tasks.map((t, i) => {
+    const assignee = t.assignee_name ?? t.assignee_email ?? "غير محدد";
+    const status = STATUS_LABEL[t.status] ?? t.status;
+    const due = t.dueDate ? formatIsoDate(t.dueDate) : "غير محدد";
+    return (
+      `${i + 1}. <b>${t.title}</b>\n` +
+      `   👤 ${assignee}\n` +
+      `   📅 الاستحقاق: ${due}\n` +
+      `   🔖 الحالة: ${status}\n` +
+      `   🆔 <code>${t.id}</code>`
+    );
+  });
+
+  const header =
+    tasks.length === 25
+      ? `📋 <b>المهام الجارية (أول 25 من أصل أكثر)</b>\n\n`
+      : `📋 <b>المهام الجارية (${tasks.length})</b>\n\n`;
+
+  await reply(chatId, header + lines.join("\n\n"));
+}
+
 // ─── /summary handler ─────────────────────────────────────────────────────────
 
 async function handleSummary(chatId: string): Promise<void> {
@@ -203,7 +262,6 @@ async function handleSummary(chatId: string): Promise<void> {
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
   ).toISOString();
 
-  // End of 7 days from now (for "due this week")
   const weekEnd = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 7, 23, 59, 59),
   ).toISOString();
@@ -215,10 +273,10 @@ async function handleSummary(chatId: string): Promise<void> {
        COUNT(CASE WHEN status NOT IN ('done','cancelled','completed') AND dueDate BETWEEN ? AND ?              THEN 1 END) AS due_this_week,
        COUNT(CASE WHEN status IN ('done','completed') AND completedAt >= ?                                     THEN 1 END) AS completed_today
      FROM "Task"`,
-    todayStart,   // total_overdue: dueDate < today
-    todayStart,   // due_this_week: dueDate >= today
-    weekEnd,      // due_this_week: dueDate <= weekEnd
-    todayStart,   // completed_today: completedAt >= today
+    todayStart,
+    todayStart,
+    weekEnd,
+    todayStart,
   ).catch(() => null);
 
   if (!row) {
@@ -260,6 +318,11 @@ export async function handleTelegramWizard(
     return;
   }
 
+  if (text === "/current") {
+    await handleCurrent(chatId);
+    return;
+  }
+
   if (text === "/summary") {
     await handleSummary(chatId);
     return;
@@ -285,7 +348,7 @@ export async function handleTelegramWizard(
   if (!session) {
     await reply(
       chatId,
-      "الأوامر المتاحة:\n/task — إنشاء مهمة جديدة\n/overdue — المهام المتأخرة\n/summary — ملخص اليوم\n/cancel — إلغاء العملية الحالية",
+      "الأوامر المتاحة:\n/task — إنشاء مهمة جديدة\n/current — المهام الجارية\n/overdue — المهام المتأخرة\n/summary — ملخص اليوم\n/cancel — إلغاء العملية الحالية",
     );
     return;
   }
