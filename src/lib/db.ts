@@ -1,8 +1,6 @@
 import { PrismaD1 } from "@prisma/adapter-d1";
 import { PrismaClient } from "../generated/prisma";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-// Explicitly import the WASM binary so the bundler includes it in the Worker bundle
-import queryCompiler from "../generated/prisma/query_compiler_bg.wasm";
 
 if (!("instantiateStreaming" in WebAssembly)) {
   Object.assign(WebAssembly, {
@@ -78,6 +76,3 @@ export const db = new Proxy({} as PrismaClient, {
     return Reflect.get(getDb(), property, receiver);
   },
 });
-
-// Ensure the WASM module reference is used to prevent tree-shaking
-void queryCompiler;
