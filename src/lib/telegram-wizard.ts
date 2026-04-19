@@ -122,6 +122,7 @@ const STATUS_LABEL: Record<string, string> = {
   in_progress: "جارية",
   on_hold: "موقوفة",
   done: "منجزة",
+  completed: "منجزة",
   cancelled: "ملغاة",
 };
 
@@ -163,7 +164,7 @@ async function handleOverdue(chatId: string): Promise<void> {
      WHERE
        t.dueDate IS NOT NULL
        AND t.dueDate < ?
-       AND t.status NOT IN ('done', 'cancelled')
+       AND t.status NOT IN ('done', 'cancelled', 'completed')
      ORDER BY t.dueDate ASC
      LIMIT 20`,
     todayIso,
@@ -209,10 +210,10 @@ async function handleSummary(chatId: string): Promise<void> {
 
   const row = await d1First<SummaryRow>(
     `SELECT
-       COUNT(CASE WHEN status NOT IN ('done','cancelled') THEN 1 END)                                        AS total_open,
-       COUNT(CASE WHEN status NOT IN ('done','cancelled') AND dueDate IS NOT NULL AND dueDate < ?  THEN 1 END) AS total_overdue,
-       COUNT(CASE WHEN status NOT IN ('done','cancelled') AND dueDate BETWEEN ? AND ?              THEN 1 END) AS due_this_week,
-       COUNT(CASE WHEN status = 'done' AND completedAt >= ?                                        THEN 1 END) AS completed_today
+       COUNT(CASE WHEN status NOT IN ('done','cancelled','completed') THEN 1 END)                                        AS total_open,
+       COUNT(CASE WHEN status NOT IN ('done','cancelled','completed') AND dueDate IS NOT NULL AND dueDate < ?  THEN 1 END) AS total_overdue,
+       COUNT(CASE WHEN status NOT IN ('done','cancelled','completed') AND dueDate BETWEEN ? AND ?              THEN 1 END) AS due_this_week,
+       COUNT(CASE WHEN status IN ('done','completed') AND completedAt >= ?                                     THEN 1 END) AS completed_today
      FROM "Task"`,
     todayStart,   // total_overdue: dueDate < today
     todayStart,   // due_this_week: dueDate >= today
