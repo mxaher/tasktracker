@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { createId, d1All, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import { sendTelegramMessage } from "@/lib/notifications/telegram";
 import { revalidatePath } from "next/cache";
@@ -220,38 +219,42 @@ export async function POST(request: NextRequest) {
   // Priority
   const priority = (priorityAr && PRIORITY_MAP[priorityAr]) ?? "medium";
 
-  // 6. Create task via Prisma
-  let createdTask: { id: string; title: string } | null = null;
+  // 6. Create task via direct D1 (Prisma WASM unavailable in Workers)
+  const taskId = createId();
+  const now6 = nowIso();
+  const dueDateIso = dueDate ? dueDate.toISOString() : null;
   try {
-    createdTask = await db.task.create({
-      data: {
-        title,
-        ownerId: telegramUser.userId,
-        assigneeId,
-        priority,
-        status: "not_started",
-        dueDate,
-        notes,
-        source: "telegram",
-      },
-      select: { id: true, title: true },
-    });
+    await d1Run(
+      `INSERT INTO "Task" ("id","title","ownerId","assigneeId","priority","status","dueDate","notes","source","createdAt","updatedAt")
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      taskId,
+      title,
+      telegramUser.userId,
+      assigneeId ?? null,
+      priority,
+      "not_started",
+      dueDateIso,
+      notes ?? null,
+      "telegram",
+      now6,
+      now6,
+    );
   } catch (err) {
     const errMsg = String(err);
     await replyToChat(chatId, `فشل إنشاء المهمة: ${errMsg}`);
     await writeTelegramLog(chatId, messageText, false, errMsg);
     return NextResponse.json({ ok: true });
   }
+  const createdTask = { id: taskId, title };
 
   // Write TaskUpdate with source: "telegram"
-  const now = nowIso();
   await d1Run(
     `INSERT INTO "TaskUpdate" ("id","taskId","source","content","createdAt") VALUES (?,?,?,?,?)`,
     createId(),
     createdTask.id,
     "telegram",
     `تم إنشاء المهمة عبر تيليغرام`,
-    now,
+    now6,
   ).catch(() => {});
 
   // Write TelegramLog with parsed: true
