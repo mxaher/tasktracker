@@ -1,8 +1,8 @@
 import { PrismaD1 } from "@prisma/adapter-d1";
-import { PrismaClient } from "../generated/prisma/edge";
+import { PrismaClient } from "../generated/prisma";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-if (!("instantiateStreaming" in WebAssembly)) {
+if (!(\"instantiateStreaming\" in WebAssembly)) {
   Object.assign(WebAssembly, {
     async instantiateStreaming(
       source: Promise<Response> | Response,
