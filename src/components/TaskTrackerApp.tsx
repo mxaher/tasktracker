@@ -26,7 +26,7 @@ import {
   CheckCircle2, Clock, AlertTriangle, XCircle, TrendingUp,
   Calendar, User, Building, Flag, BarChart3, PieChart, FileSpreadsheet,
   ChevronDown, ChevronUp, RefreshCw, Eye, Mail, MessageSquare, Save, Send,
-  AlertCircle, X, Loader2
+  AlertCircle, X, Loader2, History
 } from "lucide-react";
 import { format, differenceInDays, isPast, isToday, addDays } from "date-fns";
 import { Switch } from "@/components/ui/switch";
@@ -88,6 +88,17 @@ interface Task {
 type TaskMutationPayload = Partial<Task> & {
   newUpdateContent?: string | null;
 };
+
+interface AuditLogEntry {
+  id: string;
+  taskId: string;
+  action: string;
+  field: string | null;
+  oldValue: string | null;
+  newValue: string | null;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string | null; avatar: string | null } | null;
+}
 
 interface DashboardStats {
   totalTasks: number;
@@ -1228,6 +1239,122 @@ function DashboardContent({ stats, onNavigateToDepartment, onNavigateToOverdue, 
 }
 
 // ─────────────────────────────────────────────────────────────
+// AuditHistorySection — collapsible update log on task card
+// ─────────────────────────────────────────────────────────────
+const fieldLabelMap: Record<string, string> = {
+  title: "العنوان",
+  description: "الوصف",
+  status: "الحالة",
+  priority: "الأولوية",
+  completion: "نسبة الإنجاز",
+  dueDate: "تاريخ الاستحقاق",
+  startDate: "تاريخ البدء",
+  ownerId: "المسؤول",
+  assigneeId: "المكلف",
+  department: "القسم",
+  notes: "الملاحظات",
+  nextStep: "الخطوة التالية",
+  ceoNotes: "ملاحظات الرئيس",
+  source: "المصدر",
+  riskIndicator: "مؤشر المخاطر",
+  parentId: "المهمة الرئيسية",
+};
+
+function AuditHistorySection({
+  taskId,
+  history,
+  onDelete,
+}: {
+  taskId: string;
+  history: AuditLogEntry[];
+  onDelete: (taskId: string, logId: string) => void;
+}) {
+  const [collapsed, setCollapsed] = useState(true);
+  const visible = collapsed ? history.slice(0, 3) : history;
+
+  return (
+    <div className="rounded-2xl border border-border/60 bg-muted/5 p-4">
+      <button
+        type="button"
+        className="mb-3 flex w-full items-center justify-between gap-2 text-sm font-semibold"
+        onClick={() => setCollapsed((c) => !c)}
+      >
+        <span className="flex items-center gap-2">
+          <History className="h-4 w-4 text-primary" />
+          سجل التحديثات
+          {history.length > 0 && (
+            <span className="text-xs font-normal text-muted-foreground">({history.length})</span>
+          )}
+        </span>
+        {collapsed ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronUp className="h-4 w-4 text-muted-foreground" />}
+      </button>
+      {!collapsed || history.length > 0 ? (
+        <div className="space-y-2">
+          {visible.length === 0 ? (
+            <div className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
+              لا يوجد سجل تحديثات بعد
+            </div>
+          ) : (
+            visible.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-start gap-2 rounded-xl border bg-background/70 px-3 py-2 text-xs"
+              >
+                <History className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/60" />
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-foreground/80">
+                    {fieldLabelMap[entry.field ?? ""] || entry.field || entry.action}
+                  </span>
+                  {entry.field && (
+                    <span className="text-muted-foreground">
+                      {": "}
+                      <span className="line-through opacity-60">{entry.oldValue ?? "—"}</span>
+                      {" → "}
+                      <span className="text-foreground/70">{entry.newValue ?? "—"}</span>
+                    </span>
+                  )}
+                  {entry.user && (
+                    <span className="text-muted-foreground/70"> · {entry.user.name || entry.user.email}</span>
+                  )}
+                  <span className="text-muted-foreground/60">
+                    {" · "}
+                    {new Date(entry.createdAt).toLocaleString("ar-SA", {
+                      timeZone: "Asia/Riyadh",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="flex-shrink-0 text-muted-foreground/40 hover:text-destructive transition-colors"
+                  onClick={() => onDelete(taskId, entry.id)}
+                  aria-label="حذف السجل"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+          {collapsed && history.length > 3 && (
+            <button
+              type="button"
+              className="w-full pt-1 text-xs text-primary hover:underline"
+              onClick={() => setCollapsed(false)}
+            >
+              عرض جميع السجلات ({history.length})
+            </button>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // TaskListContent — module-level
 // ─────────────────────────────────────────────────────────────
 interface TaskListContentProps {
@@ -1278,6 +1405,8 @@ interface TaskListContentProps {
   loadingChildrenByParent: Record<string, boolean>;
   getDaysRemaining: (dueDate: string | null) => number | null;
   getRiskColor: (task: Task) => string;
+  taskHistoryById: Record<string, AuditLogEntry[]>;
+  onDeleteHistoryEntry: (taskId: string, logId: string) => void;
 }
 
 function TaskListContent({
@@ -1298,6 +1427,7 @@ function TaskListContent({
   sortBy, setSortBy, sortOrder, setSortOrder,
   taskDetailsById, loadingTaskDetailId, childTasksByParent, loadingChildrenByParent,
   getDaysRemaining, getRiskColor,
+  taskHistoryById, onDeleteHistoryEntry,
 }: TaskListContentProps) {
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -1490,6 +1620,20 @@ function TaskListContent({
               </div>
             ) : "—"}
           </TableCell>
+          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+            {(() => {
+              const latestLog = (taskHistoryById[task.id] ?? [])[0];
+              if (latestLog) {
+                return (
+                  <div className="space-y-0.5">
+                    <div className="font-medium text-foreground/70">{latestLog.field || latestLog.action}</div>
+                    <div>{new Date(latestLog.createdAt).toLocaleString("ar-SA", { timeZone: "Asia/Riyadh", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+                  </div>
+                );
+              }
+              return formatArabicDateTime(task.updatedAt);
+            })()}
+          </TableCell>
           <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-1 whitespace-nowrap">
               <DropdownMenu>
@@ -1540,7 +1684,7 @@ function TaskListContent({
         {isParentExpanded ? (
           childrenLoading ? (
             <TableRow className="bg-muted/10 hover:bg-muted/10">
-              <TableCell colSpan={11} className="px-6 py-3 text-sm text-muted-foreground">
+              <TableCell colSpan={12} className="px-6 py-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>جارٍ تحميل المهام الفرعية...</span>
@@ -1553,7 +1697,7 @@ function TaskListContent({
         ) : null}
         {isExpanded ? (
           <TableRow className="bg-muted/20 hover:bg-muted/20">
-            <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
+            <TableCell colSpan={12} className="border-t-0 px-6 pb-5 pt-0">
               <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
                 {loadingTaskDetailId === task.id && !taskDetailsById[task.id] ? (
                   <div className="flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
@@ -1668,6 +1812,13 @@ function TaskListContent({
                         </div>
                       </div>
                     )}
+
+                    {/* سجل التحديثات */}
+                    <AuditHistorySection
+                      taskId={task.id}
+                      history={taskHistoryById[task.id] ?? []}
+                      onDelete={onDeleteHistoryEntry}
+                    />
 
                   </>
                 )}
@@ -1968,6 +2119,9 @@ function TaskListContent({
                   >
                     <div className="flex items-center justify-center">تاريخ الاكتمال<SortIcon field="dueDate" /></div>
                   </TableHead>
+                  <TableHead className="text-center select-none">
+                    <div className="flex items-center justify-center gap-1"><History className="h-3 w-3" />آخر تحديث</div>
+                  </TableHead>
                   <TableHead className="w-[200px] text-center select-none">
                     <div className="flex items-center justify-center">الإجراءات</div>
                   </TableHead>
@@ -2091,7 +2245,7 @@ function TaskListContent({
                     </TableRow>
                     {isExpanded ? (
                       <TableRow className="bg-muted/20 hover:bg-muted/20">
-                        <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
+                        <TableCell colSpan={12} className="border-t-0 px-6 pb-5 pt-0">
                           <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -2609,6 +2763,7 @@ export default function TaskTrackerApp() {
   const [loadingTaskDetailId, setLoadingTaskDetailId] = useState<string | null>(null);
   const [childTasksByParent, setChildTasksByParent] = useState<Record<string, Task[]>>({});
   const [loadingChildrenByParent, setLoadingChildrenByParent] = useState<Record<string, boolean>>({});
+  const [taskHistoryById, setTaskHistoryById] = useState<Record<string, AuditLogEntry[]>>({});
 
   const [settings, setSettings] = useState<SettingsState>({
     adminEmail: "",
@@ -2690,6 +2845,31 @@ export default function TaskTrackerApp() {
       toast.error("تعذر تحميل المهام الفرعية");
     } finally {
       setLoadingChildrenByParent((prev) => ({ ...prev, [parentId]: false }));
+    }
+  };
+
+  const fetchTaskHistory = async (taskId: string) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/history`);
+      if (!response.ok) return;
+      const data = await response.json();
+      setTaskHistoryById((prev) => ({ ...prev, [taskId]: data.history || [] }));
+    } catch (error) {
+      console.error("Error fetching task history:", error);
+    }
+  };
+
+  const deleteHistoryEntry = async (taskId: string, logId: string) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/history/${logId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete history entry");
+      setTaskHistoryById((prev) => ({
+        ...prev,
+        [taskId]: (prev[taskId] ?? []).filter((e) => e.id !== logId),
+      }));
+      toast.success("تم حذف سجل التحديث");
+    } catch {
+      toast.error("تعذر حذف سجل التحديث");
     }
   };
 
@@ -3007,6 +3187,7 @@ export default function TaskTrackerApp() {
     await Promise.allSettled([
       fetchTaskDetail(taskId),
       fetchChildTasks(taskId),
+      fetchTaskHistory(taskId),
     ]);
   };
 
@@ -3424,6 +3605,8 @@ export default function TaskTrackerApp() {
               loadingChildrenByParent={loadingChildrenByParent}
               getDaysRemaining={getDaysRemaining}
               getRiskColor={getRiskColor}
+              taskHistoryById={taskHistoryById}
+              onDeleteHistoryEntry={deleteHistoryEntry}
             />
           </TabsContent>
           <TabsContent value="settings" className="mt-0">

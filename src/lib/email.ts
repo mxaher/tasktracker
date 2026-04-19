@@ -7,6 +7,7 @@ import { format, differenceInDays, isPast } from "date-fns";
 
 interface EmailPayload {
   to: string | string[];
+  cc?: string | string[];
   subject: string;
   html: string;
   text?: string;
@@ -45,6 +46,7 @@ async function sendEmailWithResend(payload: EmailPayload): Promise<{ success: bo
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: recipients,
+        ...(payload.cc ? { cc: Array.isArray(payload.cc) ? payload.cc : [payload.cc] } : {}),
         subject: payload.subject,
         html: payload.html,
         text: payload.text,
@@ -83,55 +85,55 @@ function getTaskReminderTemplate(task: {
 
   const html = `
     <!DOCTYPE html>
-    <html>
+    <html dir="rtl" lang="ar">
     <head>
+      <meta charset="UTF-8" />
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: ${isOverdue ? '#ef4444' : '#3b82f6'}; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-        .content { background: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
-        .task-info { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
-        .priority-critical { color: #dc2626; }
-        .priority-high { color: #ea580c; }
-        .priority-medium { color: #ca8a04; }
-        .priority-low { color: #16a34a; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body, table, td, p, a, span { font-family: 'Tajawal', 'Arial', sans-serif !important; }
+        body { background: transparent; line-height: 1.7; color: #1f2937; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 24px; background: transparent; }
+        .header { border-bottom: 2px solid ${isOverdue ? '#ef4444' : '#3b82f6'}; padding-bottom: 16px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 20px; color: ${isOverdue ? '#ef4444' : '#3b82f6'}; }
+        .task-info { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0; }
+        .priority-critical { color: #dc2626; font-weight: 700; }
+        .priority-high { color: #ea580c; font-weight: 700; }
+        .priority-medium { color: #ca8a04; font-weight: 700; }
+        .priority-low { color: #16a34a; font-weight: 700; }
         .progress-bar { background: #e5e7eb; border-radius: 4px; height: 8px; }
         .progress-fill { background: #3b82f6; height: 100%; border-radius: 4px; }
-        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
+        .footer { margin-top: 24px; color: #9ca3af; font-size: 12px; text-align: center; }
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="container" dir="rtl">
         <div class="header">
-          <h1 style="margin: 0;">${isOverdue ? '⚠️ Task Overdue!' : '📋 Task Reminder'}</h1>
+          <h1>${isOverdue ? '⚠️ المهمة متأخرة!' : '📋 تذكير بمهمة'}</h1>
         </div>
-        <div class="content">
-          <p>Hello ${ownerName},</p>
-          <p>${isOverdue 
-            ? `This task is <strong>${Math.abs(daysRemaining)} days overdue</strong>. Please take action.` 
-            : `This task is due in <strong>${daysRemaining} days</strong>.`}</p>
-          
-          <div class="task-info">
-            <h3 style="margin-top: 0;">${task.title}</h3>
-            ${task.taskId ? `<p><strong>Task ID:</strong> #${task.taskId}</p>` : ''}
-            <p><strong>Department:</strong> ${task.department || 'N/A'}</p>
-            <p><strong>Due Date:</strong> ${dueDateStr}</p>
-            <p><strong>Priority:</strong> <span class="priority-${task.priority}">${task.priority.toUpperCase()}</span></p>
-            <p><strong>Status:</strong> ${task.status.replace('_', ' ').toUpperCase()}</p>
-            <p><strong>Progress:</strong></p>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${task.completion * 100}%"></div>
-            </div>
-            <p style="text-align: right; font-size: 12px;">${Math.round(task.completion * 100)}% complete</p>
-            ${task.notes ? `<p><strong>Notes:</strong> ${task.notes}</p>` : ''}
+        <p>مرحبًا ${ownerName}،</p>
+        <p>${isOverdue
+          ? `هذه المهمة متأخرة بـ <strong>${Math.abs(daysRemaining)} يومًا</strong>. يرجى اتخاذ الإجراء اللازم.`
+          : `هذه المهمة مستحقة خلال <strong>${daysRemaining} يومًا</strong>.`}</p>
+
+        <div class="task-info">
+          <h3 style="margin-top: 0;">${task.title}</h3>
+          ${task.taskId ? `<p><strong>رقم المهمة:</strong> #${task.taskId}</p>` : ''}
+          <p><strong>القسم:</strong> ${task.department || 'غير محدد'}</p>
+          <p><strong>تاريخ الاستحقاق:</strong> ${dueDateStr}</p>
+          <p><strong>الأولوية:</strong> <span class="priority-${task.priority}">${task.priority.toUpperCase()}</span></p>
+          <p><strong>الحالة:</strong> ${task.status.replace('_', ' ').toUpperCase()}</p>
+          <p><strong>نسبة الإنجاز:</strong></p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${task.completion * 100}%"></div>
           </div>
-          
-          <p>Please log in to the TaskTracker system to update this task's status.</p>
-          
-          <p>Best regards,<br>TaskTracker System</p>
+          <p style="font-size: 12px; color: #6b7280;">${Math.round(task.completion * 100)}% مكتمل</p>
+          ${task.notes ? `<p><strong>الملاحظات:</strong> ${task.notes}</p>` : ''}
         </div>
+
+        <p>يرجى تسجيل الدخول إلى نظام متتبع المهام لتحديث حالة هذه المهمة.</p>
+        <p>مع تحياتنا،<br>نظام متتبع المهام</p>
         <div class="footer">
-          <p>This is an automated message from TaskTracker.</p>
+          <p>هذه رسالة تلقائية من نظام متتبع المهام.</p>
         </div>
       </div>
     </body>
@@ -209,65 +211,67 @@ function getInProgressReportTemplate(tasks: Array<{
 
   const html = `
     <!DOCTYPE html>
-    <html>
+    <html dir="rtl" lang="ar">
     <head>
+      <meta charset="UTF-8" />
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { background: #3b82f6; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-        .content { background: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
-        th { background: #374151; color: white; padding: 12px 10px; text-align: left; }
-        .stats { display: flex; gap: 20px; margin-bottom: 20px; }
-        .stat-box { background: white; padding: 15px; border-radius: 8px; flex: 1; text-align: center; }
-        .stat-number { font-size: 24px; font-weight: bold; color: #3b82f6; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body, table, td, p, a, span { font-family: 'Tajawal', 'Arial', sans-serif !important; }
+        body { background: transparent; line-height: 1.7; color: #1f2937; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: 0 auto; padding: 24px; background: transparent; }
+        .header { border-bottom: 2px solid #3b82f6; padding-bottom: 16px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 20px; color: #3b82f6; }
+        table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        th { background: transparent; border-bottom: 2px solid #e5e7eb; color: #374151; padding: 10px 12px; text-align: right; font-weight: 700; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+        .stats { display: flex; gap: 16px; margin-bottom: 20px; }
+        .stat-box { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; flex: 1; text-align: center; }
+        .stat-number { font-size: 24px; font-weight: 700; color: #3b82f6; }
         .stat-label { font-size: 12px; color: #6b7280; }
-        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
+        .footer { margin-top: 24px; color: #9ca3af; font-size: 12px; text-align: center; }
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="container" dir="rtl">
         <div class="header">
-          <h1 style="margin: 0;">📊 ${reportType === 'daily' ? 'Daily' : 'Weekly'} In-Progress Tasks Report</h1>
-          <p style="margin: 5px 0 0 0;">${format(new Date(), "MMMM d, yyyy")}</p>
+          <h1>📊 تقرير المهام ${reportType === 'daily' ? 'اليومي' : 'الأسبوعي'} — قيد التنفيذ</h1>
+          <p style="margin: 4px 0 0 0; color: #6b7280;">${format(new Date(), "MMMM d, yyyy")}</p>
         </div>
-        <div class="content">
-          <div class="stats">
-            <div class="stat-box">
-              <div class="stat-number">${tasks.length}</div>
-              <div class="stat-label">Total In Progress</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-number">${tasks.filter(t => t.priority === 'critical' || t.priority === 'high').length}</div>
-              <div class="stat-label">High Priority</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-number">${tasks.filter(t => t.dueDate && isPast(new Date(t.dueDate))).length}</div>
-              <div class="stat-label">Overdue</div>
-            </div>
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-number">${tasks.length}</div>
+            <div class="stat-label">قيد التنفيذ</div>
           </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Department</th>
-                <th>Owner</th>
-                <th>Due Date</th>
-                <th>Priority</th>
-                <th>Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tasksHtml}
-            </tbody>
-          </table>
-          
-          <p style="margin-top: 20px;">Please log in to the TaskTracker system for more details and to update task statuses.</p>
+          <div class="stat-box">
+            <div class="stat-number">${tasks.filter(t => t.priority === 'critical' || t.priority === 'high').length}</div>
+            <div class="stat-label">أولوية عالية</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">${tasks.filter(t => t.dueDate && isPast(new Date(t.dueDate))).length}</div>
+            <div class="stat-label">متأخرة</div>
+          </div>
         </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>الرقم</th>
+              <th>المهمة</th>
+              <th>القسم</th>
+              <th>المسؤول</th>
+              <th>الاستحقاق</th>
+              <th>الأولوية</th>
+              <th>الإنجاز</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tasksHtml}
+          </tbody>
+        </table>
+
+        <p style="margin-top: 20px;">يرجى تسجيل الدخول إلى نظام متتبع المهام للاطلاع على التفاصيل وتحديث الحالات.</p>
         <div class="footer">
-          <p>This is an automated message from TaskTracker.</p>
+          <p>هذه رسالة تلقائية من نظام متتبع المهام.</p>
         </div>
       </div>
     </body>
@@ -297,7 +301,7 @@ export class EmailService {
   static async sendTaskReminder(taskId: string): Promise<{ success: boolean; error?: string }> {
     const task = await db.task.findUnique({
       where: { id: taskId },
-      include: { owner: true },
+      include: { owner: true, assignee: true },
     });
 
     if (!task || !task.owner) {
@@ -308,11 +312,20 @@ export class EmailService {
       return { success: false, error: "Task has no due date" };
     }
 
+    const toAddress = task.assignee?.email;
+    const ccAddress = task.owner?.email;
+    const toEmail = (toAddress && ccAddress && toAddress !== ccAddress)
+      ? toAddress
+      : (toAddress ?? ccAddress);
+    const ccEmail = (toAddress && ccAddress && toAddress !== ccAddress) ? ccAddress : undefined;
+
+    const recipientName = task.assignee?.name || task.owner.name || task.owner.email;
     const daysRemaining = differenceInDays(new Date(task.dueDate), new Date());
-    const template = getTaskReminderTemplate(task, task.owner.name || task.owner.email, daysRemaining);
+    const template = getTaskReminderTemplate(task, recipientName, daysRemaining);
 
     const result = await sendEmailWithResend({
-      to: task.owner.email,
+      to: toEmail ?? task.owner.email,
+      cc: ccEmail,
       subject: template.subject,
       html: template.html,
       text: template.text,
@@ -380,49 +393,55 @@ export class EmailService {
       return { success: false, error: "Task not found" };
     }
 
-    const recipients: string[] = [];
-    if (task.owner?.email) recipients.push(task.owner.email);
-    if (task.assignee?.email && task.assignee.email !== task.owner?.email) {
-      recipients.push(task.assignee.email);
-    }
+    const toAddress = task.assignee?.email;
+    const ccAddress = task.owner?.email;
+    const toEmail = (toAddress && ccAddress && toAddress !== ccAddress)
+      ? toAddress
+      : (toAddress ?? ccAddress ?? null);
+    const ccEmail = (toAddress && ccAddress && toAddress !== ccAddress)
+      ? ccAddress
+      : undefined;
 
-    if (recipients.length === 0) {
+    if (!toEmail) {
       return { success: false, error: "No recipients found" };
     }
 
     const dueDateStr = task.dueDate ? format(new Date(task.dueDate), "MMMM d, yyyy") : "No due date set";
     
-    const subject = `📋 New Task Assigned: ${task.title}`;
+    const subject = `📋 تم تكليفك بمهمة جديدة: ${task.title}`;
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html dir="rtl" lang="ar">
       <head>
+        <meta charset="UTF-8" />
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #16a34a; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-          .content { background: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
-          .task-info { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+          @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+          body, table, td, p, a, span { font-family: 'Tajawal', 'Arial', sans-serif !important; }
+          body { background: transparent; line-height: 1.7; color: #1f2937; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 24px; background: transparent; }
+          .header { border-bottom: 2px solid #16a34a; padding-bottom: 16px; margin-bottom: 20px; }
+          .header h1 { margin: 0; font-size: 20px; color: #16a34a; }
+          .task-info { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0; }
+          .footer { margin-top: 24px; color: #9ca3af; font-size: 12px; text-align: center; }
         </style>
       </head>
       <body>
-        <div class="container">
+        <div class="container" dir="rtl">
           <div class="header">
-            <h1 style="margin: 0;">📋 New Task Assigned</h1>
+            <h1>📋 تم تكليفك بمهمة جديدة</h1>
           </div>
-          <div class="content">
-            <p>A new task has been assigned to you.</p>
-            
-            <div class="task-info">
-              <h3 style="margin-top: 0;">${task.title}</h3>
-              ${task.taskId ? `<p><strong>Task ID:</strong> #${task.taskId}</p>` : ''}
-              <p><strong>Department:</strong> ${task.department || 'N/A'}</p>
-              <p><strong>Priority:</strong> ${task.priority.toUpperCase()}</p>
-              <p><strong>Due Date:</strong> ${dueDateStr}</p>
-              ${task.description ? `<p><strong>Description:</strong> ${task.description}</p>` : ''}
-            </div>
-            
-            <p>Please log in to the TaskTracker system to view and update this task.</p>
+          <p>تم تعيين مهمة جديدة لك.</p>
+          <div class="task-info">
+            <h3 style="margin-top: 0;">${task.title}</h3>
+            ${task.taskId ? `<p><strong>رقم المهمة:</strong> #${task.taskId}</p>` : ''}
+            <p><strong>القسم:</strong> ${task.department || 'غير محدد'}</p>
+            <p><strong>الأولوية:</strong> ${task.priority.toUpperCase()}</p>
+            <p><strong>تاريخ الاستحقاق:</strong> ${dueDateStr}</p>
+            ${task.description ? `<p><strong>الوصف:</strong> ${task.description}</p>` : ''}
+          </div>
+          <p>يرجى تسجيل الدخول إلى نظام متتبع المهام للاطلاع على التفاصيل وتحديث الحالة.</p>
+          <div class="footer">
+            <p>هذه رسالة تلقائية من نظام متتبع المهام.</p>
           </div>
         </div>
       </body>
@@ -430,27 +449,26 @@ export class EmailService {
     `;
 
     const result = await sendEmailWithResend({
-      to: recipients,
+      to: toEmail,
+      cc: ccEmail,
       subject,
       html,
-      text: `New Task: ${task.title}\nDepartment: ${task.department || 'N/A'}\nPriority: ${task.priority}\nDue: ${dueDateStr}`,
+      text: `مهمة جديدة: ${task.title}\nالقسم: ${task.department || 'غير محدد'}\nالأولوية: ${task.priority}\nالاستحقاق: ${dueDateStr}`,
     });
 
     // Log notification
-    for (const recipient of recipients) {
-      await db.notification.create({
-        data: {
-          taskId: task.id,
-          type: "assignment",
-          channel: "email",
-          subject,
-          message: `Task assignment notification sent to ${recipient}`,
-          status: result.success ? "sent" : "failed",
-          sentAt: result.success ? new Date() : null,
-          error: result.error,
-        },
-      });
-    }
+    await db.notification.create({
+      data: {
+        taskId: task.id,
+        type: "assignment",
+        channel: "email",
+        subject,
+        message: `Task assignment notification sent to ${toEmail}${ccEmail ? ` (cc: ${ccEmail})` : ''}`,
+        status: result.success ? "sent" : "failed",
+        sentAt: result.success ? new Date() : null,
+        error: result.error,
+      },
+    });
 
     return result;
   }
@@ -716,53 +734,51 @@ function getScheduledReminderTemplate(reminder: {
 
   const html = `
     <!DOCTYPE html>
-    <html>
+    <html dir="rtl" lang="ar">
     <head>
+      <meta charset="UTF-8" />
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { background: #7c3aed; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-        .content { background: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
-        th { background: #374151; color: white; padding: 12px 10px; text-align: left; }
-        .description { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
-        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body, table, td, p, a, span { font-family: 'Tajawal', 'Arial', sans-serif !important; }
+        body { background: transparent; line-height: 1.7; color: #1f2937; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: 0 auto; padding: 24px; background: transparent; }
+        .header { border-bottom: 2px solid #7c3aed; padding-bottom: 16px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 20px; color: #7c3aed; }
+        table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        th { background: transparent; border-bottom: 2px solid #e5e7eb; color: #374151; padding: 10px 12px; text-align: right; font-weight: 700; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+        .description { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin: 12px 0; }
+        .footer { margin-top: 24px; color: #9ca3af; font-size: 12px; text-align: center; }
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="container" dir="rtl">
         <div class="header">
-          <h1 style="margin: 0;">📋 ${reminder.title}</h1>
-          <p style="margin: 5px 0 0 0;">${format(new Date(reminder.reminderDate), "MMMM d, yyyy")}</p>
+          <h1>📋 ${reminder.title}</h1>
+          <p style="margin: 4px 0 0 0; color: #6b7280;">${format(new Date(reminder.reminderDate), "MMMM d, yyyy")}</p>
         </div>
-        <div class="content">
-          ${reminder.description ? `<div class="description"><p>${reminder.description}</p></div>` : ''}
-          
-          <p><strong>${tasks.length}</strong> active tasks requiring attention:</p>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Department</th>
-                <th>Owner</th>
-                <th>Due Date</th>
-                <th>Priority</th>
-                <th>Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tasksHtml}
-            </tbody>
-          </table>
-          
-          ${tasks.length > 20 ? `<p style="margin-top: 10px; color: #6b7280;">Showing 20 of ${tasks.length} tasks. Log in to see all tasks.</p>` : ''}
-          
-          <p style="margin-top: 20px;">Please log in to the TaskTracker system to update task statuses.</p>
-        </div>
+        ${reminder.description ? `<div class="description"><p>${reminder.description}</p></div>` : ''}
+        <p><strong>${tasks.length}</strong> مهمة نشطة تتطلب متابعة:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>الرقم</th>
+              <th>المهمة</th>
+              <th>القسم</th>
+              <th>المسؤول</th>
+              <th>الاستحقاق</th>
+              <th>الأولوية</th>
+              <th>الإنجاز</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tasksHtml}
+          </tbody>
+        </table>
+        ${tasks.length > 20 ? `<p style="margin-top: 10px; color: #6b7280;">يُعرض 20 من أصل ${tasks.length} مهمة. سجّل الدخول لرؤية الكل.</p>` : ''}
+        <p style="margin-top: 20px;">يرجى تسجيل الدخول إلى نظام متتبع المهام لتحديث الحالات.</p>
         <div class="footer">
-          <p>This is an automated message from TaskTracker.</p>
+          <p>هذه رسالة تلقائية من نظام متتبع المهام.</p>
         </div>
       </div>
     </body>
