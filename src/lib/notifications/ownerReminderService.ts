@@ -121,28 +121,37 @@ function buildBulkOwnerEmailContent(ownerName: string, tasks: ReminderTaskRow[])
     )
     .join("");
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-      <p>Hello ${ownerName},</p>
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head><meta charset="UTF-8"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+body,table,td,p,a,span{font-family:'Tajawal','Arial',sans-serif!important;}
+body{background:transparent;color:#1f2937;direction:rtl;margin:0;padding:0;}
+.container{max-width:700px;margin:0 auto;padding:24px;background:transparent;}
+th{border-bottom:2px solid #e5e7eb;color:#374151;padding:10px 12px;text-align:right;font-weight:700;}
+td{padding:8px 12px;border-bottom:1px solid #e5e7eb;}
+</style></head>
+<body><div class="container" dir="rtl">
+      <p>الأخ/ ${ownerName}،</p>
       <p>${
         tasks.length === 1
-          ? "This is a reminder for the following selected task."
-          : `This is a reminder for the following ${tasks.length} selected tasks.`
+          ? "تذكير بخصوص المهمة المحددة التالية:"
+          : `تذكير بخصوص المهام المحددة التالية (${tasks.length} مهام):`
       }</p>
-      <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+      <table style="width:100%;border-collapse:collapse;margin-top:12px;">
         <thead>
-          <tr style="background:#f3f4f6; text-align:left;">
-            <th style="padding:8px;">Task ID</th>
-            <th style="padding:8px;">Task</th>
-            <th style="padding:8px;">Due Date</th>
-            <th style="padding:8px;">Priority</th>
-            <th style="padding:8px;">Department</th>
+          <tr>
+            <th>رقم المهمة</th>
+            <th>المهمة</th>
+            <th>تاريخ الاستحقاق</th>
+            <th>الأولوية</th>
+            <th>القسم</th>
           </tr>
         </thead>
         <tbody>${htmlRows}</tbody>
       </table>
-    </div>
-  `;
+    </div></body></html>`;
 
   return { subject, text, html };
 }
@@ -162,19 +171,26 @@ function buildEmailContent(task: ReminderTaskRow) {
     .filter(Boolean)
     .join("\n");
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-      <p>Hello ${ownerName},</p>
-      <p>This is a reminder for the following task.</p>
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head><meta charset="UTF-8"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+body,table,td,p,a,span,li{font-family:'Tajawal','Arial',sans-serif!important;}
+body{background:transparent;color:#1f2937;direction:rtl;margin:0;padding:0;}
+.container{max-width:600px;margin:0 auto;padding:24px;background:transparent;}
+</style></head>
+<body><div class="container" dir="rtl">
+      <p>الأخ/ ${ownerName}،</p>
+      <p>تذكير بخصوص المهمة التالية:</p>
       <ul>
-        <li><strong>Task:</strong> ${task.title}</li>
-        <li><strong>Task ID:</strong> ${task.taskId || task.id}</li>
-        <li><strong>Due Date:</strong> ${formatDueDate(task.dueDate)}</li>
-        <li><strong>Priority:</strong> ${task.priority}</li>
-        ${task.department ? `<li><strong>Department:</strong> ${task.department}</li>` : ""}
+        <li><strong>المهمة:</strong> ${task.title}</li>
+        <li><strong>رقم المهمة:</strong> ${task.taskId || task.id}</li>
+        <li><strong>تاريخ الاستحقاق:</strong> ${formatDueDate(task.dueDate)}</li>
+        <li><strong>الأولوية:</strong> ${task.priority}</li>
+        ${task.department ? `<li><strong>القسم:</strong> ${task.department}</li>` : ""}
       </ul>
-    </div>
-  `;
+    </div></body></html>`;
 
   return { subject, text, html };
 }
