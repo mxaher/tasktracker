@@ -79,20 +79,30 @@ export async function POST(request: NextRequest) {
       taskId
     );
 
-    const emailCandidates = [
-      recipientRow?.owner_contact_email,
+    // Build separate candidate lists for assignee and owner
+    const assigneeCandidates = [
       recipientRow?.assignee_contact_email,
       normalizedRequestedRecipientEmail,
-      recipientRow?.owner_email,
       recipientRow?.assignee_email,
     ].map((value) => (value ? normalizeEmailAddress(String(value)) : ""));
 
-    const resolvedRecipientEmail = getDeliverableEmails(emailCandidates)[0];
+    const ownerCandidates = [
+      recipientRow?.owner_contact_email,
+      recipientRow?.owner_email,
+    ].map((value) => (value ? normalizeEmailAddress(String(value)) : ""));
 
-    if (!resolvedRecipientEmail) {
+    const resolvedAssigneeEmail = getDeliverableEmails(assigneeCandidates)[0];
+    const resolvedOwnerEmail = getDeliverableEmails(ownerCandidates)[0];
+
+    // Collect all To recipients (assignee + owner), deduplicated
+    const toEmailsRaw = [resolvedAssigneeEmail, resolvedOwnerEmail].filter(Boolean) as string[];
+    const toEmails = [...new Set(toEmailsRaw)];
+
+    if (toEmails.length === 0) {
       console.warn("send-reminder-email: no deliverable email found", {
         taskId,
-        candidates: emailCandidates,
+        assigneeCandidates,
+        ownerCandidates,
       });
       return NextResponse.json(
         {
@@ -103,18 +113,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Primary display name for the email body (prefer assignee)
     const normalizedRecipientName = String(
-      recipientRow?.owner_contact_name ||
-        recipientRow?.owner_name ||
-        recipientRow?.assignee_contact_name ||
+      recipientRow?.assignee_contact_name ||
         recipientRow?.assignee_name ||
+        recipientRow?.owner_contact_name ||
+        recipientRow?.owner_name ||
         recipientName ||
-        resolvedRecipientEmail
+        toEmails[0]
     ).trim();
     const normalizedTaskTitle = String(taskTitle).trim();
 
     const html = buildReminderEmailHtml({
-      recipientName: normalizedRecipientName || resolvedRecipientEmail,
+      recipientName: normalizedRecipientName || toEmails[0],
       taskTitle: normalizedTaskTitle,
       startDate: startDate || "غير محدد",
       latestUpdate: latestUpdate || null,
@@ -122,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     const emailPayload = {
       from: `${encodeEmailHeader("متتبع المهام")} <${fromEmail}>`,
-      to: [resolvedRecipientEmail],
+      to: toEmails,
       cc: ["m.zaher@almarshad.com"],
       reply_to: "m.zaher@almarshad.com",
       subject: encodeEmailHeader(`تذكير: ${normalizedTaskTitle}`),
@@ -150,7 +161,13 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const sentAt = nowIso();
     const updateId = createId();
-    const updateContent = `📧 تم إرسال تذكير بالبريد الإلكتروني إلى ${normalizedRecipientName || resolvedRecipientEmail}`;
+    const toNames = [
+      recipientRow?.assignee_name || resolvedAssigneeEmail,
+      recipientRow?.owner_name || resolvedOwnerEmail,
+    ]
+      .filter(Boolean)
+      .join(" و ");
+    const updateContent = `📧 تم إرسال تذكير بالبريد الإلكتروني إلى ${toNames || normalizedRecipientName || toEmails[0]}`;
 
     await d1Run(
       `INSERT INTO "TaskUpdate" ("id", "taskId", "content", "source", "createdAt")
