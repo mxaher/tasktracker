@@ -24,13 +24,13 @@ export function buildReminderEmailHtml(params: {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>تذكير بمهمة</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+    body, table, td, p, a, span { font-family: 'Tajawal', 'Arial', sans-serif !important; }
     body {
       margin: 0;
       padding: 0;
-      background-color: #f5f5f7;
-      font-family: 'Tajawal', sans-serif;
+      background: transparent;
       direction: rtl;
       color: #1d1d1f;
     }
@@ -40,13 +40,13 @@ export function buildReminderEmailHtml(params: {
     }
     .wrapper {
       width: 100%;
-      background-color: #f5f5f7;
+      background: transparent;
     }
     .container {
       width: 100%;
       max-width: 600px;
       margin: 0 auto;
-      background-color: #ffffff;
+      background: transparent;
       border-radius: 12px;
     }
     .content {
