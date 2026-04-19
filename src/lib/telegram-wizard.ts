@@ -3,12 +3,18 @@
  * Multi-step guided wizard for creating tasks via Telegram.
  * Session state is persisted in D1 TelegramSession table.
  * Designed to run inside the Next.js App Router edge/worker runtime.
+ *
+ * Commands:
+ *   /task     — start guided 3-step task creation wizard
+ *   /cancel   — abort any active wizard session
+ *   /overdue  — list all overdue tasks across the system (admin)
+ *   /summary  — daily snapshot of task health across the system (admin)
  */
 
 import { createId, d1All, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import { sendTelegramMessage } from "@/lib/notifications/telegram";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type WizardSession = {
   step: "await_title" | "await_assignee" | "await_due_date";
@@ -28,6 +34,22 @@ type UserRow = {
   id: string;
   name: string | null;
   email: string;
+};
+
+type OverdueTaskRow = {
+  id: string;
+  title: string;
+  dueDate: string;
+  assignee_name: string | null;
+  assignee_email: string | null;
+  status: string;
+};
+
+type SummaryRow = {
+  total_open: number;
+  total_overdue: number;
+  due_this_week: number;
+  completed_today: number;
 };
 
 // ─── Session helpers ──────────────────────────────────────────────────────────
@@ -84,6 +106,25 @@ function parseDDMMYYYY(dateStr: string): string | null {
   return isNaN(Date.parse(iso)) ? null : iso;
 }
 
+function formatIsoDate(iso: string | null): string {
+  if (!iso) return "—";
+  // iso is stored as full datetime, return DD/MM/YYYY
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  not_started: "لم تبدأ",
+  in_progress: "جارية",
+  on_hold: "موقوفة",
+  done: "منجزة",
+  cancelled: "ملغاة",
+};
+
 async function writeTelegramLog(
   chatId: string,
   rawMessage: string,
@@ -104,6 +145,104 @@ async function writeTelegramLog(
   ).catch(() => {});
 }
 
+// ─── /overdue handler ─────────────────────────────────────────────────────────
+
+async function handleOverdue(chatId: string): Promise<void> {
+  const todayIso = new Date().toISOString();
+
+  const tasks = await d1All<OverdueTaskRow>(
+    `SELECT
+       t.id,
+       t.title,
+       t.dueDate,
+       t.status,
+       u.name  AS assignee_name,
+       u.email AS assignee_email
+     FROM "Task" t
+     LEFT JOIN "User" u ON u.id = t.assigneeId
+     WHERE
+       t.dueDate IS NOT NULL
+       AND t.dueDate < ?
+       AND t.status NOT IN ('done', 'cancelled')
+     ORDER BY t.dueDate ASC
+     LIMIT 20`,
+    todayIso,
+  ).catch(() => [] as OverdueTaskRow[]);
+
+  if (tasks.length === 0) {
+    await reply(chatId, "✅ لا توجد مهام متأخرة. كل شيء في موعده!");
+    return;
+  }
+
+  const lines = tasks.map((t, i) => {
+    const assignee = t.assignee_name ?? t.assignee_email ?? "غير محدد";
+    const status = STATUS_LABEL[t.status] ?? t.status;
+    return (
+      `${i + 1}. <b>${t.title}</b>\n` +
+      `   👤 ${assignee}\n` +
+      `   📅 استحق: ${formatIsoDate(t.dueDate)}\n` +
+      `   🔖 الحالة: ${status}\n` +
+      `   🆔 <code>${t.id}</code>`
+    );
+  });
+
+  const header =
+    tasks.length === 20
+      ? `⚠️ <b>المهام المتأخرة (أول 20 من أصل أكثر)</b>\n\n`
+      : `⚠️ <b>المهام المتأخرة (${tasks.length})</b>\n\n`;
+
+  await reply(chatId, header + lines.join("\n\n"));
+}
+
+// ─── /summary handler ─────────────────────────────────────────────────────────
+
+async function handleSummary(chatId: string): Promise<void> {
+  const now = new Date();
+  const todayStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  ).toISOString();
+
+  // End of 7 days from now (for "due this week")
+  const weekEnd = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 7, 23, 59, 59),
+  ).toISOString();
+
+  const row = await d1First<SummaryRow>(
+    `SELECT
+       COUNT(CASE WHEN status NOT IN ('done','cancelled') THEN 1 END)                                        AS total_open,
+       COUNT(CASE WHEN status NOT IN ('done','cancelled') AND dueDate IS NOT NULL AND dueDate < ?  THEN 1 END) AS total_overdue,
+       COUNT(CASE WHEN status NOT IN ('done','cancelled') AND dueDate BETWEEN ? AND ?              THEN 1 END) AS due_this_week,
+       COUNT(CASE WHEN status = 'done' AND completedAt >= ?                                        THEN 1 END) AS completed_today
+     FROM "Task"`,
+    todayStart,   // total_overdue: dueDate < today
+    todayStart,   // due_this_week: dueDate >= today
+    weekEnd,      // due_this_week: dueDate <= weekEnd
+    todayStart,   // completed_today: completedAt >= today
+  ).catch(() => null);
+
+  if (!row) {
+    await reply(chatId, "❌ تعذّر جلب الملخص. حاول مرة أخرى.");
+    return;
+  }
+
+  const dateLabel = now.toLocaleDateString("ar-SA", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Riyadh",
+  });
+
+  const msg =
+    `📊 <b>ملخص المهام — ${dateLabel}</b>\n\n` +
+    `📂 إجمالي المهام المفتوحة:  <b>${row.total_open}</b>\n` +
+    `⚠️ مهام متأخرة:             <b>${row.total_overdue}</b>\n` +
+    `📅 مستحقة هذا الأسبوع:     <b>${row.due_this_week}</b>\n` +
+    `✅ أُنجزت اليوم:             <b>${row.completed_today}</b>`;
+
+  await reply(chatId, msg);
+}
+
 // ─── Main wizard handler ──────────────────────────────────────────────────────
 
 export async function handleTelegramWizard(
@@ -113,7 +252,19 @@ export async function handleTelegramWizard(
 ): Promise<void> {
   const text = messageText.trim();
 
-  // /cancel at any point
+  // ── Stateless admin commands (no session needed) ──────────────────────────
+
+  if (text === "/overdue") {
+    await handleOverdue(chatId);
+    return;
+  }
+
+  if (text === "/summary") {
+    await handleSummary(chatId);
+    return;
+  }
+
+  // ── /cancel at any point ──────────────────────────────────────────────────
   if (text === "/cancel") {
     await clearSession(chatId);
     await reply(chatId, "✋ تم الإلغاء. يمكنك البدء من جديد بـ /task");
@@ -133,7 +284,7 @@ export async function handleTelegramWizard(
   if (!session) {
     await reply(
       chatId,
-      "اكتب /task لإنشاء مهمة جديدة، أو /cancel لإلغاء أي عملية جارية.",
+      "الأوامر المتاحة:\n/task — إنشاء مهمة جديدة\n/overdue — المهام المتأخرة\n/summary — ملخص اليوم\n/cancel — إلغاء العملية الحالية",
     );
     return;
   }
@@ -239,7 +390,6 @@ export async function handleTelegramWizard(
         now,
       );
 
-      // Audit log
       await d1Run(
         `INSERT INTO "TaskAuditLog" ("id","taskId","userId","action","createdAt")
          VALUES (?,?,?,?,?)`,
