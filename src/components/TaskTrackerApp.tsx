@@ -1546,7 +1546,7 @@ function TaskListContent({
               <Checkbox checked={isSelected} onCheckedChange={() => toggleSelectTask(task.id)} aria-label={`تحديد ${task.title}`} />
             </div>
           </TableCell>
-          <TableCell className="text-center text-sm font-medium text-muted-foreground">{rowNumber}</TableCell>
+          <TableCell className="w-[36px] text-center text-sm font-medium text-muted-foreground">{rowNumber}</TableCell>
           <TableCell>
             <div className="flex items-start gap-2">
               <button
@@ -1621,7 +1621,7 @@ function TaskListContent({
             ) : "—"}
           </TableCell>
           <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-1 whitespace-nowrap">
+            <div className="flex flex-wrap items-center justify-center gap-1">
               <DropdownMenu>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -2043,18 +2043,18 @@ function TaskListContent({
             اسحب أفقيًا لعرض جميع الأعمدة والإجراءات
           </div>
           <div
-            className="max-h-[calc(100vh-400px)] overflow-auto overscroll-contain"
+            className="max-h-[calc(100vh-400px)] overflow-y-auto overflow-x-hidden overscroll-contain"
             dir="rtl"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            <div className="min-w-max overflow-x-auto">
-            <Table className="w-full min-w-[1120px] animate-in fade-in-0 duration-200" dir="rtl">
+            <div className="w-full">
+            <Table className="w-full table-fixed animate-in fade-in-0 duration-200" dir="rtl">
               <TableHeader>
                 <TableRow className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
                   <TableHead className="w-[40px] pr-4 text-center">
                     <Checkbox checked={allFilteredSelected} onCheckedChange={toggleSelectAll} aria-label="تحديد الكل" />
                   </TableHead>
-                  <TableHead className="w-[50px] text-center select-none">
+                  <TableHead className="w-[36px] text-center select-none">
                     <div className="flex items-center justify-center">#</div>
                   </TableHead>
                   <TableHead
