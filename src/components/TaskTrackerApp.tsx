@@ -1585,8 +1585,8 @@ function TaskListContent({
               <Badge variant="outline" className="text-xs whitespace-nowrap">{task.source}</Badge>
             ) : "—"}
           </TableCell>
-          <TableCell>{task.department || "—"}</TableCell>
-          <TableCell>{task.owner?.name || "—"}</TableCell>
+          <TableCell className="max-w-[160px] truncate">{task.department || "—"}</TableCell>
+          <TableCell className="max-w-[180px] truncate">{task.owner?.name || "—"}</TableCell>
           <TableCell>
             <Badge className={`${priorityConfig[task.priority]?.bgColor} ${priorityConfig[task.priority]?.color}`}>
               {priorityConfig[task.priority]?.label}
@@ -1620,8 +1620,8 @@ function TaskListContent({
               </div>
             ) : "—"}
           </TableCell>
-          <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-1 whitespace-nowrap">
+          <TableCell className="sticky left-0 z-10 w-[320px] min-w-[320px] bg-background shadow-[-8px_0_12px_-12px_rgba(0,0,0,0.35)]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-start gap-1 whitespace-nowrap">
               <DropdownMenu>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -2105,7 +2105,7 @@ function TaskListContent({
                   >
                     <div className="flex items-center justify-center">تاريخ الاكتمال<SortIcon field="dueDate" /></div>
                   </TableHead>
-                  <TableHead className="w-[200px] text-center select-none">
+                  <TableHead className="w-[320px] min-w-[320px] text-center select-none">
                     <div className="flex items-center justify-center">الإجراءات</div>
                   </TableHead>
                 </TableRow>
@@ -2144,8 +2144,8 @@ function TaskListContent({
                           <Badge variant="outline" className="text-xs whitespace-nowrap">{task.source}</Badge>
                         ) : "—"}
                       </TableCell>
-                      <TableCell>{task.department || "—"}</TableCell>
-                      <TableCell>{task.owner?.name || "—"}</TableCell>
+                      <TableCell className="max-w-[160px] truncate">{task.department || "—"}</TableCell>
+                      <TableCell className="max-w-[180px] truncate">{task.owner?.name || "—"}</TableCell>
                       <TableCell>
                         <Badge className={`${priorityConfig[task.priority]?.bgColor} ${priorityConfig[task.priority]?.color}`}>
                           {priorityConfig[task.priority]?.label}
@@ -2179,8 +2179,8 @@ function TaskListContent({
                           </div>
                         ) : "—"}
                       </TableCell>
-                      <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1 whitespace-nowrap">
+                      <TableCell className="sticky left-0 z-10 w-[320px] min-w-[320px] bg-background shadow-[-8px_0_12px_-12px_rgba(0,0,0,0.35)]" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-start gap-1 whitespace-nowrap">
                           <DropdownMenu>
                             <Tooltip>
                               <TooltipTrigger asChild>
