@@ -1620,20 +1620,6 @@ function TaskListContent({
               </div>
             ) : "—"}
           </TableCell>
-          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-            {(() => {
-              const latestLog = (taskHistoryById[task.id] ?? [])[0];
-              if (latestLog) {
-                return (
-                  <div className="space-y-0.5">
-                    <div className="font-medium text-foreground/70">{latestLog.field || latestLog.action}</div>
-                    <div>{new Date(latestLog.createdAt).toLocaleString("ar-SA", { timeZone: "Asia/Riyadh", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
-                  </div>
-                );
-              }
-              return formatArabicDateTime(task.updatedAt);
-            })()}
-          </TableCell>
           <TableCell className="sticky left-0 z-10 bg-background/95 backdrop-blur" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-1 whitespace-nowrap">
               <DropdownMenu>
@@ -1684,7 +1670,7 @@ function TaskListContent({
         {isParentExpanded ? (
           childrenLoading ? (
             <TableRow className="bg-muted/10 hover:bg-muted/10">
-              <TableCell colSpan={12} className="px-6 py-3 text-sm text-muted-foreground">
+              <TableCell colSpan={11} className="px-6 py-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>جارٍ تحميل المهام الفرعية...</span>
@@ -1697,7 +1683,7 @@ function TaskListContent({
         ) : null}
         {isExpanded ? (
           <TableRow className="bg-muted/20 hover:bg-muted/20">
-            <TableCell colSpan={12} className="border-t-0 px-6 pb-5 pt-0">
+            <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
               <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
                 {loadingTaskDetailId === task.id && !taskDetailsById[task.id] ? (
                   <div className="flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
@@ -2119,9 +2105,6 @@ function TaskListContent({
                   >
                     <div className="flex items-center justify-center">تاريخ الاكتمال<SortIcon field="dueDate" /></div>
                   </TableHead>
-                  <TableHead className="text-center select-none">
-                    <div className="flex items-center justify-center gap-1"><History className="h-3 w-3" />آخر تحديث</div>
-                  </TableHead>
                   <TableHead className="w-[200px] text-center select-none">
                     <div className="flex items-center justify-center">الإجراءات</div>
                   </TableHead>
@@ -2245,7 +2228,7 @@ function TaskListContent({
                     </TableRow>
                     {isExpanded ? (
                       <TableRow className="bg-muted/20 hover:bg-muted/20">
-                        <TableCell colSpan={12} className="border-t-0 px-6 pb-5 pt-0">
+                        <TableCell colSpan={11} className="border-t-0 px-6 pb-5 pt-0">
                           <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-4 shadow-sm">
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 text-sm font-semibold">
