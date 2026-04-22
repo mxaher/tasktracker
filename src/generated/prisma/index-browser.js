@@ -166,9 +166,11 @@ exports.Prisma.TaskScalarFieldEnum = {
 
 exports.Prisma.ContactScalarFieldEnum = {
   id: 'id',
-  name: 'name',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
   phone: 'phone',
   email: 'email',
+  role: 'role',
   userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -278,6 +280,247 @@ exports.Prisma.ScheduledReminderScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CompanyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  nameAr: 'nameAr',
+  logo: 'logo',
+  fiscalStart: 'fiscalStart',
+  currency: 'currency',
+  language: 'language',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DashboardSettingsScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  type: 'type',
+  location: 'location',
+  totalUnits: 'totalUnits',
+  managerId: 'managerId',
+  occupancyRate: 'occupancyRate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyAnnualTargetScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  annualTarget: 'annualTarget',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyMonthlyTargetScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  month: 'month',
+  target: 'target',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PropertyCollectionActualScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  month: 'month',
+  collected: 'collected',
+  invoiced: 'invoiced',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PropertyAgingReportScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  month: 'month',
+  bucket0to20: 'bucket0to20',
+  bucket21to60: 'bucket21to60',
+  bucket61to90: 'bucket61to90',
+  bucketOver90: 'bucketOver90',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PropertyTargetVersionScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  version: 'version',
+  annualTarget: 'annualTarget',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeePositionScalarFieldEnum = {
+  id: 'id',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  grade: 'grade',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeeScalarFieldEnum = {
+  id: 'id',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  email: 'email',
+  positionId: 'positionId',
+  department: 'department',
+  managedById: 'managedById',
+  isActive: 'isActive',
+  joinedAt: 'joinedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.EmployeePropertyScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  propertyId: 'propertyId',
+  role: 'role',
+  assignedAt: 'assignedAt'
+};
+
+exports.Prisma.KPIScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  category: 'category',
+  unit: 'unit',
+  weight: 'weight',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeeKPITargetScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  kpiId: 'kpiId',
+  year: 'year',
+  target: 'target',
+  weight: 'weight',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeeCustomKPIScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  category: 'category',
+  unit: 'unit',
+  year: 'year',
+  target: 'target',
+  actual: 'actual',
+  weight: 'weight',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.KPIActualScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  kpiId: 'kpiId',
+  year: 'year',
+  month: 'month',
+  actual: 'actual',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CompanyKPIScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  code: 'code',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  category: 'category',
+  weight: 'weight',
+  target: 'target',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CompanyKPIMonthlyScalarFieldEnum = {
+  id: 'id',
+  kpiId: 'kpiId',
+  year: 'year',
+  month: 'month',
+  actual: 'actual',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AlertScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  titleAr: 'titleAr',
+  message: 'message',
+  severity: 'severity',
+  propertyId: 'propertyId',
+  isRead: 'isRead',
+  isResolved: 'isResolved',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt'
+};
+
+exports.Prisma.TelegramUserScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId',
+  username: 'username',
+  firstName: 'firstName',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TelegramLogScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  direction: 'direction',
+  type: 'type',
+  payload: 'payload',
+  taskId: 'taskId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ImportRecordScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  filename: 'filename',
+  period: 'period',
+  rowCount: 'rowCount',
+  status: 'status',
+  errorLog: 'errorLog',
+  uploadedBy: 'uploadedBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AIInsightScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  month: 'month',
+  type: 'type',
+  entityId: 'entityId',
+  insight: 'insight',
+  severity: 'severity',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -300,7 +543,29 @@ exports.Prisma.ModelName = {
   NotificationRule: 'NotificationRule',
   SystemConfig: 'SystemConfig',
   AdminSettings: 'AdminSettings',
-  ScheduledReminder: 'ScheduledReminder'
+  ScheduledReminder: 'ScheduledReminder',
+  Company: 'Company',
+  DashboardSettings: 'DashboardSettings',
+  Property: 'Property',
+  PropertyAnnualTarget: 'PropertyAnnualTarget',
+  PropertyMonthlyTarget: 'PropertyMonthlyTarget',
+  PropertyCollectionActual: 'PropertyCollectionActual',
+  PropertyAgingReport: 'PropertyAgingReport',
+  PropertyTargetVersion: 'PropertyTargetVersion',
+  EmployeePosition: 'EmployeePosition',
+  Employee: 'Employee',
+  EmployeeProperty: 'EmployeeProperty',
+  KPI: 'KPI',
+  EmployeeKPITarget: 'EmployeeKPITarget',
+  EmployeeCustomKPI: 'EmployeeCustomKPI',
+  KPIActual: 'KPIActual',
+  CompanyKPI: 'CompanyKPI',
+  CompanyKPIMonthly: 'CompanyKPIMonthly',
+  Alert: 'Alert',
+  TelegramUser: 'TelegramUser',
+  TelegramLog: 'TelegramLog',
+  ImportRecord: 'ImportRecord',
+  AIInsight: 'AIInsight'
 };
 
 /**

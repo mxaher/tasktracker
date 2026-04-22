@@ -130,7 +130,7 @@ export async function resolveUserMessagingContact(userId: string) {
     return null;
   }
 
-  const name = user.contact?.name || user.name || user.username || user.email;
+  const name = user.contact?.nameAr || user.name || user.username || user.email;
 
   return {
     userId: user.id,

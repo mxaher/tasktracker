@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "@/components/Providers";
 
 const tajawal = Tajawal({
   variable: "--font-tajawal",
@@ -35,7 +36,9 @@ export default function RootLayout({
       <body
         className="antialiased bg-background text-foreground w-full min-h-screen"
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Toaster />
       </body>
     </html>

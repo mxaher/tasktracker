@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const department = searchParams.get('department')
+    const active = searchParams.get('active')
+
+    const where: Record<string, unknown> = {}
+    if (department) where.department = department
+    if (active !== null) where.isActive = active !== 'false'
+
+    const employees = await db.employee.findMany({
+      where,
+      include: {
+        position: true,
+        managedBy: { select: { id: true, nameAr: true } },
+        properties: { include: { property: { select: { id: true, code: true, nameAr: true } } } },
+      },
+      orderBy: { nameAr: 'asc' },
+    })
+    return NextResponse.json({ success: true, data: employees })
+  } catch (e) {
+    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { propertyIds, ...data } = await req.json()
+    const employee = await db.employee.create({
+      data: {
+        ...data,
+        properties: propertyIds?.length
+          ? { create: propertyIds.map((pid: string) => ({ propertyId: pid })) }
+          : undefined,
+      },
+      include: { position: true },
+    })
+    return NextResponse.json({ success: true, data: employee }, { status: 201 })
+  } catch (e) {
+    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+  }
+}

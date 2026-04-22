@@ -110,6 +110,48 @@ html, body, * {
   direction: rtl;
 }
 
+/* ── Achievement color tokens ──────────────────────────── */
+:root {
+  --achievement-good: #34C759;
+  --achievement-warning: #FF9500;
+  --achievement-danger: #FF3B30;
+  --achievement-neutral: #8E8E93;
+}
+
+/* ── Entrance animations ──────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.3s ease forwards; }
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+
+/* ── Progress shine ───────────────────────────────────── */
+@keyframes shine {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+.progress-shine {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.4) 50%, transparent 75%);
+  background-size: 200% auto;
+  animation: shine 2s linear infinite;
+}
+
+/* ── Card hover ───────────────────────────────────────── */
+.card-strategy-hover {
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.card-strategy-hover:hover {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

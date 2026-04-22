@@ -93,6 +93,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  username: 'username',
   name: 'name',
   role: 'role',
   department: 'department',
@@ -112,6 +113,8 @@ exports.Prisma.TaskScalarFieldEnum = {
   taskId: 'taskId',
   title: 'title',
   description: 'description',
+  sentdmMessageId: 'sentdmMessageId',
+  lastReminderSentAt: 'lastReminderSentAt',
   ownerId: 'ownerId',
   assigneeId: 'assigneeId',
   department: 'department',
@@ -127,9 +130,30 @@ exports.Prisma.TaskScalarFieldEnum = {
   nextStep: 'nextStep',
   ceoNotes: 'ceoNotes',
   sourceMonth: 'sourceMonth',
+  source: 'source',
   dataSourceId: 'dataSourceId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContactScalarFieldEnum = {
+  id: 'id',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  phone: 'phone',
+  email: 'email',
+  role: 'role',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaskUpdateScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  source: 'source',
+  content: 'content',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.TaskAuditLogScalarFieldEnum = {
@@ -228,6 +252,247 @@ exports.Prisma.ScheduledReminderScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CompanyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  nameAr: 'nameAr',
+  logo: 'logo',
+  fiscalStart: 'fiscalStart',
+  currency: 'currency',
+  language: 'language',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DashboardSettingsScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  type: 'type',
+  location: 'location',
+  totalUnits: 'totalUnits',
+  managerId: 'managerId',
+  occupancyRate: 'occupancyRate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyAnnualTargetScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  annualTarget: 'annualTarget',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyMonthlyTargetScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  month: 'month',
+  target: 'target',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PropertyCollectionActualScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  month: 'month',
+  collected: 'collected',
+  invoiced: 'invoiced',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PropertyAgingReportScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  month: 'month',
+  bucket0to20: 'bucket0to20',
+  bucket21to60: 'bucket21to60',
+  bucket61to90: 'bucket61to90',
+  bucketOver90: 'bucketOver90',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PropertyTargetVersionScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  year: 'year',
+  version: 'version',
+  annualTarget: 'annualTarget',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeePositionScalarFieldEnum = {
+  id: 'id',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  grade: 'grade',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeeScalarFieldEnum = {
+  id: 'id',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  email: 'email',
+  positionId: 'positionId',
+  department: 'department',
+  managedById: 'managedById',
+  isActive: 'isActive',
+  joinedAt: 'joinedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.EmployeePropertyScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  propertyId: 'propertyId',
+  role: 'role',
+  assignedAt: 'assignedAt'
+};
+
+exports.Prisma.KPIScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  category: 'category',
+  unit: 'unit',
+  weight: 'weight',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeeKPITargetScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  kpiId: 'kpiId',
+  year: 'year',
+  target: 'target',
+  weight: 'weight',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmployeeCustomKPIScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  category: 'category',
+  unit: 'unit',
+  year: 'year',
+  target: 'target',
+  actual: 'actual',
+  weight: 'weight',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.KPIActualScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  kpiId: 'kpiId',
+  year: 'year',
+  month: 'month',
+  actual: 'actual',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CompanyKPIScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  code: 'code',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  category: 'category',
+  weight: 'weight',
+  target: 'target',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CompanyKPIMonthlyScalarFieldEnum = {
+  id: 'id',
+  kpiId: 'kpiId',
+  year: 'year',
+  month: 'month',
+  actual: 'actual',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AlertScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  titleAr: 'titleAr',
+  message: 'message',
+  severity: 'severity',
+  propertyId: 'propertyId',
+  isRead: 'isRead',
+  isResolved: 'isResolved',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt'
+};
+
+exports.Prisma.TelegramUserScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId',
+  username: 'username',
+  firstName: 'firstName',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TelegramLogScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  direction: 'direction',
+  type: 'type',
+  payload: 'payload',
+  taskId: 'taskId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ImportRecordScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  filename: 'filename',
+  period: 'period',
+  rowCount: 'rowCount',
+  status: 'status',
+  errorLog: 'errorLog',
+  uploadedBy: 'uploadedBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AIInsightScalarFieldEnum = {
+  id: 'id',
+  year: 'year',
+  month: 'month',
+  type: 'type',
+  entityId: 'entityId',
+  insight: 'insight',
+  severity: 'severity',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -242,13 +507,37 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   User: 'User',
   Task: 'Task',
+  Contact: 'Contact',
+  TaskUpdate: 'TaskUpdate',
   TaskAuditLog: 'TaskAuditLog',
   DataSource: 'DataSource',
   Notification: 'Notification',
   NotificationRule: 'NotificationRule',
   SystemConfig: 'SystemConfig',
   AdminSettings: 'AdminSettings',
-  ScheduledReminder: 'ScheduledReminder'
+  ScheduledReminder: 'ScheduledReminder',
+  Company: 'Company',
+  DashboardSettings: 'DashboardSettings',
+  Property: 'Property',
+  PropertyAnnualTarget: 'PropertyAnnualTarget',
+  PropertyMonthlyTarget: 'PropertyMonthlyTarget',
+  PropertyCollectionActual: 'PropertyCollectionActual',
+  PropertyAgingReport: 'PropertyAgingReport',
+  PropertyTargetVersion: 'PropertyTargetVersion',
+  EmployeePosition: 'EmployeePosition',
+  Employee: 'Employee',
+  EmployeeProperty: 'EmployeeProperty',
+  KPI: 'KPI',
+  EmployeeKPITarget: 'EmployeeKPITarget',
+  EmployeeCustomKPI: 'EmployeeCustomKPI',
+  KPIActual: 'KPIActual',
+  CompanyKPI: 'CompanyKPI',
+  CompanyKPIMonthly: 'CompanyKPIMonthly',
+  Alert: 'Alert',
+  TelegramUser: 'TelegramUser',
+  TelegramLog: 'TelegramLog',
+  ImportRecord: 'ImportRecord',
+  AIInsight: 'AIInsight'
 };
 /**
  * Create the Client
@@ -290,7 +579,6 @@ const config = {
     "db"
   ],
   "activeProvider": "sqlite",
-  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -299,13 +587,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"driverAdapters\"]\n  output          = \"../src/generated/prisma\"\n  engineType      = \"client\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// User model for authentication and task ownership\nmodel User {\n  id         String  @id @default(cuid())\n  email      String  @unique\n  name       String?\n  role       String  @default(\"viewer\") // admin, manager, viewer\n  department String?\n  phone      String? // For WhatsApp notifications\n  avatar     String?\n  isActive   Boolean @default(true)\n\n  // Notification preferences\n  receiveTaskReminders Boolean @default(true)\n  receiveDailyDigest   Boolean @default(false)\n  receiveWeeklyReport  Boolean @default(false)\n  reminderDaysBefore   Int     @default(3) // Days before due date to send reminder\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  ownedTasks    Task[]         @relation(\"TaskOwner\")\n  assignedTasks Task[]         @relation(\"TaskAssignee\")\n  auditLogs     TaskAuditLog[]\n  notifications Notification[]\n}\n\n// Main Task model\nmodel Task {\n  id          String  @id @default(cuid())\n  taskId      String? // External task ID from Excel\n  title       String\n  description String?\n\n  // Ownership and assignment\n  ownerId    String?\n  owner      User?   @relation(\"TaskOwner\", fields: [ownerId], references: [id])\n  assigneeId String?\n  assignee   User?   @relation(\"TaskAssignee\", fields: [assigneeId], references: [id])\n\n  // Classification\n  department      String?\n  priority        String  @default(\"medium\") // low, medium, high, critical\n  status          String  @default(\"not_started\") // not_started, in_progress, delayed, completed\n  strategicPillar String? // Strategic pillar/Initiative\n\n  // Progress tracking\n  completion    Float   @default(0) // 0 to 1\n  riskIndicator String? // on_track, at_risk, delayed\n\n  // Dates\n  startDate   DateTime?\n  dueDate     DateTime?\n  completedAt DateTime?\n\n  // Notes and metadata\n  notes       String?\n  nextStep    String?\n  ceoNotes    String?\n  sourceMonth String?\n\n  // Data source tracking\n  dataSourceId String?\n  dataSource   DataSource? @relation(fields: [dataSourceId], references: [id])\n\n  // Timestamps\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // Relations\n  auditLogs     TaskAuditLog[]\n  notifications Notification[]\n}\n\n// Audit log for tracking all task changes\nmodel TaskAuditLog {\n  id     String  @id @default(cuid())\n  taskId String\n  task   Task    @relation(fields: [taskId], references: [id])\n  userId String?\n  user   User?   @relation(fields: [userId], references: [id])\n\n  action   String // create, update, delete, status_change\n  field    String? // Which field was changed\n  oldValue String?\n  newValue String?\n\n  createdAt DateTime @default(now())\n}\n\n// Data source for tracking uploaded files\nmodel DataSource {\n  id            String   @id @default(cuid())\n  fileName      String\n  originalName  String\n  fileSize      Int\n  rowCount      Int\n  columnMapping String? // JSON string of column mappings\n  uploadedById  String?\n  uploadedAt    DateTime @default(now())\n\n  tasks Task[]\n}\n\n// Notification model\nmodel Notification {\n  id     String  @id @default(cuid())\n  taskId String?\n  task   Task?   @relation(fields: [taskId], references: [id])\n  userId String?\n  user   User?   @relation(fields: [userId], references: [id])\n\n  type    String // assignment, reminder, overdue, status_change\n  channel String // email, whatsapp\n  subject String\n  message String\n  status  String @default(\"pending\") // pending, sent, failed\n\n  scheduledAt DateTime?\n  sentAt      DateTime?\n  error       String?\n\n  createdAt DateTime @default(now())\n}\n\n// Notification rules configuration\nmodel NotificationRule {\n  id      String @id @default(cuid())\n  name    String\n  type    String // assignment, reminder, overdue, status_change\n  channel String @default(\"email\") // email, whatsapp\n\n  // Trigger conditions\n  daysBeforeDue Int? // For reminders (e.g., 3 days before)\n\n  // Recipients\n  notifyOwner    Boolean @default(true)\n  notifyAssignee Boolean @default(true)\n  notifyManager  Boolean @default(false)\n\n  // Template\n  subjectTemplate String?\n  bodyTemplate    String?\n\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// System configuration\nmodel SystemConfig {\n  id        String   @id @default(cuid())\n  key       String   @unique\n  value     String\n  updatedAt DateTime @updatedAt\n}\n\n// Admin notification settings\nmodel AdminSettings {\n  id String @id @default(cuid())\n\n  // Admin email for receiving reports\n  adminEmail String\n\n  // Daily digest settings\n  dailyDigestEnabled Boolean @default(false)\n  dailyDigestTime    String  @default(\"09:00\") // HH:mm format\n\n  // Weekly report settings\n  weeklyReportEnabled Boolean @default(false)\n  weeklyReportDay     Int     @default(1) // 0=Sunday, 1=Monday, etc.\n  weeklyReportTime    String  @default(\"09:00\")\n\n  // In-progress tasks report\n  inProgressReportEnabled   Boolean @default(false)\n  inProgressReportFrequency String  @default(\"daily\") // daily, weekly\n\n  // Reminder settings\n  taskReminderEnabled    Boolean @default(true)\n  overdueReminderEnabled Boolean @default(true)\n\n  // Custom reminder dates (comma-separated ISO dates)\n  customReminderDates String? // e.g., \"2024-01-15,2024-01-20,2024-01-25\"\n\n  // Days before due date for automatic reminders\n  reminderDaysBefore Int @default(3)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// Scheduled reminders with specific dates\nmodel ScheduledReminder {\n  id String @id @default(cuid())\n\n  // Reminder details\n  title       String\n  description String?\n\n  // Schedule\n  reminderDate DateTime\n  reminderTime String   @default(\"09:00\") // HH:mm format\n\n  // Recipients\n  sendToAdmin  Boolean @default(true)\n  sendToOwners Boolean @default(true)\n\n  // Task filter (optional - if set, only remind about these tasks)\n  taskIds String? // Comma-separated task IDs\n\n  // Status\n  isActive Boolean   @default(true)\n  isSent   Boolean   @default(false)\n  sentAt   DateTime?\n\n  // Email tracking\n  emailsSent   Int @default(0)\n  emailsFailed Int @default(0)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "5c1d570fe9565adf937c990b9b6c0a779b3514d147a1ba47811cb5d8f91c55e2",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"driverAdapters\"]\n  output          = \"../src/generated/prisma\"\n  engineType      = \"client\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// User model for authentication and task ownership\nmodel User {\n  id         String  @id @default(cuid())\n  email      String  @unique\n  username   String? @unique\n  name       String?\n  role       String  @default(\"viewer\") // admin, manager, viewer\n  department String?\n  phone      String? // For WhatsApp notifications\n  avatar     String?\n  isActive   Boolean @default(true)\n\n  // Notification preferences\n  receiveTaskReminders Boolean @default(true)\n  receiveDailyDigest   Boolean @default(false)\n  receiveWeeklyReport  Boolean @default(false)\n  reminderDaysBefore   Int     @default(3) // Days before due date to send reminder\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  ownedTasks    Task[]         @relation(\"TaskOwner\")\n  assignedTasks Task[]         @relation(\"TaskAssignee\")\n  auditLogs     TaskAuditLog[]\n  notifications Notification[]\n  contact       Contact?\n  employee      Employee?\n  telegramUser  TelegramUser?\n}\n\n// Main Task model\nmodel Task {\n  id                 String    @id @default(cuid())\n  taskId             String? // External task ID from Excel\n  title              String\n  description        String?\n  sentdmMessageId    String?\n  lastReminderSentAt DateTime?\n\n  // Ownership and assignment\n  ownerId    String?\n  owner      User?   @relation(\"TaskOwner\", fields: [ownerId], references: [id])\n  assigneeId String?\n  assignee   User?   @relation(\"TaskAssignee\", fields: [assigneeId], references: [id])\n\n  // Classification\n  department      String?\n  priority        String  @default(\"medium\") // low, medium, high, critical\n  status          String  @default(\"not_started\") // not_started, in_progress, delayed, completed\n  strategicPillar String? // Strategic pillar/Initiative\n\n  // Progress tracking\n  completion    Float   @default(0) // 0 to 1\n  riskIndicator String? // on_track, at_risk, delayed\n\n  // Dates\n  startDate   DateTime?\n  dueDate     DateTime?\n  completedAt DateTime?\n\n  // Notes and metadata\n  notes       String?\n  nextStep    String?\n  ceoNotes    String?\n  sourceMonth String?\n  source      String? // Origin of the task: CEO, Audit Committee, etc.\n\n  // Data source tracking\n  dataSourceId String?\n  dataSource   DataSource? @relation(fields: [dataSourceId], references: [id])\n\n  // Timestamps\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // Relations\n  auditLogs     TaskAuditLog[]\n  notifications Notification[]\n  updates       TaskUpdate[]\n}\n\nmodel Contact {\n  id        String   @id @default(cuid())\n  nameAr    String\n  nameEn    String?\n  phone     String?\n  email     String?\n  role      String?\n  userId    String?  @unique\n  user      User?    @relation(fields: [userId], references: [id])\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel TaskUpdate {\n  id        String   @id @default(cuid())\n  taskId    String\n  task      Task     @relation(fields: [taskId], references: [id])\n  source    String // \"whatsapp\" | \"telegram\" | \"manual\"\n  content   String\n  createdAt DateTime @default(now())\n\n  @@index([taskId, createdAt])\n}\n\n// Audit log for tracking all task changes\nmodel TaskAuditLog {\n  id     String  @id @default(cuid())\n  taskId String\n  task   Task    @relation(fields: [taskId], references: [id])\n  userId String?\n  user   User?   @relation(fields: [userId], references: [id])\n\n  action   String // create, update, delete, status_change\n  field    String? // Which field was changed\n  oldValue String?\n  newValue String?\n\n  createdAt DateTime @default(now())\n}\n\n// Data source for tracking uploaded files\nmodel DataSource {\n  id            String   @id @default(cuid())\n  fileName      String\n  originalName  String\n  fileSize      Int\n  rowCount      Int\n  columnMapping String? // JSON string of column mappings\n  uploadedById  String?\n  uploadedAt    DateTime @default(now())\n\n  tasks Task[]\n}\n\n// Notification model\nmodel Notification {\n  id     String  @id @default(cuid())\n  taskId String?\n  task   Task?   @relation(fields: [taskId], references: [id])\n  userId String?\n  user   User?   @relation(fields: [userId], references: [id])\n\n  type    String // assignment, reminder, overdue, status_change\n  channel String // email, whatsapp\n  subject String\n  message String\n  status  String @default(\"pending\") // pending, sent, failed\n\n  scheduledAt DateTime?\n  sentAt      DateTime?\n  error       String?\n\n  createdAt DateTime @default(now())\n}\n\n// Notification rules configuration\nmodel NotificationRule {\n  id      String @id @default(cuid())\n  name    String\n  type    String // assignment, reminder, overdue, status_change\n  channel String @default(\"email\") // email, whatsapp\n\n  // Trigger conditions\n  daysBeforeDue Int? // For reminders (e.g., 3 days before)\n\n  // Recipients\n  notifyOwner    Boolean @default(true)\n  notifyAssignee Boolean @default(true)\n  notifyManager  Boolean @default(false)\n\n  // Template\n  subjectTemplate String?\n  bodyTemplate    String?\n\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// System configuration\nmodel SystemConfig {\n  id        String   @id @default(cuid())\n  key       String   @unique\n  value     String\n  updatedAt DateTime @updatedAt\n}\n\n// Admin notification settings\nmodel AdminSettings {\n  id String @id @default(cuid())\n\n  // Admin email for receiving reports\n  adminEmail String\n\n  // Daily digest settings\n  dailyDigestEnabled Boolean @default(false)\n  dailyDigestTime    String  @default(\"09:00\") // HH:mm format\n\n  // Weekly report settings\n  weeklyReportEnabled Boolean @default(false)\n  weeklyReportDay     Int     @default(1) // 0=Sunday, 1=Monday, etc.\n  weeklyReportTime    String  @default(\"09:00\")\n\n  // In-progress tasks report\n  inProgressReportEnabled   Boolean @default(false)\n  inProgressReportFrequency String  @default(\"daily\") // daily, weekly\n\n  // Reminder settings\n  taskReminderEnabled    Boolean @default(true)\n  overdueReminderEnabled Boolean @default(true)\n\n  // Custom reminder dates (comma-separated ISO dates)\n  customReminderDates String? // e.g., \"2024-01-15,2024-01-20,2024-01-25\"\n\n  // Days before due date for automatic reminders\n  reminderDaysBefore Int @default(3)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// Scheduled reminders with specific dates\nmodel ScheduledReminder {\n  id String @id @default(cuid())\n\n  // Reminder details\n  title       String\n  description String?\n\n  // Schedule\n  reminderDate DateTime\n  reminderTime String   @default(\"09:00\") // HH:mm format\n\n  // Recipients\n  sendToAdmin  Boolean @default(true)\n  sendToOwners Boolean @default(true)\n\n  // Task filter (optional - if set, only remind about these tasks)\n  taskIds String? // Comma-separated task IDs\n\n  // Status\n  isActive Boolean   @default(true)\n  isSent   Boolean   @default(false)\n  sentAt   DateTime?\n\n  // Email tracking\n  emailsSent   Int @default(0)\n  emailsFailed Int @default(0)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// ─── COMPANY ───────────────────────────────────────────────\nmodel Company {\n  id          String   @id @default(cuid())\n  name        String\n  nameAr      String?\n  logo        String?\n  fiscalStart Int      @default(1)\n  currency    String   @default(\"SAR\")\n  language    String   @default(\"ar\")\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nmodel DashboardSettings {\n  id        String   @id @default(cuid())\n  key       String   @unique\n  value     String\n  updatedAt DateTime @updatedAt\n}\n\n// ─── PROPERTIES ────────────────────────────────────────────\nmodel Property {\n  id            String    @id @default(cuid())\n  code          String    @unique\n  nameAr        String\n  nameEn        String?\n  type          String\n  location      String?\n  totalUnits    Int       @default(0)\n  managerId     String?\n  manager       Employee? @relation(\"PropertyManager\", fields: [managerId], references: [id])\n  occupancyRate Float     @default(0)\n  isActive      Boolean   @default(true)\n  createdAt     DateTime  @default(now())\n  updatedAt     DateTime  @updatedAt\n\n  employees         EmployeeProperty[]\n  annualTargets     PropertyAnnualTarget[]\n  monthlyTargets    PropertyMonthlyTarget[]\n  collectionActuals PropertyCollectionActual[]\n  agingReports      PropertyAgingReport[]\n  targetVersions    PropertyTargetVersion[]\n  alerts            Alert[]\n}\n\nmodel PropertyAnnualTarget {\n  id           String   @id @default(cuid())\n  propertyId   String\n  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)\n  year         Int\n  annualTarget Float    @default(0)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n\n  @@unique([propertyId, year])\n}\n\nmodel PropertyMonthlyTarget {\n  id         String   @id @default(cuid())\n  propertyId String\n  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)\n  year       Int\n  month      Int\n  target     Float    @default(0)\n  createdAt  DateTime @default(now())\n\n  @@unique([propertyId, year, month])\n}\n\nmodel PropertyCollectionActual {\n  id         String   @id @default(cuid())\n  propertyId String\n  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)\n  year       Int\n  month      Int\n  collected  Float    @default(0)\n  invoiced   Float    @default(0)\n  createdAt  DateTime @default(now())\n\n  @@unique([propertyId, year, month])\n}\n\nmodel PropertyAgingReport {\n  id           String   @id @default(cuid())\n  propertyId   String\n  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)\n  year         Int\n  month        Int\n  bucket0to20  Float    @default(0)\n  bucket21to60 Float    @default(0)\n  bucket61to90 Float    @default(0)\n  bucketOver90 Float    @default(0)\n  createdAt    DateTime @default(now())\n\n  @@unique([propertyId, year, month])\n}\n\nmodel PropertyTargetVersion {\n  id           String   @id @default(cuid())\n  propertyId   String\n  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)\n  year         Int\n  version      Int\n  annualTarget Float\n  note         String?\n  createdAt    DateTime @default(now())\n}\n\n// ─── EMPLOYEES ─────────────────────────────────────────────\nmodel EmployeePosition {\n  id        String     @id @default(cuid())\n  nameAr    String\n  nameEn    String?\n  grade     String?\n  createdAt DateTime   @default(now())\n  employees Employee[]\n}\n\nmodel Employee {\n  id           String            @id @default(cuid())\n  nameAr       String\n  nameEn       String?\n  email        String?           @unique\n  positionId   String?\n  position     EmployeePosition? @relation(fields: [positionId], references: [id])\n  department   String?\n  managedById  String?\n  managedBy    Employee?         @relation(\"ManagerSubordinate\", fields: [managedById], references: [id])\n  subordinates Employee[]        @relation(\"ManagerSubordinate\")\n  isActive     Boolean           @default(true)\n  joinedAt     DateTime?\n  createdAt    DateTime          @default(now())\n  updatedAt    DateTime          @updatedAt\n\n  userId String? @unique\n  user   User?   @relation(fields: [userId], references: [id])\n\n  properties        EmployeeProperty[]\n  managedProperties Property[]          @relation(\"PropertyManager\")\n  kpiTargets        EmployeeKPITarget[]\n  customKpis        EmployeeCustomKPI[]\n  kpiActuals        KPIActual[]\n}\n\nmodel EmployeeProperty {\n  id         String   @id @default(cuid())\n  employeeId String\n  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)\n  propertyId String\n  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)\n  role       String?\n  assignedAt DateTime @default(now())\n\n  @@unique([employeeId, propertyId])\n}\n\n// ─── KPIs ───────────────────────────────────────────────────\nmodel KPI {\n  id        String   @id @default(cuid())\n  code      String   @unique\n  nameAr    String\n  nameEn    String?\n  category  String\n  unit      String?\n  weight    Float    @default(0)\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n\n  targets EmployeeKPITarget[]\n  actuals KPIActual[]\n}\n\nmodel EmployeeKPITarget {\n  id         String   @id @default(cuid())\n  employeeId String\n  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)\n  kpiId      String\n  kpi        KPI      @relation(fields: [kpiId], references: [id])\n  year       Int\n  target     Float\n  weight     Float    @default(0)\n  createdAt  DateTime @default(now())\n\n  @@unique([employeeId, kpiId, year])\n}\n\nmodel EmployeeCustomKPI {\n  id         String   @id @default(cuid())\n  employeeId String\n  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)\n  nameAr     String\n  nameEn     String?\n  category   String\n  unit       String?\n  year       Int\n  target     Float    @default(0)\n  actual     Float    @default(0)\n  weight     Float    @default(0)\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n}\n\nmodel KPIActual {\n  id         String    @id @default(cuid())\n  employeeId String?\n  employee   Employee? @relation(fields: [employeeId], references: [id])\n  kpiId      String\n  kpi        KPI       @relation(fields: [kpiId], references: [id])\n  year       Int\n  month      Int\n  actual     Float     @default(0)\n  createdAt  DateTime  @default(now())\n\n  @@unique([employeeId, kpiId, year, month])\n}\n\n// ─── COMPANY KPIs ──────────────────────────────────────────\nmodel CompanyKPI {\n  id        String   @id @default(cuid())\n  year      Int\n  code      String\n  nameAr    String\n  nameEn    String?\n  category  String\n  weight    Float    @default(0)\n  target    Float    @default(0)\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  monthlyData CompanyKPIMonthly[]\n\n  @@unique([year, code])\n}\n\nmodel CompanyKPIMonthly {\n  id        String     @id @default(cuid())\n  kpiId     String\n  kpi       CompanyKPI @relation(fields: [kpiId], references: [id], onDelete: Cascade)\n  year      Int\n  month     Int\n  actual    Float      @default(0)\n  createdAt DateTime   @default(now())\n\n  @@unique([kpiId, year, month])\n}\n\n// ─── ALERTS ────────────────────────────────────────────────\nmodel Alert {\n  id         String    @id @default(cuid())\n  title      String\n  titleAr    String?\n  message    String\n  severity   String    @default(\"info\")\n  propertyId String?\n  property   Property? @relation(fields: [propertyId], references: [id])\n  isRead     Boolean   @default(false)\n  isResolved Boolean   @default(false)\n  createdAt  DateTime  @default(now())\n  resolvedAt DateTime?\n}\n\n// ─── TELEGRAM ──────────────────────────────────────────────\nmodel TelegramUser {\n  id        String   @id @default(cuid())\n  chatId    String   @unique\n  userId    String?  @unique\n  user      User?    @relation(fields: [userId], references: [id])\n  username  String?\n  firstName String?\n  isActive  Boolean  @default(true)\n  createdAt DateTime @default(now())\n}\n\nmodel TelegramLog {\n  id        String   @id @default(cuid())\n  chatId    String\n  direction String\n  type      String\n  payload   String\n  taskId    String?\n  createdAt DateTime @default(now())\n}\n\n// ─── IMPORT TRACKING ───────────────────────────────────────\nmodel ImportRecord {\n  id         String   @id @default(cuid())\n  type       String\n  filename   String\n  period     String?\n  rowCount   Int      @default(0)\n  status     String   @default(\"pending\")\n  errorLog   String?\n  uploadedBy String?\n  createdAt  DateTime @default(now())\n}\n\n// ─── AI INSIGHTS ───────────────────────────────────────────\nmodel AIInsight {\n  id        String   @id @default(cuid())\n  year      Int\n  month     Int\n  type      String\n  entityId  String?\n  insight   String\n  severity  String   @default(\"info\")\n  createdAt DateTime @default(now())\n}\n",
+  "inlineSchemaHash": "b8f2512913a76316f6e5926e896a72decc09998fb42ecf694607f6bba3d83e4b",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiveTaskReminders\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiveDailyDigest\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiveWeeklyReport\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"reminderDaysBefore\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ownedTasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskOwner\"},{\"name\":\"assignedTasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskAssignee\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"TaskAuditLog\",\"relationName\":\"TaskAuditLogToUser\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"NotificationToUser\"}],\"dbName\":null},\"Task\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ownerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"owner\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskOwner\"},{\"name\":\"assigneeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"assignee\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskAssignee\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"priority\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"strategicPillar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"completion\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"riskIndicator\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"dueDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"completedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nextStep\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ceoNotes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceMonth\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dataSourceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dataSource\",\"kind\":\"object\",\"type\":\"DataSource\",\"relationName\":\"DataSourceToTask\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"TaskAuditLog\",\"relationName\":\"TaskToTaskAuditLog\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"NotificationToTask\"}],\"dbName\":null},\"TaskAuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskToTaskAuditLog\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskAuditLogToUser\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"field\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"oldValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"newValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"DataSource\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fileName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"originalName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fileSize\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"rowCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"columnMapping\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uploadedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uploadedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"DataSourceToTask\"}],\"dbName\":null},\"Notification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"NotificationToTask\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"NotificationToUser\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"channel\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subject\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scheduledAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"error\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"NotificationRule\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"channel\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"daysBeforeDue\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"notifyOwner\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"notifyAssignee\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"notifyManager\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"subjectTemplate\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bodyTemplate\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"SystemConfig\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AdminSettings\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"adminEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dailyDigestEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"dailyDigestTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"weeklyReportEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"weeklyReportDay\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"weeklyReportTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inProgressReportEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"inProgressReportFrequency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskReminderEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"overdueReminderEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"customReminderDates\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reminderDaysBefore\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ScheduledReminder\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reminderDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reminderTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sendToAdmin\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"sendToOwners\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"taskIds\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isSent\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"emailsSent\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"emailsFailed\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiveTaskReminders\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiveDailyDigest\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiveWeeklyReport\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"reminderDaysBefore\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ownedTasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskOwner\"},{\"name\":\"assignedTasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskAssignee\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"TaskAuditLog\",\"relationName\":\"TaskAuditLogToUser\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"NotificationToUser\"},{\"name\":\"contact\",\"kind\":\"object\",\"type\":\"Contact\",\"relationName\":\"ContactToUser\"},{\"name\":\"employee\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"EmployeeToUser\"},{\"name\":\"telegramUser\",\"kind\":\"object\",\"type\":\"TelegramUser\",\"relationName\":\"TelegramUserToUser\"}],\"dbName\":null},\"Task\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sentdmMessageId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastReminderSentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ownerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"owner\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskOwner\"},{\"name\":\"assigneeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"assignee\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskAssignee\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"priority\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"strategicPillar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"completion\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"riskIndicator\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"dueDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"completedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nextStep\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ceoNotes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceMonth\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dataSourceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dataSource\",\"kind\":\"object\",\"type\":\"DataSource\",\"relationName\":\"DataSourceToTask\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"TaskAuditLog\",\"relationName\":\"TaskToTaskAuditLog\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"NotificationToTask\"},{\"name\":\"updates\",\"kind\":\"object\",\"type\":\"TaskUpdate\",\"relationName\":\"TaskToTaskUpdate\"}],\"dbName\":null},\"Contact\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ContactToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"TaskUpdate\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskToTaskUpdate\"},{\"name\":\"source\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"TaskAuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskToTaskAuditLog\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskAuditLogToUser\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"field\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"oldValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"newValue\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"DataSource\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fileName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"originalName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fileSize\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"rowCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"columnMapping\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uploadedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uploadedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"DataSourceToTask\"}],\"dbName\":null},\"Notification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"NotificationToTask\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"NotificationToUser\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"channel\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subject\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scheduledAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"error\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"NotificationRule\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"channel\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"daysBeforeDue\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"notifyOwner\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"notifyAssignee\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"notifyManager\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"subjectTemplate\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"bodyTemplate\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"SystemConfig\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AdminSettings\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"adminEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dailyDigestEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"dailyDigestTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"weeklyReportEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"weeklyReportDay\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"weeklyReportTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inProgressReportEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"inProgressReportFrequency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskReminderEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"overdueReminderEnabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"customReminderDates\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reminderDaysBefore\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ScheduledReminder\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reminderDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reminderTime\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sendToAdmin\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"sendToOwners\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"taskIds\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isSent\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"emailsSent\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"emailsFailed\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Company\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"logo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fiscalStart\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"language\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"DashboardSettings\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Property\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"totalUnits\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"managerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"manager\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"PropertyManager\"},{\"name\":\"occupancyRate\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"employees\",\"kind\":\"object\",\"type\":\"EmployeeProperty\",\"relationName\":\"EmployeePropertyToProperty\"},{\"name\":\"annualTargets\",\"kind\":\"object\",\"type\":\"PropertyAnnualTarget\",\"relationName\":\"PropertyToPropertyAnnualTarget\"},{\"name\":\"monthlyTargets\",\"kind\":\"object\",\"type\":\"PropertyMonthlyTarget\",\"relationName\":\"PropertyToPropertyMonthlyTarget\"},{\"name\":\"collectionActuals\",\"kind\":\"object\",\"type\":\"PropertyCollectionActual\",\"relationName\":\"PropertyToPropertyCollectionActual\"},{\"name\":\"agingReports\",\"kind\":\"object\",\"type\":\"PropertyAgingReport\",\"relationName\":\"PropertyToPropertyAgingReport\"},{\"name\":\"targetVersions\",\"kind\":\"object\",\"type\":\"PropertyTargetVersion\",\"relationName\":\"PropertyToPropertyTargetVersion\"},{\"name\":\"alerts\",\"kind\":\"object\",\"type\":\"Alert\",\"relationName\":\"AlertToProperty\"}],\"dbName\":null},\"PropertyAnnualTarget\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertyAnnualTarget\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"annualTarget\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PropertyMonthlyTarget\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertyMonthlyTarget\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"month\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"target\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PropertyCollectionActual\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertyCollectionActual\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"month\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"collected\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"invoiced\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PropertyAgingReport\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertyAgingReport\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"month\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"bucket0to20\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"bucket21to60\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"bucket61to90\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"bucketOver90\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PropertyTargetVersion\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertyTargetVersion\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"version\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"annualTarget\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"note\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"EmployeePosition\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"grade\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"employees\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"EmployeeToEmployeePosition\"}],\"dbName\":null},\"Employee\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"positionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"position\",\"kind\":\"object\",\"type\":\"EmployeePosition\",\"relationName\":\"EmployeeToEmployeePosition\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"managedById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"managedBy\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"ManagerSubordinate\"},{\"name\":\"subordinates\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"ManagerSubordinate\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"joinedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"EmployeeToUser\"},{\"name\":\"properties\",\"kind\":\"object\",\"type\":\"EmployeeProperty\",\"relationName\":\"EmployeeToEmployeeProperty\"},{\"name\":\"managedProperties\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyManager\"},{\"name\":\"kpiTargets\",\"kind\":\"object\",\"type\":\"EmployeeKPITarget\",\"relationName\":\"EmployeeToEmployeeKPITarget\"},{\"name\":\"customKpis\",\"kind\":\"object\",\"type\":\"EmployeeCustomKPI\",\"relationName\":\"EmployeeToEmployeeCustomKPI\"},{\"name\":\"kpiActuals\",\"kind\":\"object\",\"type\":\"KPIActual\",\"relationName\":\"EmployeeToKPIActual\"}],\"dbName\":null},\"EmployeeProperty\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employeeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employee\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"EmployeeToEmployeeProperty\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"EmployeePropertyToProperty\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"assignedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"KPI\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"unit\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"weight\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"targets\",\"kind\":\"object\",\"type\":\"EmployeeKPITarget\",\"relationName\":\"EmployeeKPITargetToKPI\"},{\"name\":\"actuals\",\"kind\":\"object\",\"type\":\"KPIActual\",\"relationName\":\"KPIToKPIActual\"}],\"dbName\":null},\"EmployeeKPITarget\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employeeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employee\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"EmployeeToEmployeeKPITarget\"},{\"name\":\"kpiId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"kpi\",\"kind\":\"object\",\"type\":\"KPI\",\"relationName\":\"EmployeeKPITargetToKPI\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"target\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"weight\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"EmployeeCustomKPI\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employeeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employee\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"EmployeeToEmployeeCustomKPI\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"unit\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"target\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"actual\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"weight\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"KPIActual\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employeeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"employee\",\"kind\":\"object\",\"type\":\"Employee\",\"relationName\":\"EmployeeToKPIActual\"},{\"name\":\"kpiId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"kpi\",\"kind\":\"object\",\"type\":\"KPI\",\"relationName\":\"KPIToKPIActual\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"month\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"actual\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"CompanyKPI\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nameEn\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"weight\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"target\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"monthlyData\",\"kind\":\"object\",\"type\":\"CompanyKPIMonthly\",\"relationName\":\"CompanyKPIToCompanyKPIMonthly\"}],\"dbName\":null},\"CompanyKPIMonthly\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"kpiId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"kpi\",\"kind\":\"object\",\"type\":\"CompanyKPI\",\"relationName\":\"CompanyKPIToCompanyKPIMonthly\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"month\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"actual\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Alert\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"titleAr\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"severity\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"propertyId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"AlertToProperty\"},{\"name\":\"isRead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isResolved\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"resolvedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"TelegramUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"chatId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TelegramUserToUser\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"TelegramLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"chatId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"direction\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"payload\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ImportRecord\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"filename\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"period\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rowCount\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"errorLog\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uploadedBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AIInsight\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"month\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entityId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"insight\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"severity\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = undefined
 config.compilerWasm = {
