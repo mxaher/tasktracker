@@ -11,7 +11,26 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Settings, Building, LayoutDashboard, Upload, Users, Contact, Bell, Check, AlertCircle, Download, FileText } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Settings,
+  Building,
+  LayoutDashboard,
+  Upload,
+  Users,
+  Contact,
+  Bell,
+  Check,
+  AlertCircle,
+  Download,
+  FileText,
+  MessageSquare,
+  Mail,
+  RefreshCw,
+  Link2,
+  Unlink,
+} from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 
@@ -34,7 +53,10 @@ function CompanyTab() {
 
   const saveMutation = useMutation({
     mutationFn: () => companyApi.update(form),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['company'] }); toast({ title: 'تم الحفظ' }) },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['company'] })
+      toast({ title: 'تم الحفظ' })
+    },
     onError: (e) => toast({ title: 'خطأ', description: String(e), variant: 'destructive' }),
   })
 
@@ -65,7 +87,7 @@ function CompanyTab() {
         </div>
         <div className="space-y-1.5">
           <Label>بداية السنة المالية</Label>
-          <Select value={String(form.fiscalStart)} onValueChange={(v) => setForm((p) => ({ ...p, fiscalStart: parseInt(v) }))}>
+          <Select value={String(form.fiscalStart)} onValueChange={(v) => setForm((p) => ({ ...p, fiscalStart: parseInt(v, 10) }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'].map((m, i) => (
@@ -166,7 +188,13 @@ function ImportTab() {
     URL.revokeObjectURL(url)
   }
 
-  const reset = () => { setStep(1); setImportType(''); setFile(null); setPreview([]); setResult(null) }
+  const reset = () => {
+    setStep(1)
+    setImportType('')
+    setFile(null)
+    setPreview([])
+    setResult(null)
+  }
 
   const STATUS_LABEL: Record<string, string> = { complete: 'مكتمل', failed: 'فاشل', pending: 'معلق', processing: 'جارٍ' }
   const STATUS_COLOR: Record<string, string> = { complete: 'text-green-600', failed: 'text-red-600', processing: 'text-yellow-600', pending: 'text-muted-foreground' }
@@ -180,7 +208,6 @@ function ImportTab() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Steps indicator */}
           <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-2">
             {['نوع البيانات', 'الفترة', 'تنزيل القالب', 'رفع الملف', 'معاينة', 'النتيجة'].map((s, i) => (
               <div key={s} className="flex items-center shrink-0">
@@ -303,7 +330,6 @@ function ImportTab() {
         </CardContent>
       </Card>
 
-      {/* Import history */}
       {history.length > 0 && (
         <Card>
           <CardHeader>
@@ -349,12 +375,602 @@ function ImportTab() {
   )
 }
 
+interface GlobalSettings {
+  adminEmail: string
+  dailyDigestEnabled: boolean
+  dailyDigestTime: string
+  weeklyReportEnabled: boolean
+  weeklyReportDay: number
+  weeklyReportTime: string
+  inProgressReportEnabled: boolean
+  inProgressReportFrequency: 'daily' | 'weekly'
+  taskReminderEnabled: boolean
+  overdueReminderEnabled: boolean
+  customReminderDates: string
+  reminderDaysBefore: number
+  whatsappOwnerRemindersEnabled: boolean
+  whatsappReminderOffsets: string
+  whatsappReminderTemplate: string
+}
+
+interface ReminderRunSummary {
+  sentOwners: Array<{ ownerName: string }>
+  skippedTasks: Array<{ taskId: string; ownerName: string; reason: string }>
+  failedOwners: Array<{ ownerName: string; error: string }>
+}
+
+interface TelegramAccount {
+  id: string
+  chatId: string
+  userId: string
+  createdAt: string
+  user: {
+    name: string | null
+    email: string
+    role: string
+  }
+}
+
+interface TelegramLog {
+  id: string
+  chatId: string
+  messagePreview: string
+  parsed: boolean
+  parseError: string | null
+  taskId: string | null
+  createdAt: string
+}
+
+interface WebhookInfo {
+  url?: string
+  pending_update_count?: number
+  last_error_message?: string
+}
+
+const DEFAULT_SETTINGS: GlobalSettings = {
+  adminEmail: '',
+  dailyDigestEnabled: false,
+  dailyDigestTime: '09:00',
+  weeklyReportEnabled: false,
+  weeklyReportDay: 1,
+  weeklyReportTime: '09:00',
+  inProgressReportEnabled: false,
+  inProgressReportFrequency: 'daily',
+  taskReminderEnabled: true,
+  overdueReminderEnabled: true,
+  customReminderDates: '',
+  reminderDaysBefore: 3,
+  whatsappOwnerRemindersEnabled: false,
+  whatsappReminderOffsets: '0,1',
+  whatsappReminderTemplate: 'مرحبًا {{ownerName}}، هذا تذكير بخصوص المهمة {{taskTitle}} (رقم المهمة {{taskId}}). تاريخ الاستحقاق: {{dueDate}}. الأولوية: {{priority}}.',
+}
+
+function NotificationsTab() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  const [settings, setSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS)
+  const [sendingTest, setSendingTest] = useState(false)
+  const [sendingTaskReminders, setSendingTaskReminders] = useState(false)
+  const [sendingOwnerRemindersNow, setSendingOwnerRemindersNow] = useState(false)
+  const [ownerReminderSummary, setOwnerReminderSummary] = useState<ReminderRunSummary | null>(null)
+  const [appUrl, setAppUrl] = useState('')
+  const [chatId, setChatId] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState('')
+
+  useQuery({
+    queryKey: ['global-settings'],
+    queryFn: async () => {
+      const response = await fetch('/api/settings')
+      if (!response.ok) throw new Error('تعذر تحميل الإعدادات')
+      const data = await response.json()
+      if (data.settings) {
+        setSettings({
+          adminEmail: data.settings.adminEmail || '',
+          dailyDigestEnabled: data.settings.dailyDigestEnabled || false,
+          dailyDigestTime: data.settings.dailyDigestTime || '09:00',
+          weeklyReportEnabled: data.settings.weeklyReportEnabled || false,
+          weeklyReportDay: data.settings.weeklyReportDay || 1,
+          weeklyReportTime: data.settings.weeklyReportTime || '09:00',
+          inProgressReportEnabled: data.settings.inProgressReportEnabled || false,
+          inProgressReportFrequency: data.settings.inProgressReportFrequency || 'daily',
+          taskReminderEnabled: data.settings.taskReminderEnabled ?? true,
+          overdueReminderEnabled: data.settings.overdueReminderEnabled ?? true,
+          customReminderDates: data.settings.customReminderDates || '',
+          reminderDaysBefore: data.settings.reminderDaysBefore ?? 3,
+          whatsappOwnerRemindersEnabled: data.settings.whatsappOwnerRemindersEnabled ?? false,
+          whatsappReminderOffsets: data.settings.whatsappReminderOffsets || '0,1',
+          whatsappReminderTemplate: data.settings.whatsappReminderTemplate || DEFAULT_SETTINGS.whatsappReminderTemplate,
+        })
+      }
+      return data.settings
+    },
+  })
+
+  const saveSettingsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      })
+      if (!response.ok) {
+        throw new Error('تعذر حفظ الإعدادات')
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      toast({ title: 'تم حفظ الإعدادات بنجاح' })
+      queryClient.invalidateQueries({ queryKey: ['global-settings'] })
+    },
+    onError: (error) => {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    },
+  })
+
+  const { data: webhookInfo, refetch: refetchWebhookInfo } = useQuery({
+    queryKey: ['telegram-webhook-info'],
+    queryFn: async () => {
+      const response = await fetch('/api/telegram/settings/webhook')
+      const data = await response.json()
+      return (data.webhookInfo ?? null) as WebhookInfo | null
+    },
+  })
+
+  const { data: linkedAccounts = [] } = useQuery({
+    queryKey: ['telegram-linked-accounts'],
+    queryFn: async () => {
+      const response = await fetch('/api/telegram/settings/linked-accounts')
+      const data = await response.json()
+      return (data.accounts ?? []) as TelegramAccount[]
+    },
+  })
+
+  const { data: telegramLogs = [] } = useQuery({
+    queryKey: ['telegram-logs'],
+    queryFn: async () => {
+      const response = await fetch('/api/telegram/settings/logs')
+      const data = await response.json()
+      return (data.logs ?? []) as TelegramLog[]
+    },
+  })
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['users-list-settings'],
+    queryFn: async () => {
+      const response = await fetch('/api/users')
+      const data = await response.json()
+      return (data.users ?? data.data ?? []) as Array<{ id: string; name?: string; email: string }>
+    },
+  })
+
+  const setupWebhookMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/telegram/settings/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appUrl }),
+      })
+      const data = await response.json()
+      if (!response.ok || data.ok === false) {
+        throw new Error(data.description || data.error || 'تعذر إعداد Webhook')
+      }
+      return data
+    },
+    onSuccess: () => {
+      toast({ title: 'تم إعداد Webhook بنجاح' })
+      refetchWebhookInfo()
+    },
+    onError: (error) => {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    },
+  })
+
+  const linkAccountMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/telegram/settings/linked-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId, userId: selectedUserId }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'تعذر ربط الحساب')
+      }
+      return data
+    },
+    onSuccess: () => {
+      toast({ title: 'تم ربط الحساب بنجاح' })
+      setChatId('')
+      setSelectedUserId('')
+      queryClient.invalidateQueries({ queryKey: ['telegram-linked-accounts'] })
+    },
+    onError: (error) => {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    },
+  })
+
+  const unlinkAccountMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/telegram/settings/linked-accounts/${id}`, { method: 'DELETE' })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'تعذر فك الربط')
+      }
+      return data
+    },
+    onSuccess: () => {
+      toast({ title: 'تم فك الربط' })
+      queryClient.invalidateQueries({ queryKey: ['telegram-linked-accounts'] })
+    },
+    onError: (error) => {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    },
+  })
+
+  const handleSendTestEmail = async () => {
+    if (!settings.adminEmail) {
+      toast({ title: 'خطأ', description: 'يرجى إدخال البريد الإلكتروني للمشرف أولًا', variant: 'destructive' })
+      return
+    }
+    setSendingTest(true)
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'in-progress-report', reportType: 'daily' }),
+      })
+      if (!response.ok) throw new Error('تعذر إرسال رسالة الاختبار')
+      toast({ title: 'تم إرسال رسالة الاختبار بنجاح' })
+    } catch (error) {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    } finally {
+      setSendingTest(false)
+    }
+  }
+
+  const handleSendTaskReminders = async () => {
+    setSendingTaskReminders(true)
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'overdue-all' }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'تعذر إرسال التذكيرات')
+      }
+      toast({ title: `تم إرسال ${data.sent ?? 0} تذكير، وفشل ${data.failed ?? 0}` })
+    } catch (error) {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    } finally {
+      setSendingTaskReminders(false)
+    }
+  }
+
+  const handleSendOwnerReminderNow = async () => {
+    setSendingOwnerRemindersNow(true)
+    try {
+      const response = await fetch('/api/settings/reminders/send-now', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: false }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'تعذر تشغيل تذكيرات واتساب')
+      }
+      setOwnerReminderSummary(data.result as ReminderRunSummary)
+      toast({ title: 'تم تشغيل تذكيرات واتساب الآن' })
+    } catch (error) {
+      toast({ title: 'خطأ', description: String(error), variant: 'destructive' })
+    } finally {
+      setSendingOwnerRemindersNow(false)
+    }
+  }
+
+  return (
+    <Tabs defaultValue="email" className="space-y-6">
+      <TabsList className="flex-wrap h-auto gap-1">
+        <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> البريد والتذكيرات</TabsTrigger>
+        <TabsTrigger value="telegram" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> تيليجرام</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="email" className="space-y-6 mt-0">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">إعدادات البريد والتقارير</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5 max-w-3xl">
+            <div className="space-y-1.5">
+              <Label>البريد الإلكتروني للمشرف</Label>
+              <Input
+                value={settings.adminEmail}
+                onChange={(e) => setSettings((p) => ({ ...p, adminEmail: e.target.value }))}
+                placeholder="admin@example.com"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-lg border p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-medium">تقرير يومي</Label>
+                  <Switch
+                    checked={settings.dailyDigestEnabled}
+                    onCheckedChange={(checked) => setSettings((p) => ({ ...p, dailyDigestEnabled: checked }))}
+                  />
+                </div>
+                <Input
+                  type="time"
+                  value={settings.dailyDigestTime}
+                  onChange={(e) => setSettings((p) => ({ ...p, dailyDigestTime: e.target.value }))}
+                />
+              </div>
+
+              <div className="rounded-lg border p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-medium">تقرير أسبوعي</Label>
+                  <Switch
+                    checked={settings.weeklyReportEnabled}
+                    onCheckedChange={(checked) => setSettings((p) => ({ ...p, weeklyReportEnabled: checked }))}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Select
+                    value={String(settings.weeklyReportDay)}
+                    onValueChange={(value) => setSettings((p) => ({ ...p, weeklyReportDay: parseInt(value, 10) }))}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">الأحد</SelectItem>
+                      <SelectItem value="1">الاثنين</SelectItem>
+                      <SelectItem value="2">الثلاثاء</SelectItem>
+                      <SelectItem value="3">الأربعاء</SelectItem>
+                      <SelectItem value="4">الخميس</SelectItem>
+                      <SelectItem value="5">الجمعة</SelectItem>
+                      <SelectItem value="6">السبت</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="time"
+                    value={settings.weeklyReportTime}
+                    onChange={(e) => setSettings((p) => ({ ...p, weeklyReportTime: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-lg border p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-medium">تنبيهات المهام</Label>
+                  <Switch
+                    checked={settings.taskReminderEnabled}
+                    onCheckedChange={(checked) => setSettings((p) => ({ ...p, taskReminderEnabled: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label>تنبيهات التأخير</Label>
+                  <Switch
+                    checked={settings.overdueReminderEnabled}
+                    onCheckedChange={(checked) => setSettings((p) => ({ ...p, overdueReminderEnabled: checked }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>قبل الاستحقاق (أيام)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={settings.reminderDaysBefore}
+                    onChange={(e) => setSettings((p) => ({ ...p, reminderDaysBefore: parseInt(e.target.value, 10) || 3 }))}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-lg border p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-medium">واتساب للمسؤولين</Label>
+                  <Switch
+                    checked={settings.whatsappOwnerRemindersEnabled}
+                    onCheckedChange={(checked) => setSettings((p) => ({ ...p, whatsappOwnerRemindersEnabled: checked }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Offsets (أيام)</Label>
+                  <Input
+                    value={settings.whatsappReminderOffsets}
+                    onChange={(e) => setSettings((p) => ({ ...p, whatsappReminderOffsets: e.target.value }))}
+                    placeholder="0,1,3"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>قالب الرسالة</Label>
+                  <Textarea
+                    value={settings.whatsappReminderTemplate}
+                    onChange={(e) => setSettings((p) => ({ ...p, whatsappReminderTemplate: e.target.value }))}
+                    rows={4}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>تواريخ مخصصة (CSV)</Label>
+              <Textarea
+                value={settings.customReminderDates}
+                onChange={(e) => setSettings((p) => ({ ...p, customReminderDates: e.target.value }))}
+                rows={2}
+                placeholder="2026-05-01,2026-05-15"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => saveSettingsMutation.mutate()} disabled={saveSettingsMutation.isPending}>
+                {saveSettingsMutation.isPending ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                حفظ إعدادات الإشعارات
+              </Button>
+              <Button variant="outline" onClick={handleSendTestEmail} disabled={sendingTest || !settings.adminEmail}>
+                {sendingTest ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                إرسال اختبار بريد
+              </Button>
+              <Button variant="outline" onClick={handleSendTaskReminders} disabled={sendingTaskReminders}>
+                {sendingTaskReminders ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                إرسال تذكيرات المهام الآن
+              </Button>
+              <Button variant="outline" onClick={handleSendOwnerReminderNow} disabled={sendingOwnerRemindersNow}>
+                {sendingOwnerRemindersNow ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                تشغيل تذكيرات واتساب الآن
+              </Button>
+            </div>
+
+            {ownerReminderSummary && (
+              <div className="rounded-lg border p-3 text-sm">
+                <p>تم الإرسال لـ {ownerReminderSummary.sentOwners.length} مسؤول</p>
+                <p>تم تخطي {ownerReminderSummary.skippedTasks.length} مهمة</p>
+                <p>فشل {ownerReminderSummary.failedOwners.length} مسؤول</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="telegram" className="space-y-6 mt-0">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Webhook تيليجرام</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5 max-w-xl">
+              <Label>رابط التطبيق الأساسي (App URL)</Label>
+              <Input value={appUrl} onChange={(e) => setAppUrl(e.target.value)} placeholder="https://your-domain.com" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => setupWebhookMutation.mutate()} disabled={setupWebhookMutation.isPending || !appUrl}>
+                {setupWebhookMutation.isPending ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                إعداد Webhook تلقائيًا
+              </Button>
+              <Button variant="outline" onClick={() => refetchWebhookInfo()}>
+                تحديث الحالة
+              </Button>
+            </div>
+            <div className="rounded-lg border p-3 text-sm space-y-1">
+              <p>Webhook الحالي: {webhookInfo?.url || 'غير مضبوط'}</p>
+              <p>Pending updates: {webhookInfo?.pending_update_count ?? 0}</p>
+              {webhookInfo?.last_error_message ? (
+                <p className="text-destructive">آخر خطأ: {webhookInfo.last_error_message}</p>
+              ) : null}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">ربط الحسابات</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-3 gap-2">
+              <Input value={chatId} onChange={(e) => setChatId(e.target.value)} placeholder="Chat ID" />
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger><SelectValue placeholder="اختر مستخدم" /></SelectTrigger>
+                <SelectContent>
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>{u.name || u.email}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => linkAccountMutation.mutate()}
+                disabled={linkAccountMutation.isPending || !chatId || !selectedUserId}
+              >
+                <Link2 className="h-4 w-4 ml-2" />
+                ربط
+              </Button>
+            </div>
+
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-start px-3 py-2">Chat ID</th>
+                    <th className="text-start px-3 py-2">المستخدم</th>
+                    <th className="text-start px-3 py-2">التاريخ</th>
+                    <th className="text-end px-3 py-2">إجراء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {linkedAccounts.map((a) => (
+                    <tr key={a.id} className="border-t">
+                      <td className="px-3 py-2 font-mono text-xs">{a.chatId}</td>
+                      <td className="px-3 py-2">{a.user.name || a.user.email}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{format(new Date(a.createdAt), 'yyyy/MM/dd')}</td>
+                      <td className="px-3 py-2 text-end">
+                        <Button variant="ghost" size="sm" onClick={() => unlinkAccountMutation.mutate(a.id)}>
+                          <Unlink className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                  {linkedAccounts.length === 0 && (
+                    <tr>
+                      <td className="px-3 py-3 text-muted-foreground text-sm" colSpan={4}>لا توجد حسابات مرتبطة</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">سجل رسائل تيليجرام (آخر 10)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-start px-3 py-2">Chat</th>
+                    <th className="text-start px-3 py-2">الرسالة</th>
+                    <th className="text-start px-3 py-2">الحالة</th>
+                    <th className="text-start px-3 py-2">التاريخ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {telegramLogs.map((log) => (
+                    <tr key={log.id} className="border-t">
+                      <td className="px-3 py-2 font-mono text-xs">{log.chatId}</td>
+                      <td className="px-3 py-2 text-xs">{log.messagePreview}</td>
+                      <td className="px-3 py-2">
+                        <Badge variant={log.parsed ? 'secondary' : 'destructive'} className="text-xs">
+                          {log.parsed ? 'Parsed' : 'Failed'}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{format(new Date(log.createdAt), 'yyyy/MM/dd HH:mm')}</td>
+                    </tr>
+                  ))}
+                  {telegramLogs.length === 0 && (
+                    <tr>
+                      <td className="px-3 py-3 text-muted-foreground text-sm" colSpan={4}>لا توجد سجلات</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  )
+}
+
 // ─── MAIN SETTINGS SECTION ─────────────────────────────────
 export default function SettingsSection() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold flex items-center gap-2">
-        <Settings className="h-6 w-6" /> الإعدادات
+        <Settings className="h-6 w-6" /> الإعدادات العامة
       </h1>
       <Tabs defaultValue="company">
         <TabsList className="flex-wrap h-auto gap-1">
@@ -403,11 +1019,11 @@ function DashboardSettingsTab() {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>السنة الافتراضية</Label>
-          <Input type="number" value={defaultYear} onChange={(e) => setDefaultYear(parseInt(e.target.value))} />
+          <Input type="number" value={defaultYear} onChange={(e) => setDefaultYear(parseInt(e.target.value, 10))} />
         </div>
         <div className="space-y-1.5">
           <Label>الشهر الافتراضي</Label>
-          <Input type="number" min={1} max={12} value={defaultMonth} onChange={(e) => setDefaultMonth(parseInt(e.target.value))} />
+          <Input type="number" min={1} max={12} value={defaultMonth} onChange={(e) => setDefaultMonth(parseInt(e.target.value, 10))} />
         </div>
       </div>
       <Button onClick={() => toast({ title: 'تم الحفظ' })}>حفظ</Button>
@@ -421,7 +1037,7 @@ function UsersTab() {
     queryFn: async () => {
       const res = await fetch('/api/users')
       const json = await res.json()
-      return json.data ?? []
+      return json.users ?? json.data ?? []
     },
   })
   return (
@@ -436,14 +1052,14 @@ function UsersTab() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u: { id: string; name?: string; email: string; role: string; isActive: boolean }) => (
+          {users.map((u: { id: string; name?: string; email: string; role: string; isActive?: boolean }) => (
             <tr key={u.id} className="border-t">
               <td className="px-4 py-3 font-medium">{u.name ?? '—'}</td>
               <td className="px-4 py-3 text-muted-foreground text-xs">{u.email}</td>
               <td className="px-4 py-3"><Badge variant="outline" className="text-xs">{u.role}</Badge></td>
               <td className="px-4 py-3">
-                <Badge variant={u.isActive ? 'secondary' : 'destructive'} className="text-xs">
-                  {u.isActive ? 'نشط' : 'غير نشط'}
+                <Badge variant={u.isActive ?? true ? 'secondary' : 'destructive'} className="text-xs">
+                  {u.isActive ?? true ? 'نشط' : 'غير نشط'}
                 </Badge>
               </td>
             </tr>
@@ -485,49 +1101,6 @@ function ContactsTab() {
           ))}
         </tbody>
       </table>
-    </div>
-  )
-}
-
-function NotificationsTab() {
-  const { toast } = useToast()
-  const [botToken, setBotToken] = useState(process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? '')
-  const [webhookUrl, setWebhookUrl] = useState('')
-  const [settingWebhook, setSettingWebhook] = useState(false)
-
-  const setupWebhook = async () => {
-    if (!webhookUrl) return
-    setSettingWebhook(true)
-    try {
-      const res = await fetch('/api/telegram/setup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ webhookUrl }),
-      })
-      const json = await res.json()
-      if (json.success) toast({ title: 'تم إعداد Webhook بنجاح' })
-      else toast({ title: 'خطأ', description: json.error, variant: 'destructive' })
-    } catch (e) {
-      toast({ title: 'خطأ', description: String(e), variant: 'destructive' })
-    } finally {
-      setSettingWebhook(false)
-    }
-  }
-
-  return (
-    <div className="space-y-6 max-w-lg">
-      <Card>
-        <CardHeader><CardTitle className="text-sm">بوت تيليجرام</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>رابط Webhook</Label>
-            <Input value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://your-domain.com/api/telegram/webhook" />
-          </div>
-          <Button onClick={setupWebhook} disabled={settingWebhook || !webhookUrl}>
-            {settingWebhook ? 'جارٍ الإعداد...' : 'إعداد Webhook'}
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   )
 }

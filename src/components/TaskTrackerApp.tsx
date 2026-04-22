@@ -21,7 +21,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
-  LayoutDashboard, List, Grid3X3, Upload, Plus, Search, Filter,
+  List, Grid3X3, Upload, Plus, Search, Filter,
   MoreVertical, Edit, Trash2, Download, Bell, Settings, Users,
   CheckCircle2, Clock, AlertTriangle, XCircle, TrendingUp,
   Calendar, User, Building, Flag, BarChart3, PieChart, FileSpreadsheet,
@@ -2962,7 +2962,7 @@ export default function TaskTrackerApp() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("tasks");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -3734,14 +3734,8 @@ export default function TaskTrackerApp() {
             <span className="font-bold text-xl">متتبع المهام</span>
           </div>
           <nav className="order-3 flex w-full items-center gap-1 overflow-x-auto sm:order-2 sm:flex-1">
-            <Button variant={activeTab === "dashboard" ? "secondary" : "ghost"} size="sm" className="shrink-0" onClick={() => setActiveTab("dashboard")}>
-              <LayoutDashboard className="h-4 w-4 ml-2" /> لوحة التحكم
-            </Button>
             <Button variant={activeTab === "tasks" ? "secondary" : "ghost"} size="sm" className="shrink-0" onClick={() => setActiveTab("tasks")}>
               <List className="h-4 w-4 ml-2" /> المهام
-            </Button>
-            <Button variant={activeTab === "settings" ? "secondary" : "ghost"} size="sm" className="shrink-0" onClick={() => setActiveTab("settings")}>
-              <Settings className="h-4 w-4 ml-2" /> الإعدادات
             </Button>
           </nav>
           <div className="order-2 ms-auto flex items-center gap-2 sm:order-3">
@@ -3757,31 +3751,6 @@ export default function TaskTrackerApp() {
 
       <main className="flex-1 w-full px-4 py-6 md:px-6 lg:px-8 animate-in fade-in-0 duration-300 motion-reduce:animate-none">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsContent value="dashboard" className="mt-0">
-            <DashboardContent
-              stats={stats}
-              onNavigateToDepartment={(dept) => {
-                setFilterDepartment(dept);
-                setFilterOverdue(false);
-                setFilterDueSoon(false);
-                setActiveTab("tasks");
-              }}
-              onNavigateToOverdue={() => {
-                setFilterOverdue(true);
-                setFilterDueSoon(false);
-                setFilterDepartment("all");
-                setFilterStatuses(() => []);
-                setActiveTab("tasks");
-              }}
-              onNavigateToDueSoon={() => {
-                setFilterDueSoon(true);
-                setFilterOverdue(false);
-                setFilterDepartment("all");
-                setFilterStatuses(() => []);
-                setActiveTab("tasks");
-              }}
-            />
-          </TabsContent>
           <TabsContent value="tasks" className="mt-0">
             <TaskListContent
               tasks={tasks}
@@ -3833,28 +3802,6 @@ export default function TaskTrackerApp() {
               getRiskColor={getRiskColor}
               taskHistoryById={taskHistoryById}
               onDeleteHistoryEntry={deleteHistoryEntry}
-            />
-          </TabsContent>
-          <TabsContent value="settings" className="mt-0">
-            <SettingsContent
-              settings={settings}
-              setSettings={setSettings}
-              savingSettings={savingSettings}
-              sendingTest={sendingTest}
-              scheduledReminders={scheduledReminders}
-              newReminder={newReminder}
-              setNewReminder={setNewReminder}
-              showReminderForm={showReminderForm}
-              setShowReminderForm={setShowReminderForm}
-              onSaveSettings={handleSaveSettings}
-              onSendTestEmail={handleSendTestEmail}
-              onSendTaskReminders={handleSendTaskReminders}
-              onSendOwnerReminderNow={handleSendOwnerReminderNow}
-              onCreateReminder={handleCreateReminder}
-              onDeleteReminder={handleDeleteReminder}
-              onTriggerCron={handleTriggerCron}
-              sendingOwnerRemindersNow={sendingOwnerRemindersNow}
-              ownerReminderSummary={ownerReminderSummary}
             />
           </TabsContent>
         </Tabs>
