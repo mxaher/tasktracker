@@ -399,7 +399,6 @@ export default function ContactsTab() {
                 value={form.phone}
                 onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
                 placeholder="+9665xxxxxxxx أو اتركه فارغًا"
-                dir="ltr"
               />
               <p className="text-xs text-muted-foreground">
                 يُترك فارغًا إذا لم يكن هناك رقم هاتف
@@ -414,7 +413,6 @@ export default function ContactsTab() {
                 value={form.email}
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                 placeholder="example@domain.com أو اتركه فارغًا"
-                dir="ltr"
               />
             </div>
 
@@ -499,8 +497,8 @@ export default function ContactsTab() {
                 filteredContacts.map((contact) => (
                   <TableRow key={contact.id}>
                     <TableCell className="font-medium">{contact.name}</TableCell>
-                    <TableCell dir="ltr">{contact.phone || "—"}</TableCell>
-                    <TableCell dir="ltr">{contact.email || "—"}</TableCell>
+                    <TableCell>{contact.phone || "—"}</TableCell>
+                    <TableCell>{contact.email || "—"}</TableCell>
                     <TableCell>
                       {contact.user ? (
                         <div className="flex flex-col">

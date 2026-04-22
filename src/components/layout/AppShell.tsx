@@ -44,7 +44,7 @@ export default function AppShell() {
   const { activeSection } = useAppStore()
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div dir="rtl" className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar — hidden on mobile */}
       <div className="hidden md:flex">
         <Sidebar />

@@ -13,12 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import ContactsManagementTab from '@/components/settings/ContactsTab'
 import {
   Settings,
   Building,
   LayoutDashboard,
   Upload,
-  Users,
   Contact,
   Bell,
   Check,
@@ -977,8 +977,7 @@ export default function SettingsSection() {
           <TabsTrigger value="company" className="gap-1.5"><Building className="h-3.5 w-3.5" /> الشركة</TabsTrigger>
           <TabsTrigger value="dashboard" className="gap-1.5"><LayoutDashboard className="h-3.5 w-3.5" /> لوحة التحكم</TabsTrigger>
           <TabsTrigger value="import" className="gap-1.5"><Upload className="h-3.5 w-3.5" /> استيراد البيانات</TabsTrigger>
-          <TabsTrigger value="users" className="gap-1.5"><Users className="h-3.5 w-3.5" /> المستخدمون</TabsTrigger>
-          <TabsTrigger value="contacts" className="gap-1.5"><Contact className="h-3.5 w-3.5" /> جهات الاتصال</TabsTrigger>
+          <TabsTrigger value="contacts" className="gap-1.5"><Contact className="h-3.5 w-3.5" /> قائمة جهات الاتصال</TabsTrigger>
           <TabsTrigger value="notifications" className="gap-1.5"><Bell className="h-3.5 w-3.5" /> الإشعارات</TabsTrigger>
         </TabsList>
 
@@ -994,12 +993,8 @@ export default function SettingsSection() {
           <ImportTab />
         </TabsContent>
 
-        <TabsContent value="users" className="mt-6">
-          <UsersTab />
-        </TabsContent>
-
         <TabsContent value="contacts" className="mt-6">
-          <ContactsTab />
+          <ContactsManagementTab />
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-6">
@@ -1027,80 +1022,6 @@ function DashboardSettingsTab() {
         </div>
       </div>
       <Button onClick={() => toast({ title: 'تم الحفظ' })}>حفظ</Button>
-    </div>
-  )
-}
-
-function UsersTab() {
-  const { data: users = [] } = useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      const res = await fetch('/api/users')
-      const json = await res.json()
-      return json.users ?? json.data ?? []
-    },
-  })
-  return (
-    <div className="rounded-lg border overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr>
-            <th className="text-start px-4 py-3">المستخدم</th>
-            <th className="text-start px-4 py-3">البريد</th>
-            <th className="text-start px-4 py-3">الدور</th>
-            <th className="text-start px-4 py-3">الحالة</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u: { id: string; name?: string; email: string; role: string; isActive?: boolean }) => (
-            <tr key={u.id} className="border-t">
-              <td className="px-4 py-3 font-medium">{u.name ?? '—'}</td>
-              <td className="px-4 py-3 text-muted-foreground text-xs">{u.email}</td>
-              <td className="px-4 py-3"><Badge variant="outline" className="text-xs">{u.role}</Badge></td>
-              <td className="px-4 py-3">
-                <Badge variant={u.isActive ?? true ? 'secondary' : 'destructive'} className="text-xs">
-                  {u.isActive ?? true ? 'نشط' : 'غير نشط'}
-                </Badge>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-function ContactsTab() {
-  const { data: contacts = [] } = useQuery({
-    queryKey: ['contacts-settings'],
-    queryFn: async () => {
-      const res = await fetch('/api/settings/contacts')
-      const json = await res.json()
-      return json.data ?? []
-    },
-  })
-  return (
-    <div className="rounded-lg border overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr>
-            <th className="text-start px-4 py-3">الاسم</th>
-            <th className="text-start px-4 py-3">الهاتف</th>
-            <th className="text-start px-4 py-3">البريد</th>
-            <th className="text-start px-4 py-3">الدور</th>
-          </tr>
-        </thead>
-        <tbody>
-          {contacts.map((c: { id: string; nameAr: string; phone?: string; email?: string; role?: string }) => (
-            <tr key={c.id} className="border-t">
-              <td className="px-4 py-3 font-medium">{c.nameAr}</td>
-              <td className="px-4 py-3 text-muted-foreground text-xs">{c.phone ?? '—'}</td>
-              <td className="px-4 py-3 text-muted-foreground text-xs">{c.email ?? '—'}</td>
-              <td className="px-4 py-3 text-muted-foreground text-xs">{c.role ?? '—'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   )
 }
