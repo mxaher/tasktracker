@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+export type DashboardTaskFilter =
+  | 'all'
+  | 'completed'
+  | 'in_progress'
+  | 'delayed'
+  | 'overdue'
+  | 'due_soon'
+
 interface AppStore {
   // Global period selector
   selectedYear: number
@@ -14,6 +22,9 @@ interface AppStore {
   setSidebarCollapsed: (collapsed: boolean) => void
   activeSection: string
   setActiveSection: (section: string) => void
+  dashboardTaskFilter: DashboardTaskFilter | null
+  setDashboardTaskFilter: (filter: DashboardTaskFilter) => void
+  clearDashboardTaskFilter: () => void
 
   // Alerts
   unreadAlertCount: number
@@ -33,6 +44,9 @@ export const useAppStore = create<AppStore>()(
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       activeSection: 'dashboard',
       setActiveSection: (section) => set({ activeSection: section }),
+      dashboardTaskFilter: null,
+      setDashboardTaskFilter: (filter) => set({ dashboardTaskFilter: filter }),
+      clearDashboardTaskFilter: () => set({ dashboardTaskFilter: null }),
 
       unreadAlertCount: 0,
       setUnreadAlertCount: (count) => set({ unreadAlertCount: count }),

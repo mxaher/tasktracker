@@ -31,6 +31,7 @@ import {
 import { format, differenceInDays, isPast, isToday, addDays } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAppStore } from "@/lib/store";
 
 // Types
 interface Task {
@@ -2957,6 +2958,7 @@ function SettingsContent({
 // TaskTrackerApp — main component, now much leaner
 // ─────────────────────────────────────────────────────────────
 export default function TaskTrackerApp() {
+  const { dashboardTaskFilter, clearDashboardTaskFilter } = useAppStore();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -3193,6 +3195,33 @@ export default function TaskTrackerApp() {
   useEffect(() => {
     setSelectedTaskIds(new Set());
   }, [searchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon]);
+
+  useEffect(() => {
+    if (!dashboardTaskFilter) return;
+
+    // Start from a neutral baseline, then apply the requested dashboard filter.
+    setSearchQuery("");
+    setFilterPriority("all");
+    setFilterDepartment("all");
+    setFilterSource("all");
+    setFilterOverdue(false);
+    setFilterDueSoon(false);
+    setFilterStatuses([]);
+
+    if (dashboardTaskFilter === "completed") {
+      setFilterStatuses(["completed"]);
+    } else if (dashboardTaskFilter === "in_progress") {
+      setFilterStatuses(["in_progress"]);
+    } else if (dashboardTaskFilter === "delayed") {
+      setFilterStatuses(["delayed"]);
+    } else if (dashboardTaskFilter === "overdue") {
+      setFilterOverdue(true);
+    } else if (dashboardTaskFilter === "due_soon") {
+      setFilterDueSoon(true);
+    }
+
+    clearDashboardTaskFilter();
+  }, [dashboardTaskFilter, clearDashboardTaskFilter]);
 
   const departments = useMemo(() => {
     const depts = new Set(tasks.map(t => t.department).filter(Boolean));

@@ -13,10 +13,18 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const MONTHS_SHORT = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
 
 function StatCard({
-  title, value, subtitle, icon: Icon, color,
-}: { title: string; value: string | number; subtitle?: string; icon: React.ElementType; color: string }) {
+  title, value, subtitle, icon: Icon, color, onClick,
+}: { title: string; value: string | number; subtitle?: string; icon: React.ElementType; color: string; onClick?: () => void }) {
   return (
-    <Card className="card-strategy-hover animate-fade-in-up">
+    <Card
+      className={`card-strategy-hover animate-fade-in-up ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClick()
+      } : undefined}
+    >
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div>
@@ -34,7 +42,12 @@ function StatCard({
 }
 
 export default function DashboardSection() {
-  const { selectedYear, selectedMonth, setActiveSection } = useAppStore()
+  const { selectedYear, selectedMonth, setActiveSection, setDashboardTaskFilter } = useAppStore()
+
+  const openTasksWithFilter = (filter: 'all' | 'completed' | 'in_progress' | 'delayed' | 'overdue' | 'due_soon') => {
+    setDashboardTaskFilter(filter)
+    setActiveSection('tasks')
+  }
 
   const { data: taskStats } = useQuery({
     queryKey: ['task-stats'],
@@ -123,24 +136,28 @@ export default function DashboardSection() {
           value={taskStats?.totalTasks ?? 0}
           icon={CheckSquare}
           color="bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+          onClick={() => openTasksWithFilter('all')}
         />
         <StatCard
           title="مكتملة"
           value={taskStats?.completedTasks ?? 0}
           icon={CheckSquare}
           color="bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400"
+          onClick={() => openTasksWithFilter('completed')}
         />
         <StatCard
           title="قيد التنفيذ"
           value={taskStats?.inProgressTasks ?? 0}
           icon={Clock}
           color="bg-yellow-100 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400"
+          onClick={() => openTasksWithFilter('in_progress')}
         />
         <StatCard
           title="متأخرة"
           value={taskStats?.delayedTasks ?? 0}
           icon={AlertTriangle}
           color="bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+          onClick={() => openTasksWithFilter('delayed')}
         />
         <StatCard
           title="متوسط الإنجاز"
@@ -207,7 +224,7 @@ export default function DashboardSection() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-3xl font-bold text-red-700">{taskStats?.overdueTasks ?? 0}</p>
-            <Button variant="outline" size="sm" onClick={() => setActiveSection('tasks')}>
+            <Button variant="outline" size="sm" onClick={() => openTasksWithFilter('overdue')}>
               فتح صفحة المهام
             </Button>
           </CardContent>
@@ -218,7 +235,7 @@ export default function DashboardSection() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-3xl font-bold text-amber-700">{taskStats?.dueSoonTasks ?? 0}</p>
-            <Button variant="outline" size="sm" onClick={() => setActiveSection('tasks')}>
+            <Button variant="outline" size="sm" onClick={() => openTasksWithFilter('due_soon')}>
               فتح صفحة المهام
             </Button>
           </CardContent>
