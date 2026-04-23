@@ -28,7 +28,8 @@ function getCloudflareD1Binding(): D1Binding | undefined {
   // 1. Try getCloudflareContext (standard for OpenNext)
   try {
     const context = getCloudflareContext();
-    if (context?.env?.DB) return context.env.DB as D1Binding;
+    const env = context.env as { DB?: D1Binding };
+    if (env.DB) return env.DB;
   } catch {}
 
   // 2. Try global process.env (for some local dev or older OpenNext)

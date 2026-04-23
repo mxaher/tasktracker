@@ -9,11 +9,12 @@ export async function GET() {
         prepare: (sql: string) => { first: () => Promise<unknown> };
       };
     };
-    const hasDb = Boolean(env.DB);
+    const database = env.DB;
+    const hasDb = Boolean(database);
     let dbProbe: unknown = null;
 
-    if (hasDb) {
-      const result = await env.DB!.prepare("SELECT 1 AS ok").first();
+    if (hasDb && database) {
+      const result = await database.prepare("SELECT 1 AS ok").first();
       dbProbe = result;
     }
 

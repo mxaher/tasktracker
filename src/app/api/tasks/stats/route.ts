@@ -19,17 +19,18 @@ function getDb() {
     DB?: {
       prepare: (sql: string) => {
         bind: (...params: D1Value[]) => {
-          all: <T>() => Promise<{ results?: T[] }>;
+          first: <T>() => Promise<T | null>;
         };
       };
     };
   };
 
-  if (!env.DB) {
+  const database = env.DB;
+  if (!database) {
     throw new Error("Cloudflare D1 binding is not available.");
   }
 
-  return env.DB;
+  return database;
 }
 
 async function d1All<T>(sql: string, ...params: D1Value[]) {

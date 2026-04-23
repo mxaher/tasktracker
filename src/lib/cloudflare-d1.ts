@@ -74,7 +74,8 @@ const tableColumnsCache = new Map<string, string[]>();
 
 function getDatabase(): D1DatabaseBinding {
   const context = getCloudflareContext();
-  const database = (context.env as { DB?: D1DatabaseBinding }).DB;
+  const env = context.env as { DB?: D1DatabaseBinding };
+  const database = env.DB;
 
   if (!database) {
     throw new Error("Cloudflare D1 binding is not available.");

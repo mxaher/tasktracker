@@ -36,11 +36,12 @@ function getDb() {
     };
   };
 
-  if (!env.DB) {
+  const database = env.DB;
+  if (!database) {
     throw new Error("Cloudflare D1 binding is not available.");
   }
 
-  return env.DB;
+  return database;
 }
 
 async function d1First<T>(sql: string, ...params: D1Value[]) {
