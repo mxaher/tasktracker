@@ -19,6 +19,7 @@ function getDb() {
     DB?: {
       prepare: (sql: string) => {
         bind: (...params: D1Value[]) => {
+          all: <T>() => Promise<{ results?: T[] }>;
           first: <T>() => Promise<T | null>;
         };
       };
