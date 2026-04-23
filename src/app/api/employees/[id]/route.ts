@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { routeErrorResponse } from '@/lib/api-error'
 
 
 
@@ -20,7 +21,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     if (!employee) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 })
     return NextResponse.json({ success: true, data: employee })
   } catch (e) {
-    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+    return routeErrorResponse('/api/employees/[id] GET', e, { body: { success: false } })
   }
 }
 
@@ -47,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     })
     return NextResponse.json({ success: true, data: employee })
   } catch (e) {
-    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+    return routeErrorResponse('/api/employees/[id] PUT', e, { body: { success: false } })
   }
 }
 
@@ -57,6 +58,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     await db.employee.delete({ where: { id } })
     return NextResponse.json({ success: true, data: { id } })
   } catch (e) {
-    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+    return routeErrorResponse('/api/employees/[id] DELETE', e, { body: { success: false } })
   }
 }

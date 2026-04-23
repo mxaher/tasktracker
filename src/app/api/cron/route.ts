@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { EmailService } from "@/lib/email";
+import { routeErrorResponse } from "@/lib/api-error";
 
 
 
@@ -82,11 +83,10 @@ export async function GET(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("Error in cron job:", error);
-    return NextResponse.json(
-      { error: "Cron job failed", message: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+    return routeErrorResponse("/api/cron GET", error, {
+      status: 500,
+      body: { error: "Cron job failed" },
+    });
   }
 }
 

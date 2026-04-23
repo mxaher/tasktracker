@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { routeErrorResponse } from '@/lib/api-error'
 
 
 
@@ -14,6 +15,6 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json({ success: true, data: record })
   } catch (e) {
-    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+    return routeErrorResponse('/api/targets/monthly POST', e, { body: { success: false } })
   }
 }

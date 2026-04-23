@@ -1,0 +1,587 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../src/generated/prisma"
+  engineType      = "client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and task ownership
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String?  @unique
+  name          String?
+  role          String   @default("viewer") // admin, manager, viewer
+  department    String?
+  phone         String?  // For WhatsApp notifications
+  avatar        String?
+  isActive      Boolean  @default(true)
+  
+  // Notification preferences
+  receiveTaskReminders   Boolean  @default(true)
+  receiveDailyDigest     Boolean  @default(false)
+  receiveWeeklyReport    Boolean  @default(false)
+  reminderDaysBefore     Int      @default(3) // Days before due date to send reminder
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  ownedTasks    Task[]         @relation("TaskOwner")
+  assignedTasks Task[]         @relation("TaskAssignee")
+  auditLogs     TaskAuditLog[]
+  notifications Notification[]
+  contact       Contact?
+  employee      Employee?
+  telegramUser  TelegramUser?
+}
+
+// Main Task model
+model Task {
+  id               String   @id @default(cuid())
+  taskId           String?  // External task ID from Excel
+  title            String
+  description      String?
+  sentdmMessageId  String?
+  lastReminderSentAt DateTime?
+  
+  // Ownership and assignment
+  ownerId          String?
+  owner            User?    @relation("TaskOwner", fields: [ownerId], references: [id])
+  assigneeId       String?
+  assignee         User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  
+  // Classification
+  department       String?
+  priority         String   @default("medium") // low, medium, high, critical
+  status           String   @default("not_started") // not_started, in_progress, delayed, completed
+  strategicPillar  String?  // Strategic pillar/Initiative
+  
+  // Progress tracking
+  completion       Float    @default(0) // 0 to 1
+  riskIndicator    String?  // on_track, at_risk, delayed
+  
+  // Dates
+  startDate        DateTime?
+  dueDate          DateTime?
+  completedAt      DateTime?
+  
+  // Notes and metadata
+  notes            String?
+  nextStep         String?
+  ceoNotes         String?
+  sourceMonth      String?
+  source           String?  // Origin of the task: CEO, Audit Committee, etc.
+  
+  // Data source tracking
+  dataSourceId     String?
+  dataSource       DataSource? @relation(fields: [dataSourceId], references: [id])
+
+  // Parent-child hierarchy
+  parentId         String?
+  parent           Task?    @relation("TaskChildren", fields: [parentId], references: [id])
+  children         Task[]   @relation("TaskChildren")
+  
+  // Timestamps
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  auditLogs        TaskAuditLog[]
+  notifications    Notification[]
+  updates          TaskUpdate[]
+
+  @@index([parentId])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  nameAr    String
+  nameEn    String?
+  phone     String?
+  email     String?
+  role      String?
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaskUpdate {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  source    String   // "whatsapp" | "telegram" | "manual"
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+// Audit log for tracking all task changes
+model TaskAuditLog {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  action      String   // create, update, delete, status_change
+  field       String?  // Which field was changed
+  oldValue    String?
+  newValue    String?
+  
+  createdAt   DateTime @default(now())
+}
+
+// Data source for tracking uploaded files
+model DataSource {
+  id              String   @id @default(cuid())
+  fileName        String
+  originalName    String
+  fileSize        Int
+  rowCount        Int
+  columnMapping   String?  // JSON string of column mappings
+  uploadedById    String?
+  uploadedAt      DateTime @default(now())
+  
+  tasks           Task[]
+}
+
+// Notification model
+model Notification {
+  id          String   @id @default(cuid())
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  type        String   // assignment, reminder, overdue, status_change
+  channel     String   // email, whatsapp
+  subject     String
+  message     String
+  status      String   @default("pending") // pending, sent, failed
+  
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  error       String?
+  
+  createdAt   DateTime @default(now())
+}
+
+// Notification rules configuration
+model NotificationRule {
+  id              String   @id @default(cuid())
+  name            String
+  type            String   // assignment, reminder, overdue, status_change
+  channel         String   @default("email") // email, whatsapp
+  
+  // Trigger conditions
+  daysBeforeDue   Int?     // For reminders (e.g., 3 days before)
+  
+  // Recipients
+  notifyOwner     Boolean  @default(true)
+  notifyAssignee  Boolean  @default(true)
+  notifyManager   Boolean  @default(false)
+  
+  // Template
+  subjectTemplate String?
+  bodyTemplate    String?
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// System configuration
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// Admin notification settings
+model AdminSettings {
+  id                    String   @id @default(cuid())
+  
+  // Admin email for receiving reports
+  adminEmail            String
+  
+  // Daily digest settings
+  dailyDigestEnabled    Boolean  @default(false)
+  dailyDigestTime       String   @default("09:00") // HH:mm format
+  
+  // Weekly report settings
+  weeklyReportEnabled   Boolean  @default(false)
+  weeklyReportDay       Int      @default(1) // 0=Sunday, 1=Monday, etc.
+  weeklyReportTime      String   @default("09:00")
+  
+  // In-progress tasks report
+  inProgressReportEnabled Boolean @default(false)
+  inProgressReportFrequency String @default("daily") // daily, weekly
+  
+  // Reminder settings
+  taskReminderEnabled   Boolean  @default(true)
+  overdueReminderEnabled Boolean @default(true)
+  
+  // Custom reminder dates (comma-separated ISO dates)
+  customReminderDates   String?  // e.g., "2024-01-15,2024-01-20,2024-01-25"
+  
+  // Days before due date for automatic reminders
+  reminderDaysBefore    Int      @default(3)
+  whatsappOwnerRemindersEnabled Boolean @default(false)
+  whatsappReminderOffsets String @default("0,1")
+  whatsappReminderTemplate String @default("Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.")
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+// Scheduled reminders with specific dates
+model ScheduledReminder {
+  id          String   @id @default(cuid())
+  
+  // Reminder details
+  title       String
+  description String?
+  
+  // Schedule
+  reminderDate DateTime
+  reminderTime String   @default("09:00") // HH:mm format
+  
+  // Recipients
+  sendToAdmin   Boolean  @default(true)
+  sendToOwners  Boolean  @default(true)
+  
+  // Task filter (optional - if set, only remind about these tasks)
+  taskIds      String?  // Comma-separated task IDs
+  
+  // Status
+  isActive     Boolean  @default(true)
+  isSent       Boolean  @default(false)
+  sentAt       DateTime?
+  
+  // Email tracking
+  emailsSent   Int      @default(0)
+  emailsFailed Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── COMPANY ───────────────────────────────────────────────
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  nameAr      String?
+  logo        String?
+  fiscalStart Int      @default(1)
+  currency    String   @default("SAR")
+  language    String   @default("ar")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DashboardSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ─── PROPERTIES ────────────────────────────────────────────
+model Property {
+  id               String    @id @default(cuid())
+  code             String    @unique
+  nameAr           String
+  nameEn           String?
+  type             String
+  location         String?
+  totalUnits       Int       @default(0)
+  managerId        String?
+  manager          Employee? @relation("PropertyManager", fields: [managerId], references: [id])
+  occupancyRate    Float     @default(0)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  employees        EmployeeProperty[]
+  annualTargets    PropertyAnnualTarget[]
+  monthlyTargets   PropertyMonthlyTarget[]
+  collectionActuals PropertyCollectionActual[]
+  agingReports     PropertyAgingReport[]
+  targetVersions   PropertyTargetVersion[]
+  alerts           Alert[]
+}
+
+model PropertyAnnualTarget {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  year        Int
+  annualTarget Float   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([propertyId, year])
+}
+
+model PropertyMonthlyTarget {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  year        Int
+  month       Int
+  target      Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([propertyId, year, month])
+}
+
+model PropertyCollectionActual {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  year        Int
+  month       Int
+  collected   Float    @default(0)
+  invoiced    Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([propertyId, year, month])
+}
+
+model PropertyAgingReport {
+  id           String   @id @default(cuid())
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  year         Int
+  month        Int
+  bucket0to20  Float    @default(0)
+  bucket21to60 Float    @default(0)
+  bucket61to90 Float    @default(0)
+  bucketOver90 Float    @default(0)
+  createdAt    DateTime @default(now())
+
+  @@unique([propertyId, year, month])
+}
+
+model PropertyTargetVersion {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  year        Int
+  version     Int
+  annualTarget Float
+  note        String?
+  createdAt   DateTime @default(now())
+}
+
+// ─── EMPLOYEES ─────────────────────────────────────────────
+model EmployeePosition {
+  id        String     @id @default(cuid())
+  nameAr    String
+  nameEn    String?
+  grade     String?
+  createdAt DateTime   @default(now())
+  employees Employee[]
+}
+
+model Employee {
+  id           String            @id @default(cuid())
+  nameAr       String
+  nameEn       String?
+  email        String?           @unique
+  positionId   String?
+  position     EmployeePosition? @relation(fields: [positionId], references: [id])
+  department   String?
+  managedById  String?
+  managedBy    Employee?         @relation("ManagerSubordinate", fields: [managedById], references: [id])
+  subordinates Employee[]        @relation("ManagerSubordinate")
+  isActive     Boolean           @default(true)
+  joinedAt     DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  userId       String?           @unique
+  user         User?             @relation(fields: [userId], references: [id])
+
+  properties         EmployeeProperty[]
+  managedProperties  Property[]         @relation("PropertyManager")
+  kpiTargets         EmployeeKPITarget[]
+  customKpis         EmployeeCustomKPI[]
+  kpiActuals         KPIActual[]
+}
+
+model EmployeeProperty {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  role        String?
+  assignedAt  DateTime @default(now())
+
+  @@unique([employeeId, propertyId])
+}
+
+// ─── KPIs ───────────────────────────────────────────────────
+model KPI {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  nameAr      String
+  nameEn      String?
+  category    String
+  unit        String?
+  weight      Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  targets     EmployeeKPITarget[]
+  actuals     KPIActual[]
+}
+
+model EmployeeKPITarget {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  kpiId       String
+  kpi         KPI      @relation(fields: [kpiId], references: [id])
+  year        Int
+  target      Float
+  weight      Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([employeeId, kpiId, year])
+}
+
+model EmployeeCustomKPI {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  nameAr      String
+  nameEn      String?
+  category    String
+  unit        String?
+  year        Int
+  target      Float    @default(0)
+  actual      Float    @default(0)
+  weight      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model KPIActual {
+  id          String    @id @default(cuid())
+  employeeId  String?
+  employee    Employee? @relation(fields: [employeeId], references: [id])
+  kpiId       String
+  kpi         KPI       @relation(fields: [kpiId], references: [id])
+  year        Int
+  month       Int
+  actual      Float     @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@unique([employeeId, kpiId, year, month])
+}
+
+// ─── COMPANY KPIs ──────────────────────────────────────────
+model CompanyKPI {
+  id          String   @id @default(cuid())
+  year        Int
+  code        String
+  nameAr      String
+  nameEn      String?
+  category    String
+  weight      Float    @default(0)
+  target      Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  monthlyData CompanyKPIMonthly[]
+
+  @@unique([year, code])
+}
+
+model CompanyKPIMonthly {
+  id          String     @id @default(cuid())
+  kpiId       String
+  kpi         CompanyKPI @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  year        Int
+  month       Int
+  actual      Float      @default(0)
+  createdAt   DateTime   @default(now())
+
+  @@unique([kpiId, year, month])
+}
+
+// ─── ALERTS ────────────────────────────────────────────────
+model Alert {
+  id          String    @id @default(cuid())
+  title       String
+  titleAr     String?
+  message     String
+  severity    String    @default("info")
+  propertyId  String?
+  property    Property? @relation(fields: [propertyId], references: [id])
+  isRead      Boolean   @default(false)
+  isResolved  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+}
+
+// ─── TELEGRAM ──────────────────────────────────────────────
+model TelegramUser {
+  id        String   @id @default(cuid())
+  chatId    String   @unique
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  username  String?
+  firstName String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model TelegramLog {
+  id        String   @id @default(cuid())
+  chatId    String
+  direction String
+  type      String
+  payload   String
+  taskId    String?
+  createdAt DateTime @default(now())
+}
+
+// ─── IMPORT TRACKING ───────────────────────────────────────
+model ImportRecord {
+  id          String   @id @default(cuid())
+  type        String
+  filename    String
+  period      String?
+  rowCount    Int      @default(0)
+  status      String   @default("pending")
+  errorLog    String?
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+}
+
+// ─── AI INSIGHTS ───────────────────────────────────────────
+model AIInsight {
+  id         String   @id @default(cuid())
+  year       Int
+  month      Int
+  type       String
+  entityId   String?
+  insight    String
+  severity   String   @default("info")
+  createdAt  DateTime @default(now())
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { setWebhook } from '@/lib/telegram/bot'
+import { routeErrorResponse } from '@/lib/api-error'
 
 
 
@@ -13,6 +14,6 @@ export async function POST(req: NextRequest) {
     const result = await setWebhook(webhookUrl)
     return NextResponse.json({ success: true, data: result })
   } catch (e) {
-    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+    return routeErrorResponse('/api/telegram/setup POST', e, { body: { success: false } })
   }
 }

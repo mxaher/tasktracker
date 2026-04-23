@@ -1,7 +1,7 @@
 -- Migration 0004: Performance Management Platform expansion
 
 -- Add new relations to User
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "employeeId" TEXT;
+ALTER TABLE "User" ADD COLUMN "employeeId" TEXT;
 
 -- ─── COMPANY ───────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "Company" (

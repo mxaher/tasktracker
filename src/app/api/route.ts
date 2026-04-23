@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { routeErrorResponse } from "@/lib/api-error";
 
 
 
@@ -27,12 +28,11 @@ export async function GET() {
       dbProbe,
     });
   } catch (error) {
-    return NextResponse.json(
-      {
+    return routeErrorResponse("/api GET", error, {
+      status: 500,
+      body: {
         message: "Hello, world!",
-        contextError: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
-    );
+    });
   }
 }

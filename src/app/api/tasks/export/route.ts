@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { routeErrorResponse } from "@/lib/api-error";
 import * as XLSX from "xlsx";
 
 
@@ -86,10 +87,9 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error exporting tasks:", error);
-    return NextResponse.json(
-      { error: "Failed to export tasks" },
-      { status: 500 }
-    );
+    return routeErrorResponse("/api/tasks/export GET", error, {
+      status: 500,
+      body: { error: "Failed to export tasks" },
+    });
   }
 }

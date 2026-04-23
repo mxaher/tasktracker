@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx opennextjs-cloudflare *)",
+      "Bash(node node_modules/@opennextjs/cloudflare/dist/cli/index.js build)"
+    ]
+  }
+}

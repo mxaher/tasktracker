@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
+import { routeErrorResponse } from '@/lib/api-error'
 
 
 
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: updated })
   } catch (e) {
-    return NextResponse.json({ success: false, error: String(e) }, { status: 500 })
+    return routeErrorResponse('/api/import POST', e, { body: { success: false } })
   }
 }
 
