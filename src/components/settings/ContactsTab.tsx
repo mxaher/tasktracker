@@ -358,16 +358,16 @@ export default function ContactsTab() {
           />
           <Button variant="outline" asChild>
             <a href="/contacts-import-sample.csv" download>
-              <Download className="ml-2 h-4 w-4" />
+              <Download className="mr-2 h-4 w-4" />
               تحميل ملف نموذجي
             </a>
           </Button>
           <Button variant="outline" onClick={handleImportClick} disabled={importing}>
-            {importing ? <FileSpreadsheet className="ml-2 h-4 w-4 animate-pulse" /> : <Upload className="ml-2 h-4 w-4" />}
+            {importing ? <FileSpreadsheet className="mr-2 h-4 w-4 animate-pulse" /> : <Upload className="mr-2 h-4 w-4" />}
             {importing ? "جارٍ الاستيراد..." : "استيراد جهات الاتصال"}
           </Button>
           <Button onClick={openCreateDialog}>
-            <Plus className="ml-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             إضافة جهة اتصال
           </Button>
         </div>
@@ -468,7 +468,7 @@ export default function ContactsTab() {
             أضف أول جهة اتصال لتفعيل إشعارات واتساب والبريد الإلكتروني.
           </p>
           <Button className="mt-4" onClick={openCreateDialog}>
-            <Plus className="ml-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             إضافة جهة اتصال
           </Button>
         </div>

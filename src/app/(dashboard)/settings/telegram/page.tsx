@@ -174,7 +174,7 @@ export default function TelegramSettingsPage() {
   const webhookUrl = `${appUrl}/api/telegram/webhook`;
 
   return (
-    <div className="space-y-6 max-w-4xl" dir="rtl">
+    <div className="space-y-6 max-w-4xl text-right" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MessageSquare className="h-6 w-6 text-primary" />
@@ -213,9 +213,9 @@ export default function TelegramSettingsPage() {
             />
             <Button onClick={handleRegisterWebhook} disabled={webhookLoading}>
               {webhookLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
-                <RefreshCw className="h-4 w-4 ml-2" />
+                <RefreshCw className="h-4 w-4 mr-2" />
               )}
               تسجيل Webhook
             </Button>
@@ -298,7 +298,7 @@ export default function TelegramSettingsPage() {
                 </Select>
               </div>
               <Button onClick={handleAddAccount} disabled={addingAccount}>
-                {addingAccount ? <Loader2 className="h-4 w-4 animate-spin ml-1" /> : null}
+                {addingAccount ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
                 ربط
               </Button>
             </div>
@@ -358,7 +358,7 @@ export default function TelegramSettingsPage() {
             className="mt-4"
             onClick={fetchAll}
           >
-            <RefreshCw className="h-4 w-4 ml-2" />
+            <RefreshCw className="h-4 w-4 mr-2" />
             تحديث
           </Button>
         </CardContent>
