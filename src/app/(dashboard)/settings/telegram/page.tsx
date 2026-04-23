@@ -174,7 +174,7 @@ export default function TelegramSettingsPage() {
   const webhookUrl = `${appUrl}/api/telegram/webhook`;
 
   return (
-    <div className="space-y-6 max-w-4xl text-right" dir="rtl">
+    <div className="space-y-6 max-w-4xl ml-auto text-right" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MessageSquare className="h-6 w-6 text-primary" />

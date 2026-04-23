@@ -63,7 +63,7 @@ function CompanyTab() {
   if (isLoading) return <p className="text-center text-muted-foreground py-8">جارٍ التحميل...</p>
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 max-w-lg ml-auto">
       <div className="grid grid-cols-2 gap-4">
         {([
           ['nameAr', 'اسم الشركة (عربي)'],
@@ -246,7 +246,7 @@ function ImportTab() {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">حدد الفترة الزمنية للبيانات</p>
-              <div className="max-w-xs">
+              <div className="max-w-xs ml-auto">
                 <Label>الفترة (YYYY-MM)</Label>
                 <Input value={period} onChange={(e) => setPeriod(e.target.value)} className="mt-1" placeholder="2026-04" />
               </div>
@@ -675,8 +675,8 @@ function NotificationsTab() {
   }
 
   return (
-    <Tabs defaultValue="email" className="space-y-6">
-      <TabsList className="flex-wrap h-auto gap-1">
+      <Tabs defaultValue="email" className="space-y-6">
+      <TabsList className="flex-wrap h-auto gap-1 w-full justify-end">
         <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> البريد والتذكيرات</TabsTrigger>
         <TabsTrigger value="telegram" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> تيليجرام</TabsTrigger>
       </TabsList>
@@ -686,7 +686,7 @@ function NotificationsTab() {
           <CardHeader>
             <CardTitle className="text-base">إعدادات البريد والتقارير</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5 max-w-3xl">
+          <CardContent className="space-y-5 max-w-3xl ml-auto">
             <div className="space-y-1.5">
               <Label>البريد الإلكتروني للمشرف</Label>
               <Input
@@ -846,7 +846,7 @@ function NotificationsTab() {
             <CardTitle className="text-base">Webhook تيليجرام</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-1.5 max-w-xl">
+            <div className="space-y-1.5 max-w-xl ml-auto">
               <Label>رابط التطبيق الأساسي (App URL)</Label>
               <Input value={appUrl} onChange={(e) => setAppUrl(e.target.value)} placeholder="https://your-domain.com" />
             </div>
@@ -974,11 +974,11 @@ function NotificationsTab() {
 export default function SettingsSection() {
   return (
     <div dir="rtl" className="p-6 space-y-6 text-right">
-      <h1 className="text-2xl font-bold flex items-center gap-2">
+      <h1 className="text-2xl font-bold flex items-center justify-end gap-2 text-right">
         <Settings className="h-6 w-6" /> الإعدادات العامة
       </h1>
       <Tabs defaultValue="company">
-        <TabsList className="flex-wrap h-auto gap-1">
+        <TabsList className="flex-wrap h-auto gap-1 w-full justify-end">
           <TabsTrigger value="company" className="gap-1.5"><Building className="h-3.5 w-3.5" /> الشركة</TabsTrigger>
           <TabsTrigger value="dashboard" className="gap-1.5"><LayoutDashboard className="h-3.5 w-3.5" /> لوحة التحكم</TabsTrigger>
           <TabsTrigger value="import" className="gap-1.5"><Upload className="h-3.5 w-3.5" /> استيراد البيانات</TabsTrigger>
@@ -1015,7 +1015,7 @@ function DashboardSettingsTab() {
   const [defaultMonth, setDefaultMonth] = useState(new Date().getMonth() + 1)
   const { toast } = useToast()
   return (
-    <div className="space-y-4 max-w-md">
+    <div className="space-y-4 max-w-md ml-auto">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>السنة الافتراضية</Label>
