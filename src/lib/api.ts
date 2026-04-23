@@ -11,6 +11,7 @@ import type {
   KPIActual,
   Company,
   ApiResponse,
+  ApiError,
   ImportType,
 } from './types'
 
@@ -35,7 +36,11 @@ async function apiFetch<T>(
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
   })
-  return res.json() as Promise<ApiResponse<T>>
+  const data = (await res.json()) as ApiResponse<T>
+  if (!data.success) {
+    throw new Error((data as ApiError).error ?? `HTTP ${res.status}`)
+  }
+  return data
 }
 
 // ─── COMPANY ───────────────────────────────────────────────

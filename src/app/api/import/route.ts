@@ -159,20 +159,31 @@ async function processRow(type: string, row: Record<string, string>) {
       break
     }
     case 'employees': {
-      await db.employee.upsert({
-        where: { email: row.email || '__no_email__' },
-        create: {
-          nameAr: row.nameAr,
-          nameEn: row.nameEn || undefined,
-          email: row.email || undefined,
-          department: row.department || undefined,
-        },
-        update: {
-          nameAr: row.nameAr,
-          nameEn: row.nameEn || undefined,
-          department: row.department || undefined,
-        },
-      })
+      const empEmail = row.email || undefined
+      if (empEmail) {
+        await db.employee.upsert({
+          where: { email: empEmail },
+          create: {
+            nameAr: row.nameAr,
+            nameEn: row.nameEn || undefined,
+            email: empEmail,
+            department: row.department || undefined,
+          },
+          update: {
+            nameAr: row.nameAr,
+            nameEn: row.nameEn || undefined,
+            department: row.department || undefined,
+          },
+        })
+      } else {
+        await db.employee.create({
+          data: {
+            nameAr: row.nameAr,
+            nameEn: row.nameEn || undefined,
+            department: row.department || undefined,
+          },
+        })
+      }
       break
     }
     case 'kpi_actuals': {

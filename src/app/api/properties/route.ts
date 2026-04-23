@@ -83,7 +83,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const raw = await req.json()
+    const body = {
+      ...raw,
+      nameEn: raw.nameEn || undefined,
+      location: raw.location || undefined,
+      managerId: raw.managerId || undefined,
+    }
     const property = await db.property.create({ data: body })
     return NextResponse.json({ success: true, data: property }, { status: 201 })
   } catch (e) {

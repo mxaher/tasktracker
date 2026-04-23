@@ -245,28 +245,6 @@ model AdminSettings {
   updatedAt              DateTime @updatedAt
 }
 
-// Telegram bot linked accounts
-model TelegramUser {
-  id        String   @id @default(cuid())
-  chatId    String   @unique
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-// Audit trail for inbound Telegram messages
-model TelegramLog {
-  id         String   @id @default(cuid())
-  chatId     String
-  rawMessage String
-  parsed     Boolean
-  parseError String?
-  taskId     String?
-  createdAt  DateTime @default(now())
-
-  @@index([chatId, createdAt])
-}
-
 // Scheduled reminders with specific dates
 model ScheduledReminder {
   id          String   @id @default(cuid())

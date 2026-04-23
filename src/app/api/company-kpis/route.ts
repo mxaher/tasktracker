@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const raw = await req.json()
+    const body = { ...raw, nameEn: raw.nameEn || undefined }
     const kpi = await db.companyKPI.create({ data: body })
     return NextResponse.json({ success: true, data: kpi }, { status: 201 })
   } catch (e) {

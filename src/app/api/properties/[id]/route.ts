@@ -25,7 +25,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const body = await req.json()
+    const raw = await req.json()
+    const body = {
+      ...raw,
+      nameEn: raw.nameEn || undefined,
+      location: raw.location || undefined,
+      managerId: raw.managerId || undefined,
+    }
     const property = await db.property.update({ where: { id }, data: body })
     return NextResponse.json({ success: true, data: property })
   } catch (e) {

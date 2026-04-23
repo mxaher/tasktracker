@@ -24,7 +24,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const { propertyIds, ...data } = await req.json()
+    const { propertyIds, ...raw } = await req.json()
+    const data = {
+      ...raw,
+      nameEn: raw.nameEn || undefined,
+      email: raw.email || undefined,
+      department: raw.department || undefined,
+    }
     const employee = await db.$transaction(async (tx) => {
       if (propertyIds !== undefined) {
         await tx.employeeProperty.deleteMany({ where: { employeeId: id } })

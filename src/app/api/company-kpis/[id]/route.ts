@@ -4,7 +4,8 @@ import { db } from '@/lib/db'
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const body = await req.json()
+    const raw = await req.json()
+    const body = { ...raw, nameEn: raw.nameEn || undefined }
     const kpi = await db.companyKPI.update({ where: { id }, data: body })
     return NextResponse.json({ success: true, data: kpi })
   } catch (e) {

@@ -30,7 +30,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { propertyIds, ...data } = await req.json()
+    const { propertyIds, ...raw } = await req.json()
+    const data = {
+      ...raw,
+      nameEn: raw.nameEn || undefined,
+      email: raw.email || undefined,
+      department: raw.department || undefined,
+    }
     const employee = await db.employee.create({
       data: {
         ...data,
