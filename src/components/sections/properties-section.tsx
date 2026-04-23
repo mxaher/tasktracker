@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/lib/store'
-import { propertiesApi } from '@/lib/api'
-import type { Property, PropertyType } from '@/lib/types'
+import { propertiesApi, employeesApi } from '@/lib/api'
+import type { Property, PropertyType, Employee } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -59,7 +59,7 @@ function ProgressBar({ value, className }: { value: number; className?: string }
 }
 
 const emptyForm = {
-  code: '', nameAr: '', nameEn: '', type: 'commercial_market', location: '', totalUnits: 0,
+  code: '', nameAr: '', nameEn: '', type: 'commercial_market', location: '', totalUnits: 0, managerId: '' as string | null,
 }
 
 export default function PropertiesSection() {
@@ -80,6 +80,14 @@ export default function PropertiesSection() {
     },
   })
 
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees', 'active'],
+    queryFn: async () => {
+      const res = await employeesApi.list({ active: true })
+      return res.success ? res.data : []
+    },
+  })
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => propertiesApi.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['properties'] }); toast({ title: 'تم الحذف' }) },
@@ -87,7 +95,7 @@ export default function PropertiesSection() {
 
   const saveMutation = useMutation({
     mutationFn: (data: typeof emptyForm) => {
-      const typed = { ...data, type: data.type as PropertyType }
+      const typed = { ...data, type: data.type as PropertyType, managerId: data.managerId || null }
       return editingProperty ? propertiesApi.update(editingProperty.id, typed) : propertiesApi.create(typed)
     },
     onSuccess: () => {
@@ -116,7 +124,15 @@ export default function PropertiesSection() {
   const openCreate = () => { setEditingProperty(null); setForm(emptyForm); setShowForm(true) }
   const openEdit = (p: Property) => {
     setEditingProperty(p)
-    setForm({ code: p.code, nameAr: p.nameAr, nameEn: p.nameEn ?? '', type: p.type, location: p.location ?? '', totalUnits: p.totalUnits })
+    setForm({
+      code: p.code,
+      nameAr: p.nameAr,
+      nameEn: p.nameEn ?? '',
+      type: p.type,
+      location: p.location ?? '',
+      totalUnits: p.totalUnits,
+      managerId: p.managerId ?? '',
+    })
     setShowForm(true)
   }
 
@@ -277,6 +293,20 @@ export default function PropertiesSection() {
                 onChange={(e) => setForm((f) => ({ ...f, totalUnits: parseInt(e.target.value) || 0 }))}
                 className="h-8 text-sm"
               />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">مدير العقار</Label>
+              <Select value={form.managerId || 'none'} onValueChange={(v) => setForm((f) => ({ ...f, managerId: v === 'none' ? null : v }))}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="اختر مديراً" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">بدون مدير</SelectItem>
+                  {employees.map((emp: Employee) => (
+                    <SelectItem key={emp.id} value={emp.id}>{emp.nameAr}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

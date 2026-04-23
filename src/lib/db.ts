@@ -25,49 +25,39 @@ type D1Binding = ConstructorParameters<typeof PrismaD1>[0];
 const globalForPrisma = globalThis as GlobalPrisma;
 
 function getCloudflareD1Binding(): D1Binding | undefined {
+  // 1. Try getCloudflareContext (standard for OpenNext)
   try {
     const context = getCloudflareContext();
-    const binding = (context.env as { DB?: D1Binding }).DB;
-    if (binding) return binding;
+    if (context?.env?.DB) return context.env.DB as D1Binding;
   } catch {}
 
-  try {
-    const globalWithEnv = globalThis as typeof globalThis & {
-      process?: { env?: { DB?: D1Binding } };
-    };
-    const binding = globalWithEnv.process?.env?.DB as D1Binding | undefined;
-    if (binding) return binding;
-  } catch {}
+  // 2. Try global process.env (for some local dev or older OpenNext)
+  const globalAny = globalThis as any;
+  if (globalAny.process?.env?.DB) return globalAny.process.env.DB;
+  
+  // 3. Try platform-specific globals
+  if (globalAny.DB) return globalAny.DB;
 
   return undefined;
 }
 
-function createLocalPrismaClient() {
-  return new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  });
-}
-
-function createCloudflarePrismaClient(database: D1Binding) {
-  const adapter = new PrismaD1(database);
-  return new PrismaClient({ adapter });
-}
-
 export function getDb() {
   const cloudflareDb = getCloudflareD1Binding();
-  const runningInCloudflare =
-    typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
-
+  
   if (cloudflareDb) {
-    globalForPrisma.cloudflarePrisma ??= createCloudflarePrismaClient(cloudflareDb);
+    if (!globalForPrisma.cloudflarePrisma) {
+      const adapter = new PrismaD1(cloudflareDb);
+      globalForPrisma.cloudflarePrisma = new PrismaClient({ adapter });
+    }
     return globalForPrisma.cloudflarePrisma;
   }
 
-  if (runningInCloudflare) {
-    throw new Error("Cloudflare DB binding was not found in the request context.");
+  // Fallback to local SQLite for local development
+  if (!globalForPrisma.localPrisma) {
+    globalForPrisma.localPrisma = new PrismaClient({
+      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    });
   }
-
-  globalForPrisma.localPrisma ??= createLocalPrismaClient();
   return globalForPrisma.localPrisma;
 }
 

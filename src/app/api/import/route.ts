@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
 
     // Parse CSV
     const text = await file.text()
-    const lines = text.trim().split('\n')
+    const cleanText = text.replace(/^\uFEFF/, '')
+    const lines = cleanText.split(/\r?\n/)
     const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''))
     const rows = lines.slice(1).filter((l) => l.trim())
 
@@ -33,16 +34,35 @@ export async function POST(req: NextRequest) {
     const errors: string[] = []
 
     for (let i = 0; i < rows.length; i++) {
-      const cols = rows[i].split(',').map((c) => c.trim().replace(/^"|"$/g, ''))
+      const line = rows[i]
+      // Simple CSV split that handles quotes
+      const cols: string[] = []
+      let current = ''
+      let inQuotes = false
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j]
+        if (char === '"') inQuotes = !inQuotes
+        else if (char === ',' && !inQuotes) {
+          cols.push(current.trim().replace(/^"|"$/g, ''))
+          current = ''
+        } else current += char
+      }
+      cols.push(current.trim().replace(/^"|"$/g, ''))
+
       const row: Record<string, string> = {}
-      headers.forEach((h, idx) => { row[h] = cols[idx] ?? '' })
+      headers.forEach((h, idx) => {
+        if (h) row[h] = cols[idx] ?? ''
+      })
 
       try {
+        if (Object.keys(row).length === 0) continue
         await processRow(type, row)
         imported++
       } catch (e) {
         failed++
-        errors.push(`Row ${i + 2}: ${e}`)
+        const errorMsg = e instanceof Error ? e.message : String(e)
+        errors.push(`Row ${i + 2}: ${errorMsg}`)
+        console.error(`Import error at row ${i + 2}:`, e)
       }
     }
 
@@ -69,15 +89,17 @@ async function processRow(type: string, row: Record<string, string>) {
         create: {
           code: row.code,
           nameAr: row.nameAr,
-          type: row.type ?? 'commercial_market',
+          nameEn: row.nameEn || undefined,
+          type: row.type || 'commercial_market',
           location: row.location || undefined,
           totalUnits: row.totalUnits ? parseInt(row.totalUnits) : 0,
         },
         update: {
           nameAr: row.nameAr,
-          type: row.type,
+          nameEn: row.nameEn || undefined,
+          type: row.type || undefined,
           location: row.location || undefined,
-          totalUnits: row.totalUnits ? parseInt(row.totalUnits) : 0,
+          totalUnits: row.totalUnits ? parseInt(row.totalUnits) : undefined,
         },
       })
       break
@@ -97,12 +119,12 @@ async function processRow(type: string, row: Record<string, string>) {
           propertyId: property.id,
           year: parseInt(row.year),
           month: parseInt(row.month),
-          collected: parseFloat(row.collected),
+          collected: parseFloat(row.collected || '0'),
           invoiced: row.invoiced ? parseFloat(row.invoiced) : 0,
         },
         update: {
-          collected: parseFloat(row.collected),
-          invoiced: row.invoiced ? parseFloat(row.invoiced) : 0,
+          collected: row.collected ? parseFloat(row.collected) : undefined,
+          invoiced: row.invoiced ? parseFloat(row.invoiced) : undefined,
         },
       })
       break
@@ -122,16 +144,16 @@ async function processRow(type: string, row: Record<string, string>) {
           propertyId: property.id,
           year: parseInt(row.year),
           month: parseInt(row.month),
-          bucket0to20: parseFloat(row.bucket0to20 ?? '0'),
-          bucket21to60: parseFloat(row.bucket21to60 ?? '0'),
-          bucket61to90: parseFloat(row.bucket61to90 ?? '0'),
-          bucketOver90: parseFloat(row.bucketOver90 ?? '0'),
+          bucket0to20: parseFloat(row.bucket0to20 || '0'),
+          bucket21to60: parseFloat(row.bucket21to60 || '0'),
+          bucket61to90: parseFloat(row.bucket61to90 || '0'),
+          bucketOver90: parseFloat(row.bucketOver90 || '0'),
         },
         update: {
-          bucket0to20: parseFloat(row.bucket0to20 ?? '0'),
-          bucket21to60: parseFloat(row.bucket21to60 ?? '0'),
-          bucket61to90: parseFloat(row.bucket61to90 ?? '0'),
-          bucketOver90: parseFloat(row.bucketOver90 ?? '0'),
+          bucket0to20: row.bucket0to20 ? parseFloat(row.bucket0to20) : undefined,
+          bucket21to60: row.bucket21to60 ? parseFloat(row.bucket21to60) : undefined,
+          bucket61to90: row.bucket61to90 ? parseFloat(row.bucket61to90) : undefined,
+          bucketOver90: row.bucketOver90 ? parseFloat(row.bucketOver90) : undefined,
         },
       })
       break
@@ -141,11 +163,13 @@ async function processRow(type: string, row: Record<string, string>) {
         where: { email: row.email || '__no_email__' },
         create: {
           nameAr: row.nameAr,
+          nameEn: row.nameEn || undefined,
           email: row.email || undefined,
           department: row.department || undefined,
         },
         update: {
           nameAr: row.nameAr,
+          nameEn: row.nameEn || undefined,
           department: row.department || undefined,
         },
       })
@@ -171,9 +195,9 @@ async function processRow(type: string, row: Record<string, string>) {
           kpiId: kpi.id,
           year: parseInt(row.year),
           month: parseInt(row.month),
-          actual: parseFloat(row.actual),
+          actual: parseFloat(row.actual || '0'),
         },
-        update: { actual: parseFloat(row.actual) },
+        update: { actual: row.actual ? parseFloat(row.actual) : undefined },
       })
       break
     }
