@@ -57,16 +57,16 @@ export interface EmployeePosition {
 export interface Employee {
   id: string
   nameAr: string
-  nameEn?: string
-  email?: string
-  positionId?: string
+  nameEn?: string | null
+  email?: string | null
+  positionId?: string | null
   position?: EmployeePosition
-  department?: string
-  managedById?: string
-  managedBy?: Pick<Employee, 'id' | 'nameAr'>
+  department?: string | null
+  managedById?: string | null
+  managedBy?: Pick<Employee, 'id' | 'nameAr'> | null
   isActive: boolean
-  joinedAt?: string
-  userId?: string
+  joinedAt?: string | null
+  userId?: string | null
   createdAt: string
   updatedAt: string
   properties?: Property[]
@@ -81,12 +81,12 @@ export interface Property {
   id: string
   code: string
   nameAr: string
-  nameEn?: string
+  nameEn?: string | null
   type: PropertyType
-  location?: string
+  location?: string | null
   totalUnits: number
-  managerId?: string
-  manager?: Pick<Employee, 'id' | 'nameAr'>
+  managerId?: string | null
+  manager?: Pick<Employee, 'id' | 'nameAr'> | null
   occupancyRate: number
   isActive: boolean
   createdAt: string
