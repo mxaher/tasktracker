@@ -294,7 +294,7 @@ function ImportTab() {
               <div className="overflow-x-auto rounded border">
                 <table className="w-full text-xs">
                   <thead className="bg-muted/50">
-                    <tr>{preview[0].map((h, i) => <th key={i} className="px-3 py-2 text-start font-medium">{h}</th>)}</tr>
+                    <tr>{preview[0].map((h, i) => <th key={i} className="px-3 py-2 text-right font-medium">{h}</th>)}</tr>
                   </thead>
                   <tbody>
                     {preview.slice(1).map((row, ri) => (
@@ -345,12 +345,12 @@ function ImportTab() {
               <table className="w-full text-sm">
                 <thead className="border-b">
                   <tr>
-                    <th className="text-start py-2 px-3">النوع</th>
-                    <th className="text-start py-2 px-3 hidden md:table-cell">الملف</th>
-                    <th className="text-start py-2 px-3">الفترة</th>
-                    <th className="text-end py-2 px-3">الصفوف</th>
-                    <th className="text-end py-2 px-3">الحالة</th>
-                    <th className="text-end py-2 px-3 hidden md:table-cell">التاريخ</th>
+                    <th className="text-right py-2 px-3">النوع</th>
+                    <th className="text-right py-2 px-3 hidden md:table-cell">الملف</th>
+                    <th className="text-right py-2 px-3">الفترة</th>
+                    <th className="text-right py-2 px-3">الصفوف</th>
+                    <th className="text-right py-2 px-3">الحالة</th>
+                    <th className="text-right py-2 px-3 hidden md:table-cell">التاريخ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -359,13 +359,13 @@ function ImportTab() {
                       <td className="py-2 px-3">{IMPORT_TYPES[r.type as ImportType] ?? r.type}</td>
                       <td className="py-2 px-3 hidden md:table-cell text-muted-foreground text-xs truncate max-w-[150px]">{r.filename}</td>
                       <td className="py-2 px-3 text-muted-foreground text-xs">{r.period ?? '—'}</td>
-                      <td className="py-2 px-3 text-end">{r.rowCount}</td>
-                      <td className="py-2 px-3 text-end">
+                      <td className="py-2 px-3 text-right">{r.rowCount}</td>
+                      <td className="py-2 px-3 text-right">
                         <span className={`text-xs font-medium ${STATUS_COLOR[r.status] ?? ''}`}>
                           {STATUS_LABEL[r.status] ?? r.status}
                         </span>
                       </td>
-                      <td className="py-2 px-3 text-end text-muted-foreground text-xs hidden md:table-cell">
+                      <td className="py-2 px-3 text-right text-muted-foreground text-xs hidden md:table-cell">
                         {format(new Date(r.createdAt), 'yyyy/MM/dd')}
                       </td>
                     </tr>
@@ -812,19 +812,19 @@ function NotificationsTab() {
 
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => saveSettingsMutation.mutate()} disabled={saveSettingsMutation.isPending}>
-                {saveSettingsMutation.isPending ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                {saveSettingsMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
                 حفظ إعدادات الإشعارات
               </Button>
               <Button variant="outline" onClick={handleSendTestEmail} disabled={sendingTest || !settings.adminEmail}>
-                {sendingTest ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                {sendingTest ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
                 إرسال اختبار بريد
               </Button>
               <Button variant="outline" onClick={handleSendTaskReminders} disabled={sendingTaskReminders}>
-                {sendingTaskReminders ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                {sendingTaskReminders ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
                 إرسال تذكيرات المهام الآن
               </Button>
               <Button variant="outline" onClick={handleSendOwnerReminderNow} disabled={sendingOwnerRemindersNow}>
-                {sendingOwnerRemindersNow ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                {sendingOwnerRemindersNow ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
                 تشغيل تذكيرات واتساب الآن
               </Button>
             </div>
@@ -852,7 +852,7 @@ function NotificationsTab() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => setupWebhookMutation.mutate()} disabled={setupWebhookMutation.isPending || !appUrl}>
-                {setupWebhookMutation.isPending ? <RefreshCw className="h-4 w-4 ml-2 animate-spin" /> : null}
+                {setupWebhookMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
                 إعداد Webhook تلقائيًا
               </Button>
               <Button variant="outline" onClick={() => refetchWebhookInfo()}>
@@ -888,7 +888,7 @@ function NotificationsTab() {
                 onClick={() => linkAccountMutation.mutate()}
                 disabled={linkAccountMutation.isPending || !chatId || !selectedUserId}
               >
-                <Link2 className="h-4 w-4 ml-2" />
+                <Link2 className="h-4 w-4 mr-2" />
                 ربط
               </Button>
             </div>
@@ -897,10 +897,10 @@ function NotificationsTab() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="text-start px-3 py-2">Chat ID</th>
-                    <th className="text-start px-3 py-2">المستخدم</th>
-                    <th className="text-start px-3 py-2">التاريخ</th>
-                    <th className="text-end px-3 py-2">إجراء</th>
+                    <th className="text-right px-3 py-2">Chat ID</th>
+                    <th className="text-right px-3 py-2">المستخدم</th>
+                    <th className="text-right px-3 py-2">التاريخ</th>
+                    <th className="text-right px-3 py-2">إجراء</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -909,7 +909,7 @@ function NotificationsTab() {
                       <td className="px-3 py-2 font-mono text-xs">{a.chatId}</td>
                       <td className="px-3 py-2">{a.user.name || a.user.email}</td>
                       <td className="px-3 py-2 text-muted-foreground text-xs">{format(new Date(a.createdAt), 'yyyy/MM/dd')}</td>
-                      <td className="px-3 py-2 text-end">
+                      <td className="px-3 py-2 text-right">
                         <Button variant="ghost" size="sm" onClick={() => unlinkAccountMutation.mutate(a.id)}>
                           <Unlink className="h-4 w-4" />
                         </Button>
@@ -936,10 +936,10 @@ function NotificationsTab() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="text-start px-3 py-2">Chat</th>
-                    <th className="text-start px-3 py-2">الرسالة</th>
-                    <th className="text-start px-3 py-2">الحالة</th>
-                    <th className="text-start px-3 py-2">التاريخ</th>
+                    <th className="text-right px-3 py-2">Chat</th>
+                    <th className="text-right px-3 py-2">الرسالة</th>
+                    <th className="text-right px-3 py-2">الحالة</th>
+                    <th className="text-right px-3 py-2">التاريخ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -973,7 +973,7 @@ function NotificationsTab() {
 // ─── MAIN SETTINGS SECTION ─────────────────────────────────
 export default function SettingsSection() {
   return (
-    <div className="p-6 space-y-6">
+    <div dir="rtl" className="p-6 space-y-6 text-right">
       <h1 className="text-2xl font-bold flex items-center gap-2">
         <Settings className="h-6 w-6" /> الإعدادات العامة
       </h1>
