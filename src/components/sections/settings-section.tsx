@@ -126,6 +126,7 @@ interface ImportHistoryRow {
 
 function ImportTab() {
   const { toast } = useToast()
+  const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
   const [step, setStep] = useState(1)
   const [importType, setImportType] = useState<ImportType | ''>('')
@@ -166,6 +167,10 @@ function ImportTab() {
         setResult({ status: res.data.status, rowCount: res.data.rowCount, errorLog: res.data.errorLog })
         setStep(6)
         refetchHistory()
+        // Invalidate related caches so tables reflect imported data
+        qc.invalidateQueries({ queryKey: ['properties'] })
+        qc.invalidateQueries({ queryKey: ['employees'] })
+        qc.invalidateQueries({ queryKey: ['kpis'] })
       } else {
         toast({ title: 'خطأ في الاستيراد', description: res.error, variant: 'destructive' })
       }

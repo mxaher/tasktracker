@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDb } from '@/lib/db'
 
+
+
+export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
+  const db = getDb()
   try {
     const form = await req.formData()
     const file = form.get('file') as File | null
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
 
       try {
         if (Object.keys(row).length === 0) continue
-        await processRow(type, row)
+        await processRow(type, row, db)
         imported++
       } catch (e) {
         failed++
@@ -81,7 +85,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function processRow(type: string, row: Record<string, string>) {
+async function processRow(type: string, row: Record<string, string>, db: ReturnType<typeof getDb>) {
   switch (type) {
     case 'properties': {
       await db.property.upsert({

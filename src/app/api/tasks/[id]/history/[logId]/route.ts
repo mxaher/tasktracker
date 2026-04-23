@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { d1First, d1Run } from "@/lib/cloudflare-d1";
 
+
+
+export const dynamic = 'force-dynamic'
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; logId: string }> },

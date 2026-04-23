@@ -3831,12 +3831,14 @@ export namespace Prisma {
    */
 
   export type TaskCountOutputType = {
+    children: number
     auditLogs: number
     notifications: number
     updates: number
   }
 
   export type TaskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    children?: boolean | TaskCountOutputTypeCountChildrenArgs
     auditLogs?: boolean | TaskCountOutputTypeCountAuditLogsArgs
     notifications?: boolean | TaskCountOutputTypeCountNotificationsArgs
     updates?: boolean | TaskCountOutputTypeCountUpdatesArgs
@@ -3851,6 +3853,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the TaskCountOutputType
      */
     select?: TaskCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TaskCountOutputType without action
+   */
+  export type TaskCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskWhereInput
   }
 
   /**
@@ -5602,6 +5611,7 @@ export namespace Prisma {
     sourceMonth: string | null
     source: string | null
     dataSourceId: string | null
+    parentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5630,6 +5640,7 @@ export namespace Prisma {
     sourceMonth: string | null
     source: string | null
     dataSourceId: string | null
+    parentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5658,6 +5669,7 @@ export namespace Prisma {
     sourceMonth: number
     source: number
     dataSourceId: number
+    parentId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5696,6 +5708,7 @@ export namespace Prisma {
     sourceMonth?: true
     source?: true
     dataSourceId?: true
+    parentId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5724,6 +5737,7 @@ export namespace Prisma {
     sourceMonth?: true
     source?: true
     dataSourceId?: true
+    parentId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5752,6 +5766,7 @@ export namespace Prisma {
     sourceMonth?: true
     source?: true
     dataSourceId?: true
+    parentId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5867,6 +5882,7 @@ export namespace Prisma {
     sourceMonth: string | null
     source: string | null
     dataSourceId: string | null
+    parentId: string | null
     createdAt: Date
     updatedAt: Date
     _count: TaskCountAggregateOutputType | null
@@ -5914,11 +5930,14 @@ export namespace Prisma {
     sourceMonth?: boolean
     source?: boolean
     dataSourceId?: boolean
+    parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
+    children?: boolean | Task$childrenArgs<ExtArgs>
     auditLogs?: boolean | Task$auditLogsArgs<ExtArgs>
     notifications?: boolean | Task$notificationsArgs<ExtArgs>
     updates?: boolean | Task$updatesArgs<ExtArgs>
@@ -5949,11 +5968,13 @@ export namespace Prisma {
     sourceMonth?: boolean
     source?: boolean
     dataSourceId?: boolean
+    parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
   }, ExtArgs["result"]["task"]>
 
   export type TaskSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -5980,11 +6001,13 @@ export namespace Prisma {
     sourceMonth?: boolean
     source?: boolean
     dataSourceId?: boolean
+    parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
   }, ExtArgs["result"]["task"]>
 
   export type TaskSelectScalar = {
@@ -6011,15 +6034,18 @@ export namespace Prisma {
     sourceMonth?: boolean
     source?: boolean
     dataSourceId?: boolean
+    parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "taskId" | "title" | "description" | "sentdmMessageId" | "lastReminderSentAt" | "ownerId" | "assigneeId" | "department" | "priority" | "status" | "strategicPillar" | "completion" | "riskIndicator" | "startDate" | "dueDate" | "completedAt" | "notes" | "nextStep" | "ceoNotes" | "sourceMonth" | "source" | "dataSourceId" | "createdAt" | "updatedAt", ExtArgs["result"]["task"]>
+  export type TaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "taskId" | "title" | "description" | "sentdmMessageId" | "lastReminderSentAt" | "ownerId" | "assigneeId" | "department" | "priority" | "status" | "strategicPillar" | "completion" | "riskIndicator" | "startDate" | "dueDate" | "completedAt" | "notes" | "nextStep" | "ceoNotes" | "sourceMonth" | "source" | "dataSourceId" | "parentId" | "createdAt" | "updatedAt", ExtArgs["result"]["task"]>
   export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
+    children?: boolean | Task$childrenArgs<ExtArgs>
     auditLogs?: boolean | Task$auditLogsArgs<ExtArgs>
     notifications?: boolean | Task$notificationsArgs<ExtArgs>
     updates?: boolean | Task$updatesArgs<ExtArgs>
@@ -6029,11 +6055,13 @@ export namespace Prisma {
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
   }
   export type TaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | Task$ownerArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     dataSource?: boolean | Task$dataSourceArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
   }
 
   export type $TaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6042,6 +6070,8 @@ export namespace Prisma {
       owner: Prisma.$UserPayload<ExtArgs> | null
       assignee: Prisma.$UserPayload<ExtArgs> | null
       dataSource: Prisma.$DataSourcePayload<ExtArgs> | null
+      parent: Prisma.$TaskPayload<ExtArgs> | null
+      children: Prisma.$TaskPayload<ExtArgs>[]
       auditLogs: Prisma.$TaskAuditLogPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       updates: Prisma.$TaskUpdatePayload<ExtArgs>[]
@@ -6070,6 +6100,7 @@ export namespace Prisma {
       sourceMonth: string | null
       source: string | null
       dataSourceId: string | null
+      parentId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["task"]>
@@ -6469,6 +6500,8 @@ export namespace Prisma {
     owner<T extends Task$ownerArgs<ExtArgs> = {}>(args?: Subset<T, Task$ownerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     assignee<T extends Task$assigneeArgs<ExtArgs> = {}>(args?: Subset<T, Task$assigneeArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     dataSource<T extends Task$dataSourceArgs<ExtArgs> = {}>(args?: Subset<T, Task$dataSourceArgs<ExtArgs>>): Prisma__DataSourceClient<$Result.GetResult<Prisma.$DataSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    parent<T extends Task$parentArgs<ExtArgs> = {}>(args?: Subset<T, Task$parentArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    children<T extends Task$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Task$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     auditLogs<T extends Task$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, Task$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends Task$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Task$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     updates<T extends Task$updatesArgs<ExtArgs> = {}>(args?: Subset<T, Task$updatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskUpdatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -6524,6 +6557,7 @@ export namespace Prisma {
     readonly sourceMonth: FieldRef<"Task", 'String'>
     readonly source: FieldRef<"Task", 'String'>
     readonly dataSourceId: FieldRef<"Task", 'String'>
+    readonly parentId: FieldRef<"Task", 'String'>
     readonly createdAt: FieldRef<"Task", 'DateTime'>
     readonly updatedAt: FieldRef<"Task", 'DateTime'>
   }
@@ -6974,6 +7008,49 @@ export namespace Prisma {
      */
     include?: DataSourceInclude<ExtArgs> | null
     where?: DataSourceWhereInput
+  }
+
+  /**
+   * Task.parent
+   */
+  export type Task$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+  }
+
+  /**
+   * Task.children
+   */
+  export type Task$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Task
+     */
+    omit?: TaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    cursor?: TaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
   }
 
   /**
@@ -14857,6 +14934,9 @@ export namespace Prisma {
     overdueReminderEnabled: boolean | null
     customReminderDates: string | null
     reminderDaysBefore: number | null
+    whatsappOwnerRemindersEnabled: boolean | null
+    whatsappReminderOffsets: string | null
+    whatsappReminderTemplate: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14875,6 +14955,9 @@ export namespace Prisma {
     overdueReminderEnabled: boolean | null
     customReminderDates: string | null
     reminderDaysBefore: number | null
+    whatsappOwnerRemindersEnabled: boolean | null
+    whatsappReminderOffsets: string | null
+    whatsappReminderTemplate: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14893,6 +14976,9 @@ export namespace Prisma {
     overdueReminderEnabled: number
     customReminderDates: number
     reminderDaysBefore: number
+    whatsappOwnerRemindersEnabled: number
+    whatsappReminderOffsets: number
+    whatsappReminderTemplate: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -14923,6 +15009,9 @@ export namespace Prisma {
     overdueReminderEnabled?: true
     customReminderDates?: true
     reminderDaysBefore?: true
+    whatsappOwnerRemindersEnabled?: true
+    whatsappReminderOffsets?: true
+    whatsappReminderTemplate?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -14941,6 +15030,9 @@ export namespace Prisma {
     overdueReminderEnabled?: true
     customReminderDates?: true
     reminderDaysBefore?: true
+    whatsappOwnerRemindersEnabled?: true
+    whatsappReminderOffsets?: true
+    whatsappReminderTemplate?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -14959,6 +15051,9 @@ export namespace Prisma {
     overdueReminderEnabled?: true
     customReminderDates?: true
     reminderDaysBefore?: true
+    whatsappOwnerRemindersEnabled?: true
+    whatsappReminderOffsets?: true
+    whatsappReminderTemplate?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -15064,6 +15159,9 @@ export namespace Prisma {
     overdueReminderEnabled: boolean
     customReminderDates: string | null
     reminderDaysBefore: number
+    whatsappOwnerRemindersEnabled: boolean
+    whatsappReminderOffsets: string
+    whatsappReminderTemplate: string
     createdAt: Date
     updatedAt: Date
     _count: AdminSettingsCountAggregateOutputType | null
@@ -15101,6 +15199,9 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: boolean
     reminderDaysBefore?: boolean
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: boolean
+    whatsappReminderTemplate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["adminSettings"]>
@@ -15119,6 +15220,9 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: boolean
     reminderDaysBefore?: boolean
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: boolean
+    whatsappReminderTemplate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["adminSettings"]>
@@ -15137,6 +15241,9 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: boolean
     reminderDaysBefore?: boolean
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: boolean
+    whatsappReminderTemplate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["adminSettings"]>
@@ -15155,11 +15262,14 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: boolean
     reminderDaysBefore?: boolean
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: boolean
+    whatsappReminderTemplate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type AdminSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "adminEmail" | "dailyDigestEnabled" | "dailyDigestTime" | "weeklyReportEnabled" | "weeklyReportDay" | "weeklyReportTime" | "inProgressReportEnabled" | "inProgressReportFrequency" | "taskReminderEnabled" | "overdueReminderEnabled" | "customReminderDates" | "reminderDaysBefore" | "createdAt" | "updatedAt", ExtArgs["result"]["adminSettings"]>
+  export type AdminSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "adminEmail" | "dailyDigestEnabled" | "dailyDigestTime" | "weeklyReportEnabled" | "weeklyReportDay" | "weeklyReportTime" | "inProgressReportEnabled" | "inProgressReportFrequency" | "taskReminderEnabled" | "overdueReminderEnabled" | "customReminderDates" | "reminderDaysBefore" | "whatsappOwnerRemindersEnabled" | "whatsappReminderOffsets" | "whatsappReminderTemplate" | "createdAt" | "updatedAt", ExtArgs["result"]["adminSettings"]>
 
   export type $AdminSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AdminSettings"
@@ -15178,6 +15288,9 @@ export namespace Prisma {
       overdueReminderEnabled: boolean
       customReminderDates: string | null
       reminderDaysBefore: number
+      whatsappOwnerRemindersEnabled: boolean
+      whatsappReminderOffsets: string
+      whatsappReminderTemplate: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["adminSettings"]>
@@ -15616,6 +15729,9 @@ export namespace Prisma {
     readonly overdueReminderEnabled: FieldRef<"AdminSettings", 'Boolean'>
     readonly customReminderDates: FieldRef<"AdminSettings", 'String'>
     readonly reminderDaysBefore: FieldRef<"AdminSettings", 'Int'>
+    readonly whatsappOwnerRemindersEnabled: FieldRef<"AdminSettings", 'Boolean'>
+    readonly whatsappReminderOffsets: FieldRef<"AdminSettings", 'String'>
+    readonly whatsappReminderTemplate: FieldRef<"AdminSettings", 'String'>
     readonly createdAt: FieldRef<"AdminSettings", 'DateTime'>
     readonly updatedAt: FieldRef<"AdminSettings", 'DateTime'>
   }
@@ -42180,6 +42296,7 @@ export namespace Prisma {
     sourceMonth: 'sourceMonth',
     source: 'source',
     dataSourceId: 'dataSourceId',
+    parentId: 'parentId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -42302,6 +42419,9 @@ export namespace Prisma {
     overdueReminderEnabled: 'overdueReminderEnabled',
     customReminderDates: 'customReminderDates',
     reminderDaysBefore: 'reminderDaysBefore',
+    whatsappOwnerRemindersEnabled: 'whatsappOwnerRemindersEnabled',
+    whatsappReminderOffsets: 'whatsappReminderOffsets',
+    whatsappReminderTemplate: 'whatsappReminderTemplate',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -42848,11 +42968,14 @@ export namespace Prisma {
     sourceMonth?: StringNullableFilter<"Task"> | string | null
     source?: StringNullableFilter<"Task"> | string | null
     dataSourceId?: StringNullableFilter<"Task"> | string | null
+    parentId?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     assignee?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     dataSource?: XOR<DataSourceNullableScalarRelationFilter, DataSourceWhereInput> | null
+    parent?: XOR<TaskNullableScalarRelationFilter, TaskWhereInput> | null
+    children?: TaskListRelationFilter
     auditLogs?: TaskAuditLogListRelationFilter
     notifications?: NotificationListRelationFilter
     updates?: TaskUpdateListRelationFilter
@@ -42882,11 +43005,14 @@ export namespace Prisma {
     sourceMonth?: SortOrderInput | SortOrder
     source?: SortOrderInput | SortOrder
     dataSourceId?: SortOrderInput | SortOrder
+    parentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     owner?: UserOrderByWithRelationInput
     assignee?: UserOrderByWithRelationInput
     dataSource?: DataSourceOrderByWithRelationInput
+    parent?: TaskOrderByWithRelationInput
+    children?: TaskOrderByRelationAggregateInput
     auditLogs?: TaskAuditLogOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     updates?: TaskUpdateOrderByRelationAggregateInput
@@ -42919,11 +43045,14 @@ export namespace Prisma {
     sourceMonth?: StringNullableFilter<"Task"> | string | null
     source?: StringNullableFilter<"Task"> | string | null
     dataSourceId?: StringNullableFilter<"Task"> | string | null
+    parentId?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     assignee?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     dataSource?: XOR<DataSourceNullableScalarRelationFilter, DataSourceWhereInput> | null
+    parent?: XOR<TaskNullableScalarRelationFilter, TaskWhereInput> | null
+    children?: TaskListRelationFilter
     auditLogs?: TaskAuditLogListRelationFilter
     notifications?: NotificationListRelationFilter
     updates?: TaskUpdateListRelationFilter
@@ -42953,6 +43082,7 @@ export namespace Prisma {
     sourceMonth?: SortOrderInput | SortOrder
     source?: SortOrderInput | SortOrder
     dataSourceId?: SortOrderInput | SortOrder
+    parentId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TaskCountOrderByAggregateInput
@@ -42989,6 +43119,7 @@ export namespace Prisma {
     sourceMonth?: StringNullableWithAggregatesFilter<"Task"> | string | null
     source?: StringNullableWithAggregatesFilter<"Task"> | string | null
     dataSourceId?: StringNullableWithAggregatesFilter<"Task"> | string | null
+    parentId?: StringNullableWithAggregatesFilter<"Task"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
   }
@@ -43519,6 +43650,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolFilter<"AdminSettings"> | boolean
     customReminderDates?: StringNullableFilter<"AdminSettings"> | string | null
     reminderDaysBefore?: IntFilter<"AdminSettings"> | number
+    whatsappOwnerRemindersEnabled?: BoolFilter<"AdminSettings"> | boolean
+    whatsappReminderOffsets?: StringFilter<"AdminSettings"> | string
+    whatsappReminderTemplate?: StringFilter<"AdminSettings"> | string
     createdAt?: DateTimeFilter<"AdminSettings"> | Date | string
     updatedAt?: DateTimeFilter<"AdminSettings"> | Date | string
   }
@@ -43537,6 +43671,9 @@ export namespace Prisma {
     overdueReminderEnabled?: SortOrder
     customReminderDates?: SortOrderInput | SortOrder
     reminderDaysBefore?: SortOrder
+    whatsappOwnerRemindersEnabled?: SortOrder
+    whatsappReminderOffsets?: SortOrder
+    whatsappReminderTemplate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43558,6 +43695,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolFilter<"AdminSettings"> | boolean
     customReminderDates?: StringNullableFilter<"AdminSettings"> | string | null
     reminderDaysBefore?: IntFilter<"AdminSettings"> | number
+    whatsappOwnerRemindersEnabled?: BoolFilter<"AdminSettings"> | boolean
+    whatsappReminderOffsets?: StringFilter<"AdminSettings"> | string
+    whatsappReminderTemplate?: StringFilter<"AdminSettings"> | string
     createdAt?: DateTimeFilter<"AdminSettings"> | Date | string
     updatedAt?: DateTimeFilter<"AdminSettings"> | Date | string
   }, "id">
@@ -43576,6 +43716,9 @@ export namespace Prisma {
     overdueReminderEnabled?: SortOrder
     customReminderDates?: SortOrderInput | SortOrder
     reminderDaysBefore?: SortOrder
+    whatsappOwnerRemindersEnabled?: SortOrder
+    whatsappReminderOffsets?: SortOrder
+    whatsappReminderTemplate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: AdminSettingsCountOrderByAggregateInput
@@ -43602,6 +43745,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolWithAggregatesFilter<"AdminSettings"> | boolean
     customReminderDates?: StringNullableWithAggregatesFilter<"AdminSettings"> | string | null
     reminderDaysBefore?: IntWithAggregatesFilter<"AdminSettings"> | number
+    whatsappOwnerRemindersEnabled?: BoolWithAggregatesFilter<"AdminSettings"> | boolean
+    whatsappReminderOffsets?: StringWithAggregatesFilter<"AdminSettings"> | string
+    whatsappReminderTemplate?: StringWithAggregatesFilter<"AdminSettings"> | string
     createdAt?: DateTimeWithAggregatesFilter<"AdminSettings"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"AdminSettings"> | Date | string
   }
@@ -45506,6 +45652,8 @@ export namespace Prisma {
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateCreateNestedManyWithoutTaskInput
@@ -45535,8 +45683,10 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
@@ -45568,6 +45718,8 @@ export namespace Prisma {
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
@@ -45597,8 +45749,10 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
@@ -45628,6 +45782,7 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -45681,6 +45836,7 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46257,6 +46413,9 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: string | null
     reminderDaysBefore?: number
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: string
+    whatsappReminderTemplate?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46275,6 +46434,9 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: string | null
     reminderDaysBefore?: number
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: string
+    whatsappReminderTemplate?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46293,6 +46455,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     customReminderDates?: NullableStringFieldUpdateOperationsInput | string | null
     reminderDaysBefore?: IntFieldUpdateOperationsInput | number
+    whatsappOwnerRemindersEnabled?: BoolFieldUpdateOperationsInput | boolean
+    whatsappReminderOffsets?: StringFieldUpdateOperationsInput | string
+    whatsappReminderTemplate?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46311,6 +46476,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     customReminderDates?: NullableStringFieldUpdateOperationsInput | string | null
     reminderDaysBefore?: IntFieldUpdateOperationsInput | number
+    whatsappOwnerRemindersEnabled?: BoolFieldUpdateOperationsInput | boolean
+    whatsappReminderOffsets?: StringFieldUpdateOperationsInput | string
+    whatsappReminderTemplate?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46329,6 +46497,9 @@ export namespace Prisma {
     overdueReminderEnabled?: boolean
     customReminderDates?: string | null
     reminderDaysBefore?: number
+    whatsappOwnerRemindersEnabled?: boolean
+    whatsappReminderOffsets?: string
+    whatsappReminderTemplate?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46347,6 +46518,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     customReminderDates?: NullableStringFieldUpdateOperationsInput | string | null
     reminderDaysBefore?: IntFieldUpdateOperationsInput | number
+    whatsappOwnerRemindersEnabled?: BoolFieldUpdateOperationsInput | boolean
+    whatsappReminderOffsets?: StringFieldUpdateOperationsInput | string
+    whatsappReminderTemplate?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46365,6 +46539,9 @@ export namespace Prisma {
     overdueReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     customReminderDates?: NullableStringFieldUpdateOperationsInput | string | null
     reminderDaysBefore?: IntFieldUpdateOperationsInput | number
+    whatsappOwnerRemindersEnabled?: BoolFieldUpdateOperationsInput | boolean
+    whatsappReminderOffsets?: StringFieldUpdateOperationsInput | string
+    whatsappReminderTemplate?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48502,6 +48679,11 @@ export namespace Prisma {
     isNot?: DataSourceWhereInput | null
   }
 
+  export type TaskNullableScalarRelationFilter = {
+    is?: TaskWhereInput | null
+    isNot?: TaskWhereInput | null
+  }
+
   export type TaskUpdateListRelationFilter = {
     every?: TaskUpdateWhereInput
     some?: TaskUpdateWhereInput
@@ -48536,6 +48718,7 @@ export namespace Prisma {
     sourceMonth?: SortOrder
     source?: SortOrder
     dataSourceId?: SortOrder
+    parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -48568,6 +48751,7 @@ export namespace Prisma {
     sourceMonth?: SortOrder
     source?: SortOrder
     dataSourceId?: SortOrder
+    parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -48596,6 +48780,7 @@ export namespace Prisma {
     sourceMonth?: SortOrder
     source?: SortOrder
     dataSourceId?: SortOrder
+    parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -48775,11 +48960,6 @@ export namespace Prisma {
     rowCount?: SortOrder
   }
 
-  export type TaskNullableScalarRelationFilter = {
-    is?: TaskWhereInput | null
-    isNot?: TaskWhereInput | null
-  }
-
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     taskId?: SortOrder
@@ -48943,6 +49123,9 @@ export namespace Prisma {
     overdueReminderEnabled?: SortOrder
     customReminderDates?: SortOrder
     reminderDaysBefore?: SortOrder
+    whatsappOwnerRemindersEnabled?: SortOrder
+    whatsappReminderOffsets?: SortOrder
+    whatsappReminderTemplate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -48966,6 +49149,9 @@ export namespace Prisma {
     overdueReminderEnabled?: SortOrder
     customReminderDates?: SortOrder
     reminderDaysBefore?: SortOrder
+    whatsappOwnerRemindersEnabled?: SortOrder
+    whatsappReminderOffsets?: SortOrder
+    whatsappReminderTemplate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -48984,6 +49170,9 @@ export namespace Prisma {
     overdueReminderEnabled?: SortOrder
     customReminderDates?: SortOrder
     reminderDaysBefore?: SortOrder
+    whatsappOwnerRemindersEnabled?: SortOrder
+    whatsappReminderOffsets?: SortOrder
+    whatsappReminderTemplate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -50470,6 +50659,19 @@ export namespace Prisma {
     connect?: DataSourceWhereUniqueInput
   }
 
+  export type TaskCreateNestedOneWithoutChildrenInput = {
+    create?: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutChildrenInput
+    connect?: TaskWhereUniqueInput
+  }
+
+  export type TaskCreateNestedManyWithoutParentInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
   export type TaskAuditLogCreateNestedManyWithoutTaskInput = {
     create?: XOR<TaskAuditLogCreateWithoutTaskInput, TaskAuditLogUncheckedCreateWithoutTaskInput> | TaskAuditLogCreateWithoutTaskInput[] | TaskAuditLogUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskAuditLogCreateOrConnectWithoutTaskInput | TaskAuditLogCreateOrConnectWithoutTaskInput[]
@@ -50489,6 +50691,13 @@ export namespace Prisma {
     connectOrCreate?: TaskUpdateCreateOrConnectWithoutTaskInput | TaskUpdateCreateOrConnectWithoutTaskInput[]
     createMany?: TaskUpdateCreateManyTaskInputEnvelope
     connect?: TaskUpdateWhereUniqueInput | TaskUpdateWhereUniqueInput[]
+  }
+
+  export type TaskUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
   }
 
   export type TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput = {
@@ -50554,6 +50763,30 @@ export namespace Prisma {
     update?: XOR<XOR<DataSourceUpdateToOneWithWhereWithoutTasksInput, DataSourceUpdateWithoutTasksInput>, DataSourceUncheckedUpdateWithoutTasksInput>
   }
 
+  export type TaskUpdateOneWithoutChildrenNestedInput = {
+    create?: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutChildrenInput
+    upsert?: TaskUpsertWithoutChildrenInput
+    disconnect?: TaskWhereInput | boolean
+    delete?: TaskWhereInput | boolean
+    connect?: TaskWhereUniqueInput
+    update?: XOR<XOR<TaskUpdateToOneWithWhereWithoutChildrenInput, TaskUpdateWithoutChildrenInput>, TaskUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type TaskUpdateManyWithoutParentNestedInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutParentInput | TaskUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutParentInput | TaskUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutParentInput | TaskUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
+  }
+
   export type TaskAuditLogUpdateManyWithoutTaskNestedInput = {
     create?: XOR<TaskAuditLogCreateWithoutTaskInput, TaskAuditLogUncheckedCreateWithoutTaskInput> | TaskAuditLogCreateWithoutTaskInput[] | TaskAuditLogUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskAuditLogCreateOrConnectWithoutTaskInput | TaskAuditLogCreateOrConnectWithoutTaskInput[]
@@ -50594,6 +50827,20 @@ export namespace Prisma {
     update?: TaskUpdateUpdateWithWhereUniqueWithoutTaskInput | TaskUpdateUpdateWithWhereUniqueWithoutTaskInput[]
     updateMany?: TaskUpdateUpdateManyWithWhereWithoutTaskInput | TaskUpdateUpdateManyWithWhereWithoutTaskInput[]
     deleteMany?: TaskUpdateScalarWhereInput | TaskUpdateScalarWhereInput[]
+  }
+
+  export type TaskUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutParentInput | TaskUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutParentInput | TaskUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutParentInput | TaskUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
   }
 
   export type TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput = {
@@ -52016,6 +52263,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateCreateNestedManyWithoutTaskInput
@@ -52044,8 +52293,10 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
@@ -52085,6 +52336,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateCreateNestedManyWithoutTaskInput
@@ -52113,8 +52366,10 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
@@ -52333,6 +52588,7 @@ export namespace Prisma {
     sourceMonth?: StringNullableFilter<"Task"> | string | null
     source?: StringNullableFilter<"Task"> | string | null
     dataSourceId?: StringNullableFilter<"Task"> | string | null
+    parentId?: StringNullableFilter<"Task"> | string | null
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
   }
@@ -52663,6 +52919,148 @@ export namespace Prisma {
     create: XOR<DataSourceCreateWithoutTasksInput, DataSourceUncheckedCreateWithoutTasksInput>
   }
 
+  export type TaskCreateWithoutChildrenInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner?: UserCreateNestedOneWithoutOwnedTasksInput
+    assignee?: UserCreateNestedOneWithoutAssignedTasksInput
+    dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
+    notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutChildrenInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    ownerId?: string | null
+    assigneeId?: string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
+    dataSourceId?: string | null
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutChildrenInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+  }
+
+  export type TaskCreateWithoutParentInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner?: UserCreateNestedOneWithoutOwnedTasksInput
+    assignee?: UserCreateNestedOneWithoutAssignedTasksInput
+    dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    children?: TaskCreateNestedManyWithoutParentInput
+    auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
+    notifications?: NotificationCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutParentInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    ownerId?: string | null
+    assigneeId?: string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
+    dataSourceId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
+    auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
+    updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutParentInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput>
+  }
+
+  export type TaskCreateManyParentInputEnvelope = {
+    data: TaskCreateManyParentInput | TaskCreateManyParentInput[]
+  }
+
   export type TaskAuditLogCreateWithoutTaskInput = {
     id?: string
     action: string
@@ -52903,6 +53301,97 @@ export namespace Prisma {
     uploadedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TaskUpsertWithoutChildrenInput = {
+    update: XOR<TaskUpdateWithoutChildrenInput, TaskUncheckedUpdateWithoutChildrenInput>
+    create: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+    where?: TaskWhereInput
+  }
+
+  export type TaskUpdateToOneWithWhereWithoutChildrenInput = {
+    where?: TaskWhereInput
+    data: XOR<TaskUpdateWithoutChildrenInput, TaskUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type TaskUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutOwnedTasksNestedInput
+    assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
+    dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
+    notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUpsertWithWhereUniqueWithoutParentInput = {
+    where: TaskWhereUniqueInput
+    update: XOR<TaskUpdateWithoutParentInput, TaskUncheckedUpdateWithoutParentInput>
+    create: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput>
+  }
+
+  export type TaskUpdateWithWhereUniqueWithoutParentInput = {
+    where: TaskWhereUniqueInput
+    data: XOR<TaskUpdateWithoutParentInput, TaskUncheckedUpdateWithoutParentInput>
+  }
+
+  export type TaskUpdateManyWithWhereWithoutParentInput = {
+    where: TaskScalarWhereInput
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutParentInput>
+  }
+
   export type TaskAuditLogUpsertWithWhereUniqueWithoutTaskInput = {
     where: TaskAuditLogWhereUniqueInput
     update: XOR<TaskAuditLogUpdateWithoutTaskInput, TaskAuditLogUncheckedUpdateWithoutTaskInput>
@@ -53100,6 +53589,8 @@ export namespace Prisma {
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
   }
@@ -53128,8 +53619,10 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -53176,6 +53669,8 @@ export namespace Prisma {
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
   }
@@ -53204,8 +53699,10 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -53236,6 +53733,8 @@ export namespace Prisma {
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
@@ -53264,8 +53763,10 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -53365,6 +53866,8 @@ export namespace Prisma {
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
@@ -53393,8 +53896,10 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -53483,6 +53988,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     notifications?: NotificationCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateCreateNestedManyWithoutTaskInput
@@ -53511,8 +54018,10 @@ export namespace Prisma {
     ceoNotes?: string | null
     sourceMonth?: string | null
     source?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
@@ -53569,6 +54078,8 @@ export namespace Prisma {
     owner?: UserCreateNestedOneWithoutOwnedTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     dataSource?: DataSourceCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateCreateNestedManyWithoutTaskInput
   }
@@ -53597,8 +54108,10 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     auditLogs?: TaskAuditLogUncheckedCreateNestedManyWithoutTaskInput
     updates?: TaskUpdateUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -53698,6 +54211,8 @@ export namespace Prisma {
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
   }
@@ -53726,8 +54241,10 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -56559,6 +57076,7 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -56586,6 +57104,7 @@ export namespace Prisma {
     sourceMonth?: string | null
     source?: string | null
     dataSourceId?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -56639,6 +57158,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
@@ -56667,8 +57188,10 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
@@ -56697,6 +57220,7 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -56726,6 +57250,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
@@ -56754,8 +57280,10 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
@@ -56784,6 +57312,7 @@ export namespace Prisma {
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
     dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -56860,6 +57389,34 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TaskCreateManyParentInput = {
+    id?: string
+    taskId?: string | null
+    title: string
+    description?: string | null
+    sentdmMessageId?: string | null
+    lastReminderSentAt?: Date | string | null
+    ownerId?: string | null
+    assigneeId?: string | null
+    department?: string | null
+    priority?: string
+    status?: string
+    strategicPillar?: string | null
+    completion?: number
+    riskIndicator?: string | null
+    startDate?: Date | string | null
+    dueDate?: Date | string | null
+    completedAt?: Date | string | null
+    notes?: string | null
+    nextStep?: string | null
+    ceoNotes?: string | null
+    sourceMonth?: string | null
+    source?: string | null
+    dataSourceId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type TaskAuditLogCreateManyTaskInput = {
     id?: string
     userId?: string | null
@@ -56889,6 +57446,98 @@ export namespace Prisma {
     source: string
     content: string
     createdAt?: Date | string
+  }
+
+  export type TaskUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutOwnedTasksNestedInput
+    assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
+    dataSource?: DataSourceUpdateOneWithoutTasksNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
+    auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
+    notifications?: NotificationUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
+    auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
+    updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateManyWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    sentdmMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastReminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    strategicPillar?: NullableStringFieldUpdateOperationsInput | string | null
+    completion?: FloatFieldUpdateOperationsInput | number
+    riskIndicator?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    nextStep?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: NullableStringFieldUpdateOperationsInput | string | null
+    dataSourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskAuditLogUpdateWithoutTaskInput = {
@@ -57007,6 +57656,7 @@ export namespace Prisma {
     ceoNotes?: string | null
     sourceMonth?: string | null
     source?: string | null
+    parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57036,6 +57686,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneWithoutOwnedTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUpdateManyWithoutTaskNestedInput
@@ -57064,8 +57716,10 @@ export namespace Prisma {
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     auditLogs?: TaskAuditLogUncheckedUpdateManyWithoutTaskNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutTaskNestedInput
     updates?: TaskUpdateUncheckedUpdateManyWithoutTaskNestedInput
@@ -57094,6 +57748,7 @@ export namespace Prisma {
     ceoNotes?: NullableStringFieldUpdateOperationsInput | string | null
     sourceMonth?: NullableStringFieldUpdateOperationsInput | string | null
     source?: NullableStringFieldUpdateOperationsInput | string | null
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

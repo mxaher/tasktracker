@@ -3,6 +3,9 @@ import { createId, d1All, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 
+
+
+export const dynamic = 'force-dynamic'
 type ImportRow = Record<string, unknown>;
 
 type ExistingContactRow = {

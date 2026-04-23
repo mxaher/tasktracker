@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 type WebhookInfo = {
   url?: string;
   has_custom_certificate?: boolean;

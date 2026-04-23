@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { d1All } from "@/lib/cloudflare-d1";
 
+
+
+export const dynamic = 'force-dynamic'
 type TelegramLogRow = {
   id: string;
   chatId: string;

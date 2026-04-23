@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { d1All, d1First } from "@/lib/cloudflare-d1";
 
+
+
+export const dynamic = 'force-dynamic'
 type AuditLogRow = {
   id: string;
   taskId: string;

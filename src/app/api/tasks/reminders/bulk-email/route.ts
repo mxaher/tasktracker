@@ -1,6 +1,9 @@
 import { sendGroupedOwnerEmailReminders } from "@/lib/notifications/ownerReminderService";
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 /**
  * Sends grouped email reminders for selected tasks, grouped by owner.
  */

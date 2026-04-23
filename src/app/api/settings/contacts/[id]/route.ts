@@ -2,6 +2,9 @@ import { parseContactUpdateInput } from "@/lib/contact-validation";
 import { d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 type ContactRow = {
   id: string;
   name: string;

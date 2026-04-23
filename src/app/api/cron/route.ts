@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { EmailService } from "@/lib/email";
 
+
+
+export const dynamic = 'force-dynamic'
 // This endpoint can be called by a cron service (like cron-job.org, Vercel Cron, or Cloudflare Scheduled Workers)
 // It handles all scheduled email notifications
 

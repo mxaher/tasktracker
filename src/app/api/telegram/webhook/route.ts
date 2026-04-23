@@ -13,6 +13,9 @@ import { d1First } from "@/lib/cloudflare-d1";
 import { handleTelegramWizard } from "@/lib/telegram-wizard";
 import { sendTelegramMessage } from "@/lib/notifications/telegram";
 
+
+
+export const dynamic = 'force-dynamic'
 type TelegramWebhookBody = {
   message?: {
     text?: string;

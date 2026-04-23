@@ -4,6 +4,9 @@ import {
 } from "@/lib/notifications/ownerReminderService";
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 /**
  * Sends grouped reminders for selected tasks (WhatsApp + email), grouped by owner.
  * Keeps `result` as the WhatsApp payload for backward-compatible UI handling.

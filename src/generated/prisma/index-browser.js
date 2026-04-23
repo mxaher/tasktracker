@@ -160,6 +160,7 @@ exports.Prisma.TaskScalarFieldEnum = {
   sourceMonth: 'sourceMonth',
   source: 'source',
   dataSourceId: 'dataSourceId',
+  parentId: 'parentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -258,6 +259,9 @@ exports.Prisma.AdminSettingsScalarFieldEnum = {
   overdueReminderEnabled: 'overdueReminderEnabled',
   customReminderDates: 'customReminderDates',
   reminderDaysBefore: 'reminderDaysBefore',
+  whatsappOwnerRemindersEnabled: 'whatsappOwnerRemindersEnabled',
+  whatsappReminderOffsets: 'whatsappReminderOffsets',
+  whatsappReminderTemplate: 'whatsappReminderTemplate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

@@ -77,10 +77,10 @@ export default function TelegramSettingsPage() {
         fetch("/api/users").then((r) => r.json()),
       ]);
 
-      if (accountsRes.status === "fulfilled") setAccounts(accountsRes.value.accounts ?? []);
-      if (logsRes.status === "fulfilled") setLogs(logsRes.value.logs ?? []);
-      if (webhookRes.status === "fulfilled") setWebhookInfo(webhookRes.value.webhookInfo ?? null);
-      if (usersRes.status === "fulfilled") setUsers(usersRes.value.users ?? []);
+      if (accountsRes.status === "fulfilled") setAccounts((accountsRes.value as any).accounts ?? []);
+      if (logsRes.status === "fulfilled") setLogs((logsRes.value as any).logs ?? []);
+      if (webhookRes.status === "fulfilled") setWebhookInfo((webhookRes.value as any).webhookInfo ?? null);
+      if (usersRes.status === "fulfilled") setUsers((usersRes.value as any).users ?? []);
     } finally {
       setLoading(false);
     }

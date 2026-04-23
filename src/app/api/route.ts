@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+
+
+export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     const context = getCloudflareContext();

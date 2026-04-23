@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+
+
+export const dynamic = 'force-dynamic'
 type D1Value = string | number | null;
 
 type UserRow = {

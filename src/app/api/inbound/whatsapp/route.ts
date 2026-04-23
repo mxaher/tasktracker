@@ -10,6 +10,9 @@ import { sendWhatsAppMessage } from "@/lib/notifications/sentdm";
 import { getAllowedTelegramChatIds, sendTelegramMessage } from "@/lib/notifications/telegram";
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 type SentDmWebhookPayload = {
   from?: string;
   message?: string;

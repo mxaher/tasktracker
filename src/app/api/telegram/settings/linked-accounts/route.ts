@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createId, d1All, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 
+
+
+export const dynamic = 'force-dynamic'
 type TelegramUserRow = {
   id: string;
   chatId: string;

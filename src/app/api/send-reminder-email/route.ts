@@ -3,10 +3,13 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { buildReminderEmailHtml } from "@/lib/reminder-email-template";
 import { createId, d1First, d1Run, nowIso } from "@/lib/cloudflare-d1";
 import {
+
   getDeliverableEmails,
   normalizeEmailAddress,
 } from "@/lib/email-address";
 
+
+export const dynamic = 'force-dynamic'
 type ReminderRecipientRow = {
   owner_name: string | null;
   owner_email: string | null;

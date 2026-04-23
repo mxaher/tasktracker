@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+
   createId,
   d1All,
   d1Run,
@@ -9,6 +10,8 @@ import {
   toIsoDate,
 } from "@/lib/cloudflare-d1";
 
+
+export const dynamic = 'force-dynamic'
 type ScheduledReminderRow = {
   id: string;
   title: string;

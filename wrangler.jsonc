@@ -21,13 +21,19 @@
   },
   "vars": {
     "NEXT_TELEMETRY_DISABLED": "1",
-    "DATABASE_URL": "file:./dev.db",
     "FROM_EMAIL": "noreply@tasks.almarshad.com",
     "ADMIN_EMAIL": "m.zaher@almarshad.com"
   },
   "triggers": {
     "crons": ["0 6 * * *"]
   },
+  "r2_buckets": [
+    {
+      "binding": "FILES_BUCKET",
+      "bucket_name": "tasktracker-files",
+      "preview_bucket_name": "tasktracker-files-preview"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",

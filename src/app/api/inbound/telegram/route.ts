@@ -9,6 +9,9 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { format } from "date-fns";
 
+
+
+export const dynamic = 'force-dynamic'
 type TelegramWebhookPayload = {
   message?: {
     text?: string;

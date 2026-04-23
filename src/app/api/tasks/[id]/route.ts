@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+
   buildTaskSelectSql,
   createId,
   d1All,
@@ -12,6 +13,8 @@ import {
   toIsoDate,
 } from "@/lib/cloudflare-d1";
 
+
+export const dynamic = 'force-dynamic'
 type TaskRow = Parameters<typeof mapTaskRow>[0];
 type TaskUpdateRow = {
   id: string;

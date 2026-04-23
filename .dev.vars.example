@@ -1,4 +1,4 @@
-DATABASE_URL="file:./db/custom.db"
+# DATABASE_URL is not used in Cloudflare Workers — D1 is bound via wrangler.jsonc
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
 FROM_EMAIL="noreply@yourdomain.com"
 ADMIN_EMAIL="admin@yourdomain.com"

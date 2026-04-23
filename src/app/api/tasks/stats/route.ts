@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { addDays, isBefore, isWithinInterval, startOfDay } from "date-fns";
 
+
+
+export const dynamic = 'force-dynamic'
 type D1Value = string | number | null;
 
 type StatsTaskRow = {

@@ -1,6 +1,9 @@
 import { runReminderCycle } from "@/lib/notifications/reminderService";
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 /** Executes the WhatsApp reminder cycle for the scheduled cron trigger. */
 export async function GET(request: NextRequest) {
   try {

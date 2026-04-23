@@ -3,6 +3,9 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDeliverableEmails } from "@/lib/email-address";
 import { format, isPast } from "date-fns";
 
+
+
+export const dynamic = 'force-dynamic'
 type D1Value = string | number | null;
 
 type NotificationRow = {

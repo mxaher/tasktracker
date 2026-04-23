@@ -4,7 +4,10 @@ import("@opennextjs/cloudflare").then((mod) => mod.initOpenNextCloudflareForDev(
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: "standalone",
+
+  images: {
+    unoptimized: true,
+  },
 
   turbopack: {
     root: process.cwd(),
@@ -13,10 +16,6 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_TELEMETRY_DISABLED: "1",
   },
-
-  allowedDevOrigins: [
-    "preview-chat-0daed9cf-daeb-40a4-98ed-ead68f62aeb8.space.z.ai",
-  ],
 
   webpack(config, { isServer }) {
     // Required for Prisma's query_compiler_bg.wasm to be bundled into the Cloudflare Worker

@@ -1,6 +1,9 @@
 import { sendSingleOwnerTaskReminder } from "@/lib/notifications/ownerReminderService";
 import { NextRequest, NextResponse } from "next/server";
 
+
+
+export const dynamic = 'force-dynamic'
 /**
  * Sends a reminder for a single task using the selected channel.
  */

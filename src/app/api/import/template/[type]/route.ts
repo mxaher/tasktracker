@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+
+
+export const dynamic = 'force-dynamic'
 const TEMPLATES: Record<string, { filename: string; content: string }> = {
   properties: {
     filename: 'properties_template.csv',

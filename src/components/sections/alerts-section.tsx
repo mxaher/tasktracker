@@ -42,6 +42,10 @@ export default function AlertsSection() {
       qc.invalidateQueries({ queryKey: ['alerts-page'] })
       qc.invalidateQueries({ queryKey: ['alerts-unread'] })
     },
+    onError: (error: unknown) => {
+      console.error('[Mutation Error]', error)
+      toast({ title: 'حدث خطأ', description: error instanceof Error ? error.message : String(error), variant: 'destructive' })
+    },
   })
 
   const deleteMutation = useMutation({
@@ -51,6 +55,10 @@ export default function AlertsSection() {
       qc.invalidateQueries({ queryKey: ['alerts-unread'] })
       toast({ title: 'تم الحذف' })
     },
+    onError: (error: unknown) => {
+      console.error('[Mutation Error]', error)
+      toast({ title: 'حدث خطأ', description: error instanceof Error ? error.message : String(error), variant: 'destructive' })
+    },
   })
 
   const markAllRead = useMutation({
@@ -59,6 +67,10 @@ export default function AlertsSection() {
       qc.invalidateQueries({ queryKey: ['alerts-page'] })
       qc.invalidateQueries({ queryKey: ['alerts-unread'] })
       toast({ title: 'تم تحديد الكل كمقروء' })
+    },
+    onError: (error: unknown) => {
+      console.error('[Mutation Error]', error)
+      toast({ title: 'حدث خطأ', description: error instanceof Error ? error.message : String(error), variant: 'destructive' })
     },
   })
 
