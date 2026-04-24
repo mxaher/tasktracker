@@ -8,7 +8,7 @@ import type { Employee } from '@/lib/types'
 
 interface KPITargetRow {
   id: string
-  kpi: { nameAr: string; category: string }
+  kpi: { id: string; nameAr: string; category: string }
   target: number
   weight: number
 }
