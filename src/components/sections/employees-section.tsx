@@ -12,9 +12,17 @@ interface KPITargetRow {
   target: number
   weight: number
 }
+interface KpiActualRow {
+  id: string
+  kpiId: string
+  actual: number
+  year: number
+  month?: number
+}
 interface EmployeeDetail extends Omit<Employee, 'properties'> {
   email?: string
   kpiTargets?: KPITargetRow[]
+  kpiActuals?: KpiActualRow[]
   customKpis?: unknown[]
   properties?: Array<{ propertyId: string; property?: { nameAr: string } }>
 }
@@ -199,9 +207,17 @@ export default function EmployeesSection() {
             <TabsContent value="financial" className="mt-4">
               <Card>
                 <CardContent className="pt-4 space-y-4">
-                  {employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'financial').map((t) => (
-                    <AchievementBar key={t.id} label={t.kpi.nameAr} value={(t.target > 0 ? 75 : 0)} />
-                  ))}
+                  {(() => {
+            const computeAchievement = (target: KPITargetRow) => {
+              if (!employeeDetail?.kpiActuals || target.target <= 0) return 0
+              const actuals = employeeDetail.kpiActuals.filter(a => a.kpiId === target.kpi.id)
+              const actual = actuals.reduce((s, a) => s + a.actual, 0)
+              return (actual / target.target) * 100
+            }
+            return employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'financial').map((t) => (
+              <AchievementBar key={t.id} label={t.kpi.nameAr} value={computeAchievement(t)} />
+            ))
+          })()}
                   {!employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'financial').length && (
                     <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات مالية</p>
                   )}
@@ -211,9 +227,17 @@ export default function EmployeesSection() {
             <TabsContent value="org" className="mt-4">
               <Card>
                 <CardContent className="pt-4 space-y-4">
-                  {employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'organizational').map((t) => (
-                    <AchievementBar key={t.id} label={t.kpi.nameAr} value={(t.target > 0 ? 65 : 0)} />
-                  ))}
+                  {(() => {
+            const computeAchievement = (target: KPITargetRow) => {
+              if (!employeeDetail?.kpiActuals || target.target <= 0) return 0
+              const actuals = employeeDetail.kpiActuals.filter(a => a.kpiId === target.kpi.id)
+              const actual = actuals.reduce((s, a) => s + a.actual, 0)
+              return (actual / target.target) * 100
+            }
+            return employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'organizational').map((t) => (
+              <AchievementBar key={t.id} label={t.kpi.nameAr} value={computeAchievement(t)} />
+            ))
+          })()}
                   {!employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'organizational').length && (
                     <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات تنظيمية</p>
                   )}

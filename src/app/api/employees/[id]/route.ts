@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         managedBy: { select: { id: true, nameAr: true } },
         properties: { include: { property: true } },
         kpiTargets: { include: { kpi: true } },
+        kpiActuals: true,
         customKpis: true,
       },
     })
