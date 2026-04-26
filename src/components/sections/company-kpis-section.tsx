@@ -174,6 +174,14 @@ export default function CompanyKpisSection() {
   const totalWeight = kpis.reduce((s: number, k: CompanyKPI) => s + k.weight, 0)
   const weightOk = Math.abs(totalWeight - 100) < 0.1
 
+  // Calculate overall weighted achievement
+  const overallAchievement = kpis.reduce((acc: number, kpi: CompanyKPI) => {
+    const totalActual = kpi.monthlyData?.reduce((s, m) => s + m.actual, 0) ?? 0
+    const achievement = kpi.target > 0 ? (totalActual / kpi.target) * 100 : 0
+    return acc + (achievement * (kpi.weight / 100))
+  }, 0)
+  const overallColor = overallAchievement >= 90 ? '#34C759' : overallAchievement >= 70 ? '#FF9500' : '#FF3B30'
+
   const openEdit = (kpi: CompanyKPI) => {
     setEditingKpi(kpi)
     setForm({ code: kpi.code, nameAr: kpi.nameAr, nameEn: kpi.nameEn ?? '', category: kpi.category, weight: kpi.weight, target: kpi.target })
@@ -190,6 +198,37 @@ export default function CompanyKpisSection() {
           <Plus className="h-4 w-4" /> إضافة مؤشر
         </Button>
       </div>
+
+      {/* Summary Progress Bar */}
+      {kpis.length > 0 && (
+        <Card className="bg-muted/30 border-primary/20">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex justify-between items-end mb-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">الإنجاز الكلي لجميع المؤشرات</p>
+                <h2 className="text-3xl font-bold tabular-nums" style={{ color: overallColor }}>
+                  {overallAchievement.toFixed(1)}%
+                </h2>
+              </div>
+              <div className="text-end">
+                <Badge variant="outline" className={weightOk ? "text-green-600 border-green-200" : "text-yellow-600 border-yellow-200"}>
+                  إجمالي الوزن: {totalWeight.toFixed(1)}%
+                </Badge>
+              </div>
+            </div>
+            <div className="h-4 bg-muted rounded-full overflow-hidden shadow-inner">
+              <div 
+                className="h-full rounded-full transition-all duration-1000 ease-out" 
+                style={{ 
+                  width: `${Math.min(overallAchievement, 100)}%`, 
+                  backgroundColor: overallColor,
+                  boxShadow: '0 0 10px ' + overallColor + '40'
+                }} 
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Weight warning */}
       {kpis.length > 0 && !weightOk && (
