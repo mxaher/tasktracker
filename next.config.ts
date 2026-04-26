@@ -1,17 +1,11 @@
 import type { NextConfig } from "next";
 
-import("@opennextjs/cloudflare").then((mod) => mod.initOpenNextCloudflareForDev());
-
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  serverExternalPackages: ["@prisma/client", ".prisma/client"],
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-d1"],
 
   images: {
     unoptimized: true,
-  },
-
-  turbopack: {
-    root: process.cwd(),
   },
 
   env: {
