@@ -5,7 +5,7 @@ import { NotificationBell } from '@/components/ui/notification-bell'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Search, Moon, Sun } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 
 const MONTHS = [
   'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
@@ -16,16 +16,12 @@ const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 +
 
 export default function Header() {
   const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useAppStore()
-  const [dark, setDark] = useState(false)
-
-  useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark')
-    setDark(isDark)
-  }, [])
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
 
   const toggleDark = () => {
-    document.documentElement.classList.toggle('dark')
-    setDark((p) => !p)
+    const newDark = !dark
+    document.documentElement.classList.toggle('dark', newDark)
+    setDark(newDark)
   }
 
   return (

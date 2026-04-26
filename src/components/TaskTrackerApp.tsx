@@ -1439,37 +1439,39 @@ function TaskListContent({
     }
   };
 
-  const SortIcon = ({ field }: { field: string }) =>
-    sortBy === field
-      ? sortOrder === "asc"
-        ? <ChevronUp className="h-3 w-3 inline-block ml-1 flex-shrink-0" />
-        : <ChevronDown className="h-3 w-3 inline-block ml-1 flex-shrink-0" />
-      : (
-        <span className="inline-flex flex-col ml-1 opacity-30 flex-shrink-0" style={{ lineHeight: 0, gap: 0, verticalAlign: "middle" }}>
-          <ChevronUp className="h-2 w-2" />
-          <ChevronDown className="h-2 w-2" />
-        </span>
-      );
+  const SortIcon = ({ field, sortBy, sortOrder }: { field: string; sortBy: string; sortOrder: string }) =>
+  sortBy === field
+    ? sortOrder === "asc"
+      ? <ChevronUp className="h-3 w-3 inline-block ml-1 flex-shrink-0" />
+      : <ChevronDown className="h-3 w-3 inline-block ml-1 flex-shrink-0" />
+    : (
+      <span className="inline-flex flex-col ml-1 opacity-30 flex-shrink-0" style={{ lineHeight: 0, gap: 0, verticalAlign: "middle" }}>
+        <ChevronUp className="h-2 w-2" />
+        <ChevronDown className="h-2 w-2" />
+      </span>
+    );
 
   const allFilteredSelected =
     filteredTasks.length > 0 &&
     filteredTasks.every(t => selectedTaskIds.has(t.id));
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
-  const [visibleCount, setVisibleCount] = useState(isMobileViewport ? 12 : 25);
+  const [visibleCount, setVisibleCount] = useState(0);
   const isRunningTasksFilterActive = matchesStatusGroup(filterStatuses, RUNNING_TASK_STATUSES);
   const isCompletedTasksFilterActive = matchesStatusGroup(filterStatuses, COMPLETED_TASK_STATUSES);
   const isAllTasksFilterActive = filterStatuses.length === 0 && !filterOverdue && !filterDueSoon;
   const effectiveViewMode = isMobileViewport ? "card" : viewMode;
+  const baseVisibleCount = isMobileViewport ? 12 : 25;
+  const computedVisibleCount = visibleCount > 0 ? visibleCount : baseVisibleCount;
   const visibleTasks = useMemo(
-    () => filteredTasks.slice(0, visibleCount),
-    [filteredTasks, visibleCount],
+    () => filteredTasks.slice(0, computedVisibleCount),
+    [filteredTasks, computedVisibleCount],
   );
   const hasMoreTasks = visibleTasks.length < filteredTasks.length;
 
-  useEffect(() => {
-    setVisibleCount(isMobileViewport ? 12 : 25);
-  }, [searchQuery, filterStatuses, filterPriority, filterDepartment, filterSource, filterOverdue, filterDueSoon, sortBy, sortOrder, isMobileViewport]);
+  const handleShowMore = () => {
+    setVisibleCount((current) => current + (isMobileViewport ? 12 : 25));
+  };
 
   const toggleSelectAll = () => {
     if (allFilteredSelected) {
@@ -2062,49 +2064,49 @@ function TaskListContent({
                     className="min-w-[200px] text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("title")}
                   >
-                    <div className="flex items-center justify-center">المهمة<SortIcon field="title" /></div>
+                    <div className="flex items-center justify-center">المهمة<SortIcon field="title" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("source")}
                   >
-                    <div className="flex items-center justify-center">المصدر<SortIcon field="source" /></div>
+                    <div className="flex items-center justify-center">المصدر<SortIcon field="source" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("department")}
                   >
-                    <div className="flex items-center justify-center">القسم<SortIcon field="department" /></div>
+                    <div className="flex items-center justify-center">القسم<SortIcon field="department" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("owner")}
                   >
-                    <div className="flex items-center justify-center">المسؤول<SortIcon field="owner" /></div>
+                    <div className="flex items-center justify-center">المسؤول<SortIcon field="owner" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("priority")}
                   >
-                    <div className="flex items-center justify-center">الأولوية<SortIcon field="priority" /></div>
+                    <div className="flex items-center justify-center">الأولوية<SortIcon field="priority" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("status")}
                   >
-                    <div className="flex items-center justify-center">الحالة<SortIcon field="status" /></div>
+                    <div className="flex items-center justify-center">الحالة<SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="w-[100px] text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("completion")}
                   >
-                    <div className="flex items-center justify-center">التقدم<SortIcon field="completion" /></div>
+                    <div className="flex items-center justify-center">التقدم<SortIcon field="completion" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead
                     className="text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 select-none"
                     onClick={() => handleSort("dueDate")}
                   >
-                    <div className="flex items-center justify-center">تاريخ الاكتمال<SortIcon field="dueDate" /></div>
+                    <div className="flex items-center justify-center">تاريخ الاكتمال<SortIcon field="dueDate" sortBy={sortBy} sortOrder={sortOrder} /></div>
                   </TableHead>
                   <TableHead className="w-[320px] min-w-[320px] text-center select-none">
                     <div className="flex items-center justify-center">الإجراءات</div>
@@ -2267,7 +2269,7 @@ function TaskListContent({
           <Button
             variant="outline"
             className="min-w-40 transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transform-none"
-            onClick={() => setVisibleCount((current) => current + (isMobileViewport ? 12 : 25))}
+            onClick={handleShowMore}
           >
             عرض المزيد
           </Button>
