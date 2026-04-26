@@ -16,11 +16,13 @@ const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 +
 
 export default function Header() {
   const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useAppStore()
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
+  const [dark, setDark] = useState(false)
 
   const toggleDark = () => {
     const newDark = !dark
-    document.documentElement.classList.toggle('dark', newDark)
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', newDark)
+    }
     setDark(newDark)
   }
 
