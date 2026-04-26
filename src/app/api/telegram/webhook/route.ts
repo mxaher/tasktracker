@@ -27,6 +27,19 @@ type TelegramWebhookBody = {
       username?: string;
     };
   };
+  callback_query?: {
+    id?: string;
+    data?: string;
+    message?: {
+      chat?: { id?: number | string };
+    };
+    from?: {
+      id?: number;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+    };
+  };
 };
 
 type TelegramUserRow = {
@@ -62,6 +75,57 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  // 3. Handle callback_query (inline button presses)
+  if (body.callback_query) {
+    const callbackId = body.callback_query.id;
+    const callbackData = body.callback_query.data?.trim() ?? "";
+    const cbChatId = body.callback_query.message?.chat?.id;
+    const cbChatIdStr = cbChatId !== undefined ? String(cbChatId) : null;
+
+    if (callbackId) {
+      try {
+        await fetch(
+          `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ callback_query_id: callbackId }),
+          },
+        );
+      } catch {}
+    }
+
+    // Process the callback command
+    if (cbChatIdStr && callbackData) {
+      // Validate chat ID for callback
+      const allowedIds = (process.env.TELEGRAM_ALLOWED_CHAT_IDS ?? "")
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+
+      if (allowedIds.length > 0 && !allowedIds.includes(cbChatIdStr)) {
+        return NextResponse.json({ ok: true });
+      }
+
+      // Look up linked user
+      const telegramUser = await d1First<TelegramUserRow>(
+        `SELECT tu.id, tu.chatId, tu.userId,
+                u.name AS user_name, u.email AS user_email, u.role AS user_role
+         FROM "TelegramUser" tu
+         JOIN "User" u ON u.id = tu.userId
+         WHERE tu.chatId = ?`,
+        cbChatIdStr,
+      ).catch(() => null);
+
+      if (telegramUser) {
+        await handleTelegramWizard(cbChatIdStr, callbackData, telegramUser);
+      }
+    }
+
+    return NextResponse.json({ ok: true });
+  }
+
+  // 5. Handle regular messages
   const chatIdValue = body.message?.chat?.id;
   const chatId = chatIdValue !== undefined ? String(chatIdValue) : null;
   const messageText = body.message?.text?.trim() ?? "";
@@ -70,7 +134,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // 3. Check allowed chat IDs
+  // 6. Check allowed chat IDs
   const allowedIds = (process.env.TELEGRAM_ALLOWED_CHAT_IDS ?? "")
     .split(",")
     .map((v) => v.trim())

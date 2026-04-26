@@ -299,7 +299,13 @@ async function handleSummary(chatId: string): Promise<void> {
     `📅 مستحقة هذا الأسبوع:     <b>${row.due_this_week}</b>\n` +
     `✅ أُنجزت اليوم:             <b>${row.completed_today}</b>`;
 
-  await reply(chatId, msg);
+  const replyMarkup = [
+    [{ text: "📝 مهمة جديدة", callback_data: "/task" }],
+    [{ text: "📊 إحصائيات", callback_data: "/summary" }],
+    [{ text: "📋 المهام الجارية", callback_data: "/current" }],
+  ];
+
+  await sendTelegramMessage(chatId, msg, replyMarkup);
 }
 
 // ─── Main wizard handler ──────────────────────────────────────────────────────
@@ -310,6 +316,31 @@ export async function handleTelegramWizard(
   telegramUser: TelegramUserRow,
 ): Promise<void> {
   const text = messageText.trim();
+
+  // ── Welcome /start ───────────────────────────────────────────────────────
+  if (text === "/start") {
+    const welcomeMsg = `🎉 أهلاً وسهلاً ${telegramUser.user_name || telegramUser.user_email}!
+
+أنا بوت إدارة المهام الاستراتيجية 🏢
+
+يمكنني مساعدتك في:
+📋 إنشاء ومتابعة المهام
+📊 عرض الإحصائيات
+🔄 تحديث حالة المهام
+⏰ تذكيرات المواعيد النهائية
+
+ابدأ بإرسال /help لمعرفة الأوامر المتاحة
+أو أرسل /new لإنشاء مهمة جديدة فوراً!`;
+
+    const replyMarkup = [
+      [{ text: "📝 مهمة جديدة", callback_data: "/task" }],
+      [{ text: "📊 ملخص", callback_data: "/summary" }],
+      [{ text: "📋 المهام الجارية", callback_data: "/current" }],
+    ];
+
+    await sendTelegramMessage(chatId, welcomeMsg, replyMarkup);
+    return;
+  }
 
   // ── Stateless admin commands (no session needed) ──────────────────────────
 
@@ -337,8 +368,9 @@ export async function handleTelegramWizard(
 
   const session = await getSession(chatId);
 
-  // ── Step 0: /task — kick off wizard ──────────────────────────────────────
-  if (text === "/task" || text.startsWith("/task ")) {
+  // ── Step 0: /task or /new — kick off wizard ─────────────────────────
+  if (text === "/task" || text === "/new" || text.startsWith("/task ") || text.startsWith("/new ")) {
+    const taskInput = text.replace(/^\/(task|new)\s*/, "").trim();
     await setSession(chatId, "await_title", {});
     await reply(chatId, "📝 ما عنوان المهمة؟\n(أرسل /cancel في أي وقت للإلغاء)");
     return;
@@ -348,7 +380,7 @@ export async function handleTelegramWizard(
   if (!session) {
     await reply(
       chatId,
-      "الأوامر المتاحة:\n/task — إنشاء مهمة جديدة\n/current — المهام الجارية\n/overdue — المهام المتأخرة\n/summary — ملخص اليوم\n/cancel — إلغاء العملية الحالية",
+      "الأوامر المتاحة:\n/task — إنشاء مهمة جديدة\n/new — مهمة جديدة (اختصار)\n/current — المهام الجارية\n/overdue — المهام المتأخرة\n/summary — ملخص اليوم\n/start — القائمة الرئيسية\n/cancel — إلغاء العملية الحالية",
     );
     return;
   }

@@ -8,14 +8,37 @@ export function getAllowedTelegramChatIds(): string[] {
     .filter((value) => value.length > 0);
 }
 
+type InlineKeyboardButton = {
+  text: string;
+  callback_data?: string;
+};
+
+type InlineKeyboard = InlineKeyboardButton[][];
+
 /**
  * Sends a message through the configured Telegram bot.
  */
-export async function sendTelegramMessage(chatId: string, text: string): Promise<void> {
+export async function sendTelegramMessage(
+  chatId: string,
+  text: string,
+  replyMarkup?: InlineKeyboard,
+): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
 
   if (!token) {
     throw new Error("TELEGRAM_BOT_TOKEN is not configured.");
+  }
+
+  const payload: Record<string, unknown> = {
+    chat_id: chatId,
+    text,
+    parse_mode: "HTML",
+  };
+
+  if (replyMarkup) {
+    payload.reply_markup = {
+      inline_keyboard: replyMarkup,
+    };
   }
 
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -23,15 +46,11 @@ export async function sendTelegramMessage(chatId: string, text: string): Promise
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: "HTML",
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { description?: string } | null;
-    throw new Error(payload?.description || "Failed to send Telegram message");
+    const data = (await response.json().catch(() => null)) as { description?: string } | null;
+    throw new Error(data?.description || "Failed to send Telegram message");
   }
 }
