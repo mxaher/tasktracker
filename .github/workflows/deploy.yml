@@ -28,6 +28,9 @@ jobs:
       - name: Generate Prisma client  
         run: bun run db:generate
 
+      - name: Build Next.js for Cloudflare
+        run: bun run cf:build
+
       - name: Build and Deploy Worker
         run: bunx wrangler deploy --config wrangler.jsonc
         env:
