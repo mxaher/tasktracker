@@ -431,48 +431,48 @@ export default function EmployeesSection() {
             <TabsContent value="financial" className="mt-4">
               <Card>
                 <CardContent className="pt-4 space-y-4">
-             {(() => {
-             const current: JSX.Element[] = []
-             if (employeeDetail?.kpiTargets) {
-               employeeDetail.kpiTargets.filter(t => t.kpi.category === 'financial').forEach(t => {
-                 const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
-                 const actual = actuals.reduce((s, a) => s + a.actual, 0)
-                 const val = t.target > 0 ? (actual / t.target) * 100 : 0
-                 current.push(<AchievementBar key={t.id} label={t.kpi.nameAr} value={val} />)
-               })
-             }
-             if (employeeDetail?.customKpis) {
-               employeeDetail.customKpis.filter(k => k.category === 'financial').forEach(k => {
-                 const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
-                 current.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
-               })
-             }
-             return current.length > 0 ? current : <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات مالية</p>
-           })()}
+              {(() => {
+              const current = []
+              if (employeeDetail?.kpiTargets) {
+                employeeDetail.kpiTargets.filter(t => t.kpi.category === 'financial').forEach(t => {
+                  const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
+                  const actual = actuals.reduce((s, a) => s + a.actual, 0)
+                  const val = t.target > 0 ? (actual / t.target) * 100 : 0
+                  current.push(<AchievementBar key={t.id} label={t.kpi.nameAr} value={val} />)
+                })
+              }
+              if (employeeDetail?.customKpis) {
+                employeeDetail.customKpis.filter(k => k.category === 'financial').forEach(k => {
+                  const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
+                  current.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
+                })
+              }
+              return current.length > 0 ? current : <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات مالية</p>
+            })()}
                 </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="org" className="mt-4">
               <Card>
                 <CardContent className="pt-4 space-y-4">
-             {(() => {
-             const current: JSX.Element[] = []
-             if (employeeDetail?.kpiTargets) {
-               employeeDetail.kpiTargets.filter(t => t.kpi.category === 'organizational').forEach(t => {
-                 const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
-                 const actual = actuals.reduce((s, a) => s + a.actual, 0)
-                 const val = t.target > 0 ? (actual / t.target) * 100 : 0
-                 current.push(<AchievementBar key={t.id} label={t.kpi.nameAr} value={val} />)
-               })
-             }
-             if (employeeDetail?.customKpis) {
-               employeeDetail.customKpis.filter(k => k.category === 'organizational').forEach(k => {
-                 const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
-                 current.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
-               })
-             }
-             return current.length > 0 ? current : <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات تنظيمية</p>
-           })()}
+              {(() => {
+              const current = []
+              if (employeeDetail?.kpiTargets) {
+                employeeDetail.kpiTargets.filter(t => t.kpi.category === 'organizational').forEach(t => {
+                  const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
+                  const actual = actuals.reduce((s, a) => s + a.actual, 0)
+                  const val = t.target > 0 ? (actual / t.target) * 100 : 0
+                  current.push(<AchievementBar key={t.id} label={t.kpi.nameAr} value={val} />)
+                })
+              }
+              if (employeeDetail?.customKpis) {
+                employeeDetail.customKpis.filter(k => k.category === 'organizational').forEach(k => {
+                  const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
+                  current.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
+                })
+              }
+              return current.length > 0 ? current : <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات تنظيمية</p>
+            })()}
                 </CardContent>
               </Card>
             </TabsContent>
