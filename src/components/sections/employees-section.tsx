@@ -32,9 +32,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { Users, Search, Plus, Edit } from 'lucide-react'
+import { Users, Search, Plus, Edit, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { kpiApi } from '@/lib/api'
 
 function AchievementBar({ label, value }: { label: string; value: number }) {
   const pct = Math.min(Math.max(value, 0), 100)
@@ -48,6 +50,139 @@ function AchievementBar({ label, value }: { label: string; value: number }) {
       <div className="h-2 bg-muted rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
+    </div>
+  )
+}
+
+function KpiManagementTab({ employeeId, year, currentTargets }: { employeeId: string, year: number, currentTargets: KPITargetRow[] }) {
+  const qc = useQueryClient()
+  const { toast } = useToast()
+  const [showAdd, setShowAdd] = useState(false)
+  const [newTarget, setNewTarget] = useState({ kpiId: '', target: 0, weight: 0 })
+
+  const { data: allKpis = [] } = useQuery({
+    queryKey: ['kpis'],
+    queryFn: async () => {
+      const res = await kpiApi.list()
+      return res.success ? res.data : []
+    }
+  })
+
+  const upsertMutation = useMutation({
+    mutationFn: (data: any) => kpiApi.targets.upsert({ ...data, employeeId, year }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employee-detail', employeeId] })
+      qc.invalidateQueries({ queryKey: ['employees-kpis'] })
+      setShowAdd(false)
+      setNewTarget({ kpiId: '', target: 0, weight: 0 })
+      toast({ title: 'تم التحديث بنجاح' })
+    }
+  })
+
+  const deleteMutation = useMutation({
+    // Using upsert with target 0 or a dedicated delete if available. 
+    // Since api.ts only has upsert, we might need a delete endpoint or just set target to 0 if the backend handles it.
+    // Let's assume for now we want to support deletion. I will check if there is a delete for targets.
+    // Actually kpi-targets usually has a way to remove. If not, I'll just use upsert with a flag or something.
+    // Based on api.ts, it's just upsert.
+    mutationFn: async (targetId: string) => {
+      // If no delete endpoint, we might need to add one. Let's check api.ts again.
+      // kpiApi.targets only has list and upsert.
+      return fetch(`/api/kpi-targets/${targetId}`, { method: 'DELETE' }).then(res => res.json())
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employee-detail', employeeId] })
+      qc.invalidateQueries({ queryKey: ['employees-kpis'] })
+      toast({ title: 'تم الحذف' })
+    }
+  })
+
+  return (
+    <div className="space-y-4 mt-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium">المؤشرات الحالية</h3>
+        <Button size="sm" onClick={() => setShowAdd(true)} className="h-8 gap-1">
+          <Plus className="h-3.5 w-3.5" /> إضافة مؤشر
+        </Button>
+      </div>
+
+      <div className="border rounded-lg overflow-hidden">
+        <table className="w-full text-xs">
+          <thead className="bg-muted">
+            <tr>
+              <th className="text-start px-3 py-2">المؤشر</th>
+              <th className="text-end px-3 py-2">المستهدف</th>
+              <th className="text-end px-3 py-2">الوزن</th>
+              <th className="px-3 py-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {currentTargets.map((t) => (
+              <tr key={t.id} className="border-t">
+                <td className="px-3 py-2">{t.kpi.nameAr}</td>
+                <td className="px-3 py-2 text-end">{t.target}</td>
+                <td className="px-3 py-2 text-end">{t.weight}%</td>
+                <td className="px-3 py-2 text-end">
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={() => deleteMutation.mutate(t.id)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+            {currentTargets.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-3 py-8 text-center text-muted-foreground">لا توجد مؤشرات مسندة</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showAdd && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardContent className="pt-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 space-y-1">
+                <Label className="text-xs">اختر المؤشر</Label>
+                <Select value={newTarget.kpiId} onValueChange={(v) => setNewTarget(p => ({ ...p, kpiId: v }))}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="اختر مؤشرًا..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allKpis.map(k => (
+                      <SelectItem key={k.id} value={k.id}>{k.nameAr} ({k.category === 'financial' ? 'مالي' : 'تنظيمي'})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">المستهدف</Label>
+                <Input 
+                  type="number" 
+                  value={newTarget.target} 
+                  onChange={(e) => setNewTarget(p => ({ ...p, target: parseFloat(e.target.value) }))}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">الوزن (%)</Label>
+                <Input 
+                  type="number" 
+                  value={newTarget.weight} 
+                  onChange={(e) => setNewTarget(p => ({ ...p, weight: parseFloat(e.target.value) }))}
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>إلغاء</Button>
+              <Button size="sm" onClick={() => upsertMutation.mutate(newTarget)} disabled={!newTarget.kpiId || upsertMutation.isPending}>
+                إضافة
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -185,6 +320,7 @@ export default function EmployeesSection() {
               <TabsTrigger value="profile" className="flex-1">الملف الشخصي</TabsTrigger>
               <TabsTrigger value="financial" className="flex-1">المؤشرات المالية</TabsTrigger>
               <TabsTrigger value="org" className="flex-1">المؤشرات التنظيمية</TabsTrigger>
+              <TabsTrigger value="manage" className="flex-1">إدارة المؤشرات</TabsTrigger>
             </TabsList>
             <TabsContent value="profile" className="space-y-3 mt-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -243,6 +379,13 @@ export default function EmployeesSection() {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+            <TabsContent value="manage">
+              <KpiManagementTab 
+                employeeId={selectedEmployee?.id ?? ''} 
+                year={selectedYear}
+                currentTargets={employeeDetail?.kpiTargets ?? []}
+              />
             </TabsContent>
           </Tabs>
           <DialogFooter>
