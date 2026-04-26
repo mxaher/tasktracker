@@ -107,7 +107,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ tasks: tasksWithCount });
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Failed to fetch tasks", details: message }, { status: 500 });
   }
 }
 
