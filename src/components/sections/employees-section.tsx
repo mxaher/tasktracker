@@ -432,7 +432,7 @@ export default function EmployeesSection() {
               <Card>
                 <CardContent className="pt-4 space-y-4">
               {(() => {
-              const current = []
+              const current: React.ReactElement[] = []
               if (employeeDetail?.kpiTargets) {
                 employeeDetail.kpiTargets.filter(t => t.kpi.category === 'financial').forEach(t => {
                   const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
@@ -456,7 +456,7 @@ export default function EmployeesSection() {
               <Card>
                 <CardContent className="pt-4 space-y-4">
               {(() => {
-              const current = []
+              const current: React.ReactElement[] = []
               if (employeeDetail?.kpiTargets) {
                 employeeDetail.kpiTargets.filter(t => t.kpi.category === 'organizational').forEach(t => {
                   const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
