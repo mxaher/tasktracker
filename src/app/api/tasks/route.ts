@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-
-  buildTaskSelectSql,
-  createId,
-  d1All,
-  d1First,
-  d1Run,
-  getAllDescendantIds,
-  getTaskDepth,
-  mapTaskRow,
-  nowIso,
-  toIsoDate,
-} from "@/lib/cloudflare-d1";
-
-
-export const dynamic = 'force-dynamic'
+ 
+   buildTaskSelectSql,
+   createId,
+   d1All,
+   d1First,
+   d1Run,
+   getAllDescendantIds,
+   getTaskDepth,
+   mapTaskRow,
+   nowIso,
+   toIsoDate,
+ } from "@/lib/cloudflare-d1";
+ 
+ 
+ export const dynamic = 'force-dynamic'
+ 
+ // Run migrations once at module load
+ const runTaskMigrations = async () => {
+   try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
+   try { await d1Run('ALTER TABLE "Task" ADD COLUMN "parentId" TEXT REFERENCES "Task"("id") ON DELETE SET NULL'); } catch {}
+ };
+ 
+ // Call migrations
+ runTaskMigrations().catch(console.error);
 type TaskRow = Parameters<typeof mapTaskRow>[0];
 
 export async function GET(request: NextRequest) {
   try {
-    // Ensure optional columns exist (idempotent — fails silently if already present)
-    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
-    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "parentId" TEXT REFERENCES "Task"("id") ON DELETE SET NULL'); } catch {}
 
     const { searchParams } = new URL(request.url);
     const statuses = searchParams
@@ -75,17 +81,28 @@ export async function GET(request: NextRequest) {
       ...params,
     );
 
-    // Attach childrenCount for each task
-    const tasksWithCount = await Promise.all(
-      rows.map(async (row) => {
-        const mapped = mapTaskRow(row);
-        const countRow = await d1First<{ cnt: number }>(
-          'SELECT COUNT(*) AS cnt FROM "Task" WHERE "parentId" = ?',
-          mapped.id,
-        );
-        return { ...mapped, childrenCount: countRow?.cnt ?? 0 };
-      }),
-    );
+     // Attach childrenCount for each task - batch query to avoid N+1 problem
+     const taskIds = rows.map(row => mapTaskRow(row).id);
+     const childrenCountsMap = new Map<string, number>();
+     
+     if (taskIds.length > 0) {
+       // Create placeholders for the IN clause
+       const placeholders = taskIds.map(() => "?").join(", ");
+       const countRows = await d1All<{ parentId: string; cnt: number }>(
+         `SELECT "parentId", COUNT(*) AS cnt FROM "Task" WHERE "parentId" IN (${placeholders}) GROUP BY "parentId"`,
+         ...taskIds,
+       );
+       
+       // Build a map for quick lookup
+       for (const { parentId, cnt } of countRows) {
+         childrenCountsMap.set(parentId, cnt);
+       }
+     }
+     
+     const tasksWithCount = rows.map(row => {
+       const mapped = mapTaskRow(row);
+       return { ...mapped, childrenCount: childrenCountsMap.get(mapped.id) ?? 0 };
+     });
 
     return NextResponse.json({ tasks: tasksWithCount });
   } catch (error) {
@@ -96,9 +113,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
-    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "parentId" TEXT REFERENCES "Task"("id") ON DELETE SET NULL'); } catch {}
-    try { await d1Run('CREATE INDEX IF NOT EXISTS "Task_parentId_idx" ON "Task"("parentId")'); } catch {}
 
     const data = await request.json();
     const taskSelectSql = await buildTaskSelectSql();

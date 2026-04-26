@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-
-  buildTaskSelectSql,
-  createId,
-  d1All,
-  d1First,
-  d1Run,
-  getAllDescendantIds,
-  getTaskDepth,
-  mapTaskRow,
-  nowIso,
-  toIsoDate,
-} from "@/lib/cloudflare-d1";
-
-
-export const dynamic = 'force-dynamic'
+ 
+   buildTaskSelectSql,
+   createId,
+   d1All,
+   d1First,
+   d1Run,
+   getAllDescendantIds,
+   getTaskDepth,
+   mapTaskRow,
+   nowIso,
+   toIsoDate,
+ } from "@/lib/cloudflare-d1";
+ 
+ 
+ export const dynamic = 'force-dynamic'
+ 
+ // Run migrations once at module load
+ const runTaskMigrations = async () => {
+   try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
+   try { await d1Run('ALTER TABLE "Task" ADD COLUMN "parentId" TEXT REFERENCES "Task"("id") ON DELETE SET NULL'); } catch {}
+ };
+ 
+ // Call migrations
+ runTaskMigrations().catch(console.error);
 type TaskRow = Parameters<typeof mapTaskRow>[0];
 type TaskUpdateRow = {
   id: string;
@@ -62,6 +71,50 @@ async function getTaskUpdates(taskId: string) {
     `,
     taskId,
   );
+}
+
+async function checkAndCompleteParent(taskId: string) {
+  const task = await d1First<{ parentId: string | null; status: string }>(
+    'SELECT "parentId", "status" FROM "Task" WHERE "id" = ?',
+    taskId,
+  );
+  if (task?.parentId) {
+    const parentId = task.parentId;
+    const incompleteCount = await d1First<{ cnt: number }>(
+      'SELECT COUNT(*) AS cnt FROM "Task" WHERE "parentId" = ? AND "status" != \'completed\'',
+      parentId,
+    );
+    if ((incompleteCount?.cnt ?? 0) === 0) {
+      const now = nowIso();
+      // Get parent's current status for audit log
+      const parentTask = await d1First<{ status: string }>(
+        'SELECT "status" FROM "Task" WHERE "id" = ?',
+        parentId,
+      );
+      const oldStatus = parentTask?.status ?? 'unknown';
+      
+      await d1Run(
+        'UPDATE "Task" SET "status" = \'completed\', "completion" = 1, "completedAt" = ?, "updatedAt" = ? WHERE "id" = ?',
+        now,
+        now,
+        parentId,
+      );
+      await d1Run(
+        `INSERT INTO "TaskAuditLog" ("id", "taskId", "userId", "action", "field", "oldValue", "newValue", "createdAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        createId(),
+        parentId,
+        null,
+        "update",
+        "status",
+        oldStatus,
+        "completed",
+        now,
+      );
+      
+      // Recursively check if the parent's parent should also be completed
+      await checkAndCompleteParent(parentId);
+    }
+  }
 }
 
 async function buildTaskResponse(taskId: string) {
@@ -130,13 +183,11 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "source" TEXT'); } catch {}
-    try { await d1Run('ALTER TABLE "Task" ADD COLUMN "parentId" TEXT REFERENCES "Task"("id") ON DELETE SET NULL'); } catch {}
-    const { id } = await params;
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
+  ) {
+   try {
+     const { id } = await params;
     const data = (await request.json()) as Record<string, unknown> & { newUpdateContent?: string | null };
     const currentTask = await d1First<BaseTaskRow>(
       'SELECT * FROM "Task" WHERE "id" = ? LIMIT 1',
@@ -337,38 +388,48 @@ export async function PUT(
       );
     }
 
-    // --- Completion roll-up: if all children completed, mark parent as completed ---
-    const taskAfterUpdate = await d1First<{ parentId: string | null; status: string }>(
-      'SELECT "parentId", "status" FROM "Task" WHERE "id" = ?',
-      id,
-    );
-    if (taskAfterUpdate?.parentId) {
-      const parentId = taskAfterUpdate.parentId;
-      const incompleteCount = await d1First<{ cnt: number }>(
-        'SELECT COUNT(*) AS cnt FROM "Task" WHERE "parentId" = ? AND "status" != \'completed\'',
-        parentId,
-      );
-      if ((incompleteCount?.cnt ?? 0) === 0) {
-        const now = nowIso();
-        await d1Run(
-          'UPDATE "Task" SET "status" = \'completed\', "completion" = 1, "completedAt" = ?, "updatedAt" = ? WHERE "id" = ?',
-          now,
-          now,
-          parentId,
-        );
-        await d1Run(
-          `INSERT INTO "TaskAuditLog" ("id", "taskId", "userId", "action", "field", "oldValue", "newValue", "createdAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          createId(),
-          parentId,
-          null,
-          "update",
-          "status",
-          "in_progress",
-          "completed",
-          now,
-        );
-      }
-    }
+     // --- Completion roll-up: if all children completed, mark parent as completed ---
+     const taskAfterUpdate = await d1First<{ parentId: string | null; status: string }>(
+       'SELECT "parentId", "status" FROM "Task" WHERE "id" = ?',
+       id,
+     );
+     if (taskAfterUpdate?.parentId) {
+       const parentId = taskAfterUpdate.parentId;
+       const incompleteCount = await d1First<{ cnt: number }>(
+         'SELECT COUNT(*) AS cnt FROM "Task" WHERE "parentId" = ? AND "status" != \'completed\'',
+         parentId,
+       );
+       if ((incompleteCount?.cnt ?? 0) === 0) {
+         const now = nowIso();
+         // Get parent's current status for audit log
+         const parentTask = await d1First<{ status: string }>(
+           'SELECT "status" FROM "Task" WHERE "id" = ?',
+           parentId,
+         );
+         const oldStatus = parentTask?.status ?? 'unknown';
+         
+         await d1Run(
+           'UPDATE "Task" SET "status" = \'completed\', "completion" = 1, "completedAt" = ?, "updatedAt" = ? WHERE "id" = ?',
+           now,
+           now,
+           parentId,
+         );
+         await d1Run(
+           `INSERT INTO "TaskAuditLog" ("id", "taskId", "userId", "action", "field", "oldValue", "newValue", "createdAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+           createId(),
+           parentId,
+           null,
+           "update",
+           "status",
+           oldStatus,
+           "completed",
+           now,
+         );
+         
+         // Recursively check if the parent's parent should also be completed
+         await checkAndCompleteParent(parentId);
+       }
+     }
 
     const task = await buildTaskResponse(id);
     return NextResponse.json({ task });

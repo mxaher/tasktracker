@@ -95,10 +95,13 @@ function mapSettingsRow(row: SettingsRow) {
 }
 
 async function ensureReminderColumns() {
-  try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappOwnerRemindersEnabled" BOOLEAN NOT NULL DEFAULT false'); } catch {}
-  try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappReminderOffsets" TEXT NOT NULL DEFAULT \'0,1\''); } catch {}
-  try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappReminderTemplate" TEXT NOT NULL DEFAULT \'Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.\''); } catch {}
+   try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappOwnerRemindersEnabled" BOOLEAN NOT NULL DEFAULT false'); } catch {}
+   try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappReminderOffsets" TEXT NOT NULL DEFAULT \'0,1\''); } catch {}
+   try { await d1Run('ALTER TABLE "AdminSettings" ADD COLUMN "whatsappReminderTemplate" TEXT NOT NULL DEFAULT \'Hi {{ownerName}}, this is a reminder for task {{taskTitle}} (Task #{{taskId}}). Due date: {{dueDate}}. Priority: {{priority}}.\''); } catch {}
 }
+
+// Call once at module load to avoid running on every request
+ensureReminderColumns().catch(console.error);
 
 async function ensureSettingsRow() {
   await ensureReminderColumns();
