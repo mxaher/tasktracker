@@ -23,7 +23,7 @@ interface EmployeeDetail extends Omit<Employee, 'properties'> {
   email?: string
   kpiTargets?: KPITargetRow[]
   kpiActuals?: KpiActualRow[]
-  customKpis?: unknown[]
+  customKpis?: any[]
   properties?: Array<{ propertyId: string; property?: { nameAr: string } }>
 }
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -34,17 +34,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { Users, Search, Plus, Edit, Trash2 } from 'lucide-react'
+import { Users, Search, Plus, Edit, Trash2, ShieldAlert } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { kpiApi } from '@/lib/api'
 
-function AchievementBar({ label, value }: { label: string; value: number }) {
+function AchievementBar({ label, value, isCustom }: { label: string; value: number; isCustom?: boolean }) {
   const pct = Math.min(Math.max(value, 0), 100)
   const color = pct >= 90 ? 'bg-green-500' : pct >= 70 ? 'bg-yellow-500' : 'bg-red-500'
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground flex items-center gap-1">
+          {label}
+          {isCustom && <Badge variant="outline" className="text-[10px] h-4 px-1 leading-none">خاص</Badge>}
+        </span>
         <span className={pct >= 90 ? 'text-green-600' : pct >= 70 ? 'text-yellow-600' : 'text-red-600'}>{pct.toFixed(1)}%</span>
       </div>
       <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -54,11 +57,13 @@ function AchievementBar({ label, value }: { label: string; value: number }) {
   )
 }
 
-function KpiManagementTab({ employeeId, year, currentTargets }: { employeeId: string, year: number, currentTargets: KPITargetRow[] }) {
+function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: { employeeId: string, year: number, currentTargets: KPITargetRow[], customKpis: any[] }) {
   const qc = useQueryClient()
   const { toast } = useToast()
   const [showAdd, setShowAdd] = useState(false)
+  const [showAddCustom, setShowAddCustom] = useState(false)
   const [newTarget, setNewTarget] = useState({ kpiId: '', target: 0, weight: 0 })
+  const [newCustom, setNewCustom] = useState({ nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 })
 
   const { data: allKpis = [] } = useQuery({
     queryKey: ['kpis'],
@@ -79,15 +84,19 @@ function KpiManagementTab({ employeeId, year, currentTargets }: { employeeId: st
     }
   })
 
+  const addCustomMutation = useMutation({
+    mutationFn: (data: any) => employeesApi.customKpis.create({ ...data, employeeId, year }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employee-detail', employeeId] })
+      qc.invalidateQueries({ queryKey: ['employees-kpis'] })
+      setShowAddCustom(false)
+      setNewCustom({ nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 })
+      toast({ title: 'تم إضافة المؤشر الخاص' })
+    }
+  })
+
   const deleteMutation = useMutation({
-    // Using upsert with target 0 or a dedicated delete if available. 
-    // Since api.ts only has upsert, we might need a delete endpoint or just set target to 0 if the backend handles it.
-    // Let's assume for now we want to support deletion. I will check if there is a delete for targets.
-    // Actually kpi-targets usually has a way to remove. If not, I'll just use upsert with a flag or something.
-    // Based on api.ts, it's just upsert.
     mutationFn: async (targetId: string) => {
-      // If no delete endpoint, we might need to add one. Let's check api.ts again.
-      // kpiApi.targets only has list and upsert.
       return fetch(`/api/kpi-targets/${targetId}`, { method: 'DELETE' }).then(res => res.json())
     },
     onSuccess: () => {
@@ -97,92 +106,171 @@ function KpiManagementTab({ employeeId, year, currentTargets }: { employeeId: st
     }
   })
 
+  const deleteCustomMutation = useMutation({
+    mutationFn: (id: string) => employeesApi.customKpis.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employee-detail', employeeId] })
+      qc.invalidateQueries({ queryKey: ['employees-kpis'] })
+      toast({ title: 'تم حذف المؤشر الخاص' })
+    }
+  })
+
   return (
-    <div className="space-y-4 mt-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium">المؤشرات الحالية</h3>
-        <Button size="sm" onClick={() => setShowAdd(true)} className="h-8 gap-1">
-          <Plus className="h-3.5 w-3.5" /> إضافة مؤشر
-        </Button>
-      </div>
+    <div className="space-y-6 mt-4">
+      <section className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-bold border-s-4 border-primary ps-2">المؤشرات العامة (المشتركة)</h3>
+          <Button size="sm" onClick={() => setShowAdd(true)} className="h-8 gap-1" variant="outline">
+            <Plus className="h-3.5 w-3.5" /> إسناد مؤشر عام
+          </Button>
+        </div>
 
-      <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-xs">
-          <thead className="bg-muted">
-            <tr>
-              <th className="text-start px-3 py-2">المؤشر</th>
-              <th className="text-end px-3 py-2">المستهدف</th>
-              <th className="text-end px-3 py-2">الوزن</th>
-              <th className="px-3 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {currentTargets.map((t) => (
-              <tr key={t.id} className="border-t">
-                <td className="px-3 py-2">{t.kpi.nameAr}</td>
-                <td className="px-3 py-2 text-end">{t.target}</td>
-                <td className="px-3 py-2 text-end">{t.weight}%</td>
-                <td className="px-3 py-2 text-end">
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={() => deleteMutation.mutate(t.id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {currentTargets.length === 0 && (
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-xs">
+            <thead className="bg-muted">
               <tr>
-                <td colSpan={4} className="px-3 py-8 text-center text-muted-foreground">لا توجد مؤشرات مسندة</td>
+                <th className="text-start px-3 py-2">المؤشر</th>
+                <th className="text-end px-3 py-2">المستهدف</th>
+                <th className="text-end px-3 py-2">الوزن</th>
+                <th className="px-3 py-2" />
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {currentTargets.map((t) => (
+                <tr key={t.id} className="border-t">
+                  <td className="px-3 py-2">{t.kpi.nameAr}</td>
+                  <td className="px-3 py-2 text-end">{t.target}</td>
+                  <td className="px-3 py-2 text-end">{t.weight}%</td>
+                  <td className="px-3 py-2 text-end">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={() => deleteMutation.mutate(t.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {currentTargets.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-3 py-4 text-center text-muted-foreground italic">لا توجد مؤشرات عامة مسندة</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      {showAdd && (
-        <Card className="border-primary/50 bg-primary/5">
-          <CardContent className="pt-4 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">اختر المؤشر</Label>
-                <Select value={newTarget.kpiId} onValueChange={(v) => setNewTarget(p => ({ ...p, kpiId: v }))}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="اختر مؤشرًا..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allKpis.map(k => (
-                      <SelectItem key={k.id} value={k.id}>{k.nameAr} ({k.category === 'financial' ? 'مالي' : 'تنظيمي'})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        {showAdd && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="pt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">اختر المؤشر</Label>
+                  <Select value={newTarget.kpiId} onValueChange={(v) => setNewTarget(p => ({ ...p, kpiId: v }))}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="اختر مؤشرًا..." /></SelectTrigger>
+                    <SelectContent>
+                      {allKpis.map(k => (
+                        <SelectItem key={k.id} value={k.id}>{k.nameAr} ({k.category === 'financial' ? 'مالي' : 'تنظيمي'})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">المستهدف</Label>
+                  <Input type="number" value={newTarget.target} onChange={(e) => setNewTarget(p => ({ ...p, target: parseFloat(e.target.value) }))} className="h-8 text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الوزن (%)</Label>
+                  <Input type="number" value={newTarget.weight} onChange={(e) => setNewTarget(p => ({ ...p, weight: parseFloat(e.target.value) }))} className="h-8 text-xs" />
+                </div>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">المستهدف</Label>
-                <Input 
-                  type="number" 
-                  value={newTarget.target} 
-                  onChange={(e) => setNewTarget(p => ({ ...p, target: parseFloat(e.target.value) }))}
-                  className="h-8 text-xs"
-                />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>إلغاء</Button>
+                <Button size="sm" onClick={() => upsertMutation.mutate(newTarget)} disabled={!newTarget.kpiId || upsertMutation.isPending}>إسناد</Button>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">الوزن (%)</Label>
-                <Input 
-                  type="number" 
-                  value={newTarget.weight} 
-                  onChange={(e) => setNewTarget(p => ({ ...p, weight: parseFloat(e.target.value) }))}
-                  className="h-8 text-xs"
-                />
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-bold border-s-4 border-orange-500 ps-2">المؤشرات الخاصة (بالموظف فقط)</h3>
+          <Button size="sm" onClick={() => setShowAddCustom(true)} className="h-8 gap-1" variant="outline">
+            <Plus className="h-3.5 w-3.5" /> إضافة مؤشر خاص
+          </Button>
+        </div>
+
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-xs">
+            <thead className="bg-muted">
+              <tr>
+                <th className="text-start px-3 py-2">المؤشر</th>
+                <th className="text-end px-3 py-2">المستهدف</th>
+                <th className="text-end px-3 py-2">الفعلي</th>
+                <th className="text-end px-3 py-2">الوزن</th>
+                <th className="px-3 py-2" />
+              </tr>
+            </thead>
+            <tbody>
+              {customKpis.map((ck) => (
+                <tr key={ck.id} className="border-t">
+                  <td className="px-3 py-2 font-medium">{ck.nameAr}</td>
+                  <td className="px-3 py-2 text-end">{ck.target}</td>
+                  <td className="px-3 py-2 text-end">{ck.actual}</td>
+                  <td className="px-3 py-2 text-end">{ck.weight}%</td>
+                  <td className="px-3 py-2 text-end">
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={() => deleteCustomMutation.mutate(ck.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {customKpis.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground italic">لا توجد مؤشرات خاصة</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {showAddCustom && (
+          <Card className="border-orange-500/50 bg-orange-500/5">
+            <CardContent className="pt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">اسم المؤشر الخاص</Label>
+                  <Input value={newCustom.nameAr} onChange={(e) => setNewCustom(p => ({ ...p, nameAr: e.target.value }))} className="h-8 text-xs" placeholder="مثال: إنجاز مشروع أتمتة العقود" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الفئة</Label>
+                  <Select value={newCustom.category} onValueChange={(v) => setNewCustom(p => ({ ...p, category: v }))}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="financial">مالي</SelectItem>
+                      <SelectItem value="organizational">تنظيمي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الوزن (%)</Label>
+                  <Input type="number" value={newCustom.weight} onChange={(e) => setNewCustom(p => ({ ...p, weight: parseFloat(e.target.value) }))} className="h-8 text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">المستهدف</Label>
+                  <Input type="number" value={newCustom.target} onChange={(e) => setNewCustom(p => ({ ...p, target: parseFloat(e.target.value) }))} className="h-8 text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الفعلي الحالي</Label>
+                  <Input type="number" value={newCustom.actual} onChange={(e) => setNewCustom(p => ({ ...p, actual: parseFloat(e.target.value) }))} className="h-8 text-xs" />
+                </div>
               </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>إلغاء</Button>
-              <Button size="sm" onClick={() => upsertMutation.mutate(newTarget)} disabled={!newTarget.kpiId || upsertMutation.isPending}>
-                إضافة
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setShowAddCustom(false)}>إلغاء</Button>
+                <Button size="sm" className="bg-orange-600 hover:bg-orange-700" onClick={() => addCustomMutation.mutate(newCustom)} disabled={!newCustom.nameAr || addCustomMutation.isPending}>إضافة</Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </section>
     </div>
   )
 }
@@ -344,19 +432,23 @@ export default function EmployeesSection() {
               <Card>
                 <CardContent className="pt-4 space-y-4">
                   {(() => {
-            const computeAchievement = (target: KPITargetRow) => {
-              if (!employeeDetail?.kpiActuals || target.target <= 0) return 0
-              const actuals = employeeDetail.kpiActuals.filter(a => a.kpiId === target.kpi.id)
-              const actual = actuals.reduce((s, a) => s + a.actual, 0)
-              return (actual / target.target) * 100
+            const current = []
+            if (employeeDetail?.kpiTargets) {
+              employeeDetail.kpiTargets.filter(t => t.kpi.category === 'financial').forEach(t => {
+                const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
+                const actual = actuals.reduce((s, a) => s + a.actual, 0)
+                const val = t.target > 0 ? (actual / t.target) * 100 : 0
+                current.push(<AchievementBar key={t.id} label={t.kpi.nameAr} value={val} />)
+              })
             }
-            return employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'financial').map((t) => (
-              <AchievementBar key={t.id} label={t.kpi.nameAr} value={computeAchievement(t)} />
-            ))
+            if (employeeDetail?.customKpis) {
+              employeeDetail.customKpis.filter(k => k.category === 'financial').forEach(k => {
+                const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
+                current.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
+              })
+            }
+            return current.length > 0 ? current : <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات مالية</p>
           })()}
-                  {!employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'financial').length && (
-                    <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات مالية</p>
-                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -364,19 +456,23 @@ export default function EmployeesSection() {
               <Card>
                 <CardContent className="pt-4 space-y-4">
                   {(() => {
-            const computeAchievement = (target: KPITargetRow) => {
-              if (!employeeDetail?.kpiActuals || target.target <= 0) return 0
-              const actuals = employeeDetail.kpiActuals.filter(a => a.kpiId === target.kpi.id)
-              const actual = actuals.reduce((s, a) => s + a.actual, 0)
-              return (actual / target.target) * 100
+            const current = []
+            if (employeeDetail?.kpiTargets) {
+              employeeDetail.kpiTargets.filter(t => t.kpi.category === 'organizational').forEach(t => {
+                const actuals = employeeDetail.kpiActuals?.filter(a => a.kpiId === t.kpi.id) ?? []
+                const actual = actuals.reduce((s, a) => s + a.actual, 0)
+                const val = t.target > 0 ? (actual / t.target) * 100 : 0
+                current.push(<AchievementBar key={t.id} label={t.kpi.nameAr} value={val} />)
+              })
             }
-            return employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'organizational').map((t) => (
-              <AchievementBar key={t.id} label={t.kpi.nameAr} value={computeAchievement(t)} />
-            ))
+            if (employeeDetail?.customKpis) {
+              employeeDetail.customKpis.filter(k => k.category === 'organizational').forEach(k => {
+                const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
+                current.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
+              })
+            }
+            return current.length > 0 ? current : <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات تنظيمية</p>
           })()}
-                  {!employeeDetail?.kpiTargets?.filter((t) => t.kpi.category === 'organizational').length && (
-                    <p className="text-muted-foreground text-sm text-center py-4">لا توجد مؤشرات تنظيمية</p>
-                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -385,6 +481,7 @@ export default function EmployeesSection() {
                 employeeId={selectedEmployee?.id ?? ''} 
                 year={selectedYear}
                 currentTargets={employeeDetail?.kpiTargets ?? []}
+                customKpis={employeeDetail?.customKpis ?? []}
               />
             </TabsContent>
           </Tabs>
