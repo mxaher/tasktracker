@@ -1,0 +1,16 @@
+{
+  "name": "@tasktracker/cloudflare-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Cloudflare Workers and D1",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
+    "@modelcontextprotocol/server": "latest",
+    "dotenv": "^16.4.0",
+    "zod": "^4.3.6"
+  }
+}
