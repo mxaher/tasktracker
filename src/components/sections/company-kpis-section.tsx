@@ -140,11 +140,12 @@ export default function CompanyKpisSection() {
   const qc = useQueryClient()
   const { toast } = useToast()
 
-  const { data: kpis = [], isLoading } = useQuery({
+  const { data: kpis = [], isLoading, error } = useQuery({
     queryKey: ['company-kpis', selectedYear, categoryFilter],
     queryFn: async () => {
       const res = await companyKpisApi.list({ year: selectedYear, category: categoryFilter === 'all' ? undefined : categoryFilter })
-      return res.success ? res.data : []
+      if (!res.success) throw new Error('Failed to fetch KPIs')
+      return res.data
     },
   })
 
@@ -214,6 +215,8 @@ export default function CompanyKpisSection() {
 
       {isLoading ? (
         <p className="text-center text-muted-foreground py-12">جارٍ التحميل...</p>
+      ) : error ? (
+        <p className="text-center text-destructive py-12">خطأ: {String(error)}</p>
       ) : kpis.length === 0 ? (
         <p className="text-center text-muted-foreground py-12">لا توجد مؤشرات</p>
       ) : (
