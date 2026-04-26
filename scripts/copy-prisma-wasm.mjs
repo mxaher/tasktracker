@@ -5,8 +5,9 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const srcDir = join(__dirname, "node_modules/.prisma/client");
-const destDir = join(__dirname, ".open-next/server-functions/default/node_modules/.prisma/client");
+const projectRoot = join(__dirname, "..");
+const srcDir = join(projectRoot, "node_modules/.prisma/client");
+const destDir = join(projectRoot, ".open-next/server-functions/default/node_modules/.prisma/client");
 
 if (!existsSync(destDir)) {
   mkdirSync(destDir, { recursive: true });

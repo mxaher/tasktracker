@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-d1"],
+  serverExternalPackages: ["@prisma/adapter-d1"],
 
   images: {
     unoptimized: true,

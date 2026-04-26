@@ -1,6 +1,6 @@
 import { PrismaD1 } from "@prisma/adapter-d1";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client/wasm";
 import { getErrorDetails } from "./api-error";
 
 if (!("instantiateStreaming" in WebAssembly)) {
