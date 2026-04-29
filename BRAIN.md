@@ -174,6 +174,39 @@ If direction = LOWER_IS_BETTER:
 Score is clamped: max 100 (or optionally uncapped for stretch goals)
 ```
 
+### Company KPI Monthly Achievement — Cumulative Formula
+
+For **Company KPIs** with monthly data entry, achievement is computed using a
+**cumulative annual formula**, not a pro-rated monthly slice:
+
+```
+achievement = (totalActual / annualTarget) × 100
+```
+
+Where `totalActual` is the sum of all months entered so far for the year.
+
+**Why cumulative, not pro-rated?**
+
+The previous implementation used a pro-rated target:
+```
+proRateTarget = (annualTarget / 12) × monthsEntered
+achievement   = totalActual / proRateTarget × 100
+```
+
+This is mathematically incorrect for cumulative KPIs (Revenue, Net Profit, etc.).
+Example: Annual target = 100M. Jan actual = 10M, Feb actual = 7M.
+
+| Formula | Result | Interpretation |
+|---|---|---|
+| Pro-rated (old) | 17M / 16.67M = **102%** | False over-achievement signal |
+| Cumulative (new) | 17M / 100M = **17%** | Correct year-to-date progress |
+
+The cumulative formula is implemented in the `calcAchievement()` utility function
+in `src/components/sections/company-kpis-section.tsx` and applied consistently
+across individual KPI cards, the weighted overall banner, and per-category summaries.
+
+The 150% cap is retained to prevent extreme outliers from distorting the UI progress bar.
+
 ### Alert Thresholds
 
 Each alert record defines:

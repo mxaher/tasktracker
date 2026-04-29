@@ -46,6 +46,22 @@ function getColor(pct: number) {
   return { hex: '#dc2626', cls: 'text-red-600', bg: 'bg-red-500' }
 }
 
+/**
+ * calcAchievement — Cumulative annual achievement.
+ *
+ * Uses the full annual target as the denominator regardless of how many months
+ * have been entered. This is the correct formula for cumulative KPIs (Revenue,
+ * Net Profit, etc.) because partial-year actuals should always be measured
+ * against the full annual goal, not a pro-rated slice.
+ *
+ * Formula: achievement = (totalActual / annualTarget) × 100
+ * Capped at 150% to prevent UI distortion from extreme outliers.
+ */
+function calcAchievement(totalActual: number, annualTarget: number): number {
+  if (annualTarget <= 0) return 0
+  return Math.min((totalActual / annualTarget) * 100, 150)
+}
+
 function MiniSparkline({ data, target }: { data: CompanyKPIMonthly[]; target: number }) {
   if (!data || data.length === 0) return null
   const sorted = [...data].sort((a, b) => a.month - b.month)
@@ -95,10 +111,8 @@ function KPICard({ kpi, year, onEdit, onDelete }: {
 
   const enteredMonths = kpi.monthlyData?.filter(m => m.actual > 0) ?? []
   const totalActual = enteredMonths.reduce((s, m) => s + m.actual, 0)
-  // Pro-rate: if target is annual and we have partial months, compare proportionally
-  const monthsEntered = enteredMonths.length
-  const proRateTarget = monthsEntered > 0 && kpi.target > 0 ? (kpi.target / 12) * monthsEntered : kpi.target
-  const achievement = proRateTarget > 0 ? Math.min((totalActual / proRateTarget) * 100, 150) : 0
+  // Cumulative achievement: always measure against the full annual target
+  const achievement = calcAchievement(totalActual, kpi.target)
   const { hex: color, bg: colorBg } = getColor(achievement)
 
   const getMonthActual = (month: number) =>
@@ -252,7 +266,7 @@ export default function CompanyKpisSection() {
 
   const filtered = categoryFilter === 'all' ? kpis : kpis.filter((k: CompanyKPI) => k.category === categoryFilter)
 
-  // Overall weighted achievement — only count KPIs that have at least one month entered
+  // Overall weighted achievement — cumulative against full annual targets
   const kpisWithData = kpis.filter((k: CompanyKPI) => (k.monthlyData?.some(m => m.actual > 0)))
   const totalWeight = kpis.reduce((s: number, k: CompanyKPI) => s + k.weight, 0)
   const weightOk = Math.abs(totalWeight - 100) < 0.1
@@ -260,8 +274,7 @@ export default function CompanyKpisSection() {
   const overallAchievement = kpis.reduce((acc: number, kpi: CompanyKPI) => {
     const entered = kpi.monthlyData?.filter(m => m.actual > 0) ?? []
     const totalActual = entered.reduce((s, m) => s + m.actual, 0)
-    const proRate = entered.length > 0 && kpi.target > 0 ? (kpi.target / 12) * entered.length : kpi.target
-    const ach = proRate > 0 ? Math.min((totalActual / proRate) * 100, 150) : 0
+    const ach = calcAchievement(totalActual, kpi.target)
     return acc + (ach * (kpi.weight / 100))
   }, 0)
   const { hex: overallColor, bg: overallBg } = getColor(overallAchievement)
@@ -273,8 +286,7 @@ export default function CompanyKpisSection() {
     const catAch = catKpis.reduce((acc: number, kpi: CompanyKPI) => {
       const entered = kpi.monthlyData?.filter((m: CompanyKPIMonthly) => m.actual > 0) ?? []
       const totalActual = entered.reduce((s: number, m: CompanyKPIMonthly) => s + m.actual, 0)
-      const proRate = entered.length > 0 && kpi.target > 0 ? (kpi.target / 12) * entered.length : kpi.target
-      const ach = proRate > 0 ? Math.min((totalActual / proRate) * 100, 150) : 0
+      const ach = calcAchievement(totalActual, kpi.target)
       return acc + ach
     }, 0) / catKpis.length
     return { cat, label: CATEGORIES[cat], count: catKpis.length, ach: catAch }
