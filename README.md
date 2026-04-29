@@ -35,7 +35,8 @@ The architecture runs **locally on SQLite via Prisma** and **in production on Cl
 ## Key Features
 
 - **Task Management** — Full CRUD for tasks with status, priority, assignment to employees, and deadline tracking
-- **KPI Engine** — Multi-level KPIs: company-level, employee-level, and custom KPIs with monthly targets and actuals
+- **KPI Engine** — Multi-level KPIs: company-level (financial and non-financial), employee-level, and custom KPIs with flexible tracking models
+- **Company KPI Categories** — Financial KPIs use a 12-month cumulative grid; Strategic, Organizational, and Operational KPIs use a single percentage achievement entry
 - **Employee & Manager Profiles** — Position tracking, hierarchical manager-employee relationships
 - **Notification System** — Email notifications via Resend and Telegram bot integration for real-time alerts
 - **Scheduled Reminders** — Cron-based reminder jobs triggered via a secret-protected API endpoint
@@ -100,7 +101,7 @@ tasktracker/
 │   │   │   ├── alerts/             # Alert configuration and triggers
 │   │   │   ├── company/            # Company entity CRUD
 │   │   │   ├── company-kpis/       # Company-level KPI definitions
-│   │   │   ├── company-kpis-monthly/ # Monthly KPI snapshots
+│   │   │   ├── company-kpis-monthly/ # Monthly KPI snapshots (financial) + single achievement (non-financial via month=0)
 │   │   │   ├── cron/               # Scheduled job endpoint (CRON_SECRET protected)
 │   │   │   ├── employee-custom-kpis/ # Custom KPI assignments per employee
 │   │   │   ├── employee-positions/ # Position/role definitions
@@ -127,6 +128,8 @@ tasktracker/
 │   │   ├── layout.tsx              # Root layout
 │   │   └── page.tsx                # Root redirect
 │   ├── components/                 # Shared and domain-specific UI components
+│   │   └── sections/
+│   │       └── company-kpis-section.tsx  # Company KPI page — handles both financial and non-financial KPI types
 │   ├── hooks/                      # Custom React hooks
 │   └── lib/                        # Core utilities: DB client, email helpers, validators
 ├── upload/                         # Incoming uploaded file storage
@@ -157,7 +160,7 @@ The full schema lives in [`prisma/schema.prisma`](./prisma/schema.prisma). The c
 | `KpiTarget` | Target value for a KPI within a time period |
 | `KpiActual` | Recorded actual value for a KPI |
 | `CompanyKpi` | Company-level KPI association |
-| `CompanyKpiMonthly` | Monthly rollup of company KPI data |
+| `CompanyKpiMonthly` | Monthly rollup for financial KPIs (month 1–12); sentinel slot (month=0) for non-financial single achievement |
 | `EmployeeKpi` | Employee-level KPI assignment |
 | `EmployeeCustomKpi` | Bespoke KPI defined for a specific employee |
 | `Notification` | In-app notification record |
@@ -166,6 +169,15 @@ The full schema lives in [`prisma/schema.prisma`](./prisma/schema.prisma). The c
 | `Settings` | Global app configuration store |
 | `Property` | Dynamic property/custom field definitions |
 | `User` | Application user with role and auth context |
+
+### Company KPI Category Behavior
+
+| Category | Type | Data Entry | Achievement Formula | Target Field |
+|---|---|---|---|---|
+| `financial` | Cumulative numeric | 12-month grid (month 1–12) | `Σ actuals / annualTarget × 100` | Required (annual value) |
+| `strategic` | Percentage-based | Single field (month=0 sentinel) | Direct percentage value | Hidden (implicit 100%) |
+| `organizational` | Percentage-based | Single field (month=0 sentinel) | Direct percentage value | Hidden (implicit 100%) |
+| `operational` | Percentage-based | Single field (month=0 sentinel) | Direct percentage value | Hidden (implicit 100%) |
 
 ---
 
@@ -185,7 +197,7 @@ All endpoints live under `/api/`. Every route follows REST conventions.
 | `/api/kpi-targets` | GET, POST | Set KPI targets |
 | `/api/kpi-actuals` | GET, POST | Record KPI actuals |
 | `/api/company-kpis` | GET, POST | Company KPI links |
-| `/api/company-kpis-monthly` | GET, POST | Monthly KPI snapshots |
+| `/api/company-kpis-monthly` | GET, POST | Monthly KPI data (financial: month 1–12; non-financial: month=0 sentinel) |
 | `/api/employees-kpis` | GET, POST | Employee KPI links |
 | `/api/employee-custom-kpis` | GET, POST | Custom employee KPIs |
 | `/api/notifications` | GET, POST, PATCH | Notifications |

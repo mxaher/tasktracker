@@ -174,38 +174,70 @@ If direction = LOWER_IS_BETTER:
 Score is clamped: max 100 (or optionally uncapped for stretch goals)
 ```
 
-### Company KPI Monthly Achievement — Cumulative Formula
+### Company KPI Categories & Achievement Model
 
-For **Company KPIs** with monthly data entry, achievement is computed using a
-**cumulative annual formula**, not a pro-rated monthly slice:
+Company KPIs are divided into two behaviorally distinct types:
+
+#### Financial KPIs (category: `financial`)
+
+These KPIs track cumulative numeric values over the year (e.g., Revenue, Net Profit). Achievement is computed using a **cumulative annual formula** against a full annual target:
 
 ```
-achievement = (totalActual / annualTarget) × 100
+achievement = (Σ monthly_actuals[month 1..12] / annualTarget) × 100
 ```
 
-Where `totalActual` is the sum of all months entered so far for the year.
+Data is entered month by month through a **12-month grid** (Jan–Dec).
+Each cell stores its value in `CompanyKpiMonthly` with `month = 1..12`.
 
 **Why cumulative, not pro-rated?**
 
-The previous implementation used a pro-rated target:
-```
-proRateTarget = (annualTarget / 12) × monthsEntered
-achievement   = totalActual / proRateTarget × 100
-```
-
-This is mathematically incorrect for cumulative KPIs (Revenue, Net Profit, etc.).
-Example: Annual target = 100M. Jan actual = 10M, Feb actual = 7M.
+A pro-rated approach (`totalActual / (annualTarget/12 × monthsEntered)`) gives a false signal. Example: Annual target = 100M, Jan = 10M, Feb = 7M:
 
 | Formula | Result | Interpretation |
 |---|---|---|
-| Pro-rated (old) | 17M / 16.67M = **102%** | False over-achievement signal |
-| Cumulative (new) | 17M / 100M = **17%** | Correct year-to-date progress |
+| Pro-rated (old) | 17M / 16.67M = **102%** | False over-achievement |
+| Cumulative (new) | 17M / 100M = **17%** | Correct YTD progress |
 
-The cumulative formula is implemented in the `calcAchievement()` utility function
-in `src/components/sections/company-kpis-section.tsx` and applied consistently
-across individual KPI cards, the weighted overall banner, and per-category summaries.
+The 150% cap is retained to prevent extreme outliers from distorting the progress bar.
 
-The 150% cap is retained to prevent extreme outliers from distorting the UI progress bar.
+#### Non-Financial KPIs (categories: `strategic`, `organizational`, `operational`)
+
+These KPIs measure qualitative outcomes expressed as a **single percentage** (e.g., "Strategy Execution Completion", "Employee Satisfaction Score", "Process Automation Coverage"). They do **not** accumulate monthly — there is one achievement number per year, entered once when known.
+
+**UI Behavior:**
+- No monthly grid is shown
+- A single `SingleAchievementInput` field is rendered instead
+- The user clicks the field, types a percentage (0–100), and saves
+- The input shows a large colored percentage badge (green ≥90%, yellow ≥70%, red <70%)
+- A `CheckCircle2` icon confirms the value has been entered
+
+**Storage Mechanism:**
+
+The single achievement value is stored using `month = 0` as a sentinel slot in the same `CompanyKpiMonthly` table — no schema changes required:
+
+```
+CompanyKpiMonthly { kpiId, year, month: 0, actual: <achieved %> }
+```
+
+The value `0` is never a valid calendar month (months are 1–12), so it is a safe and unambiguous sentinel. The monthly grid for financial KPIs explicitly filters `month > 0` to exclude this slot.
+
+**Achievement Calculation for Non-Financial KPIs:**
+
+```
+achievement = month_0_entry.actual   (already a percentage, 0–100)
+```
+
+The target is implicitly 100% — no `annualTarget` field is required at creation time. In the add/edit form, the target field is hidden for non-financial categories and replaced with a "الهدف: 100%" label.
+
+### Achievement Aggregation
+
+Both KPI types feed into the same weighted overall achievement banner:
+
+```
+overallAchievement = Σ (kpi.achievement × kpi.weight / 100)
+```
+
+Where `kpi.achievement` is computed using the appropriate formula per category (cumulative for financial, sentinel value for non-financial). Category-level averages in the summary panel follow the same branching logic.
 
 ### Alert Thresholds
 
@@ -361,10 +393,11 @@ These invariants must always hold:
 
 1. **A Task must have at least one assignee** — tasks cannot exist in a vacuum; they must reference an Employee or User.
 2. **KpiActual period must match a KpiTarget period** — actuals without a corresponding target are accepted but will produce a `NO_TARGET` evaluation state (not a score).
-3. **CompanyKpiMonthly is derived, not primary** — monthly snapshots are computed from KpiActuals; direct modification should be avoided.
-4. **Notification records are immutable after SENT** — once dispatched, a notification is never edited; if resend is needed, a new record is created.
-5. **Soft deletes preferred** — entities use an `archivedAt` or `active` flag rather than hard deletion to preserve audit trail.
-6. **Employee-Manager relationship is single-parent** — an employee has exactly one direct manager at any time (managed by position records).
+3. **CompanyKpiMonthly `month = 0` is a reserved sentinel** — this slot stores the single achievement percentage for non-financial KPIs (strategic, organizational, operational). It must never be written by the monthly financial grid (which filters `month > 0`).
+4. **Non-financial KPI achievement is a direct percentage** — the `actual` value stored at `month = 0` is already a percentage (0–100). It is not divided by any target in calculations.
+5. **Notification records are immutable after SENT** — once dispatched, a notification is never edited; if resend is needed, a new record is created.
+6. **Soft deletes preferred** — entities use an `archivedAt` or `active` flag rather than hard deletion to preserve audit trail.
+7. **Employee-Manager relationship is single-parent** — an employee has exactly one direct manager at any time (managed by position records).
 
 ---
 
