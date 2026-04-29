@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/lib/store'
 import { employeesApi, kpiApi } from '@/lib/api'
-import type { Employee } from '@/lib/types'
+import type { Employee, KPICategory } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -90,7 +90,9 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
   const [showAdd, setShowAdd] = useState(false)
   const [showAddCustom, setShowAddCustom] = useState(false)
   const [newTarget, setNewTarget] = useState({ kpiId: '', target: 0, weight: 0 })
-  const [newCustom, setNewCustom] = useState({ nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 })
+  const [newCustom, setNewCustom] = useState<{ nameAr: string; category: KPICategory; target: number; actual: number; weight: number }>({
+    nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0
+  })
 
   const { data: allKpis = [] } = useQuery({
     queryKey: ['kpis'],
@@ -274,7 +276,10 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">الفئة</Label>
-                  <Select value={newCustom.category} onValueChange={(v) => setNewCustom(p => ({ ...p, category: v }))}>
+                  <Select
+                    value={newCustom.category}
+                    onValueChange={(v) => setNewCustom(p => ({ ...p, category: v as KPICategory }))}
+                  >
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="financial">مالي</SelectItem>
