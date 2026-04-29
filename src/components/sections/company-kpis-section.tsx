@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { BarChart3, Plus, Edit, Trash2, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { BarChart3, Plus, Edit, Trash2, AlertCircle, TrendingUp, TrendingDown, Minus, CheckCircle2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 const CATEGORIES: Record<string, string> = {
@@ -38,6 +38,9 @@ const CATEGORY_BG: Record<string, string> = {
 
 const MONTHS_SHORT = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
 
+// Non-financial categories use a single percentage achievement — no monthly tracking
+const NON_FINANCIAL_CATEGORIES = ['strategic', 'organizational', 'operational']
+
 const emptyForm = { code: '', nameAr: '', nameEn: '', category: 'financial', weight: 0, target: 0 }
 
 function getColor(pct: number) {
@@ -48,12 +51,6 @@ function getColor(pct: number) {
 
 /**
  * calcAchievement — Cumulative annual achievement.
- *
- * Uses the full annual target as the denominator regardless of how many months
- * have been entered. This is the correct formula for cumulative KPIs (Revenue,
- * Net Profit, etc.) because partial-year actuals should always be measured
- * against the full annual goal, not a pro-rated slice.
- *
  * Formula: achievement = (totalActual / annualTarget) × 100
  * Capped at 150% to prevent UI distortion from extreme outliers.
  */
@@ -92,6 +89,102 @@ function MiniSparkline({ data, target }: { data: CompanyKPIMonthly[]; target: nu
   )
 }
 
+/**
+ * SingleAchievementInput — used for non-financial KPIs (strategic, org, operational).
+ * These KPIs are percentage-based with a single year-end achievement value.
+ * The user enters one number (0–100) representing the achieved percentage.
+ * We store this value in month=0 (a sentinel slot) via the monthly upsert API.
+ */
+function SingleAchievementInput({ kpi, year }: { kpi: CompanyKPI; year: number }) {
+  const qc = useQueryClient()
+  const [editing, setEditing] = useState(false)
+  const [inputVal, setInputVal] = useState('')
+
+  // Sentinel: we store the single achievement in month=0
+  const storedEntry = kpi.monthlyData?.find((m: CompanyKPIMonthly) => m.month === 0)
+  const achieved = storedEntry?.actual ?? 0
+  const hasValue = achieved > 0
+
+  const upsert = useMutation({
+    mutationFn: (actual: number) =>
+      companyKpisApi.monthly.upsert({ kpiId: kpi.id, year, month: 0, actual }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['company-kpis'] })
+      setEditing(false)
+    },
+  })
+
+  const { hex: color, bg: colorBg } = getColor(achieved)
+
+  return (
+    <div className="space-y-3">
+      {/* Achievement bar */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-muted-foreground">الهدف: <span className="font-medium text-foreground">100%</span></span>
+            <span className="font-bold tabular-nums" style={{ color }}>{achieved.toFixed(1)}%</span>
+          </div>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ${colorBg}`}
+              style={{ width: `${Math.min(achieved, 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Single value input */}
+      <div className="border rounded-lg p-3 bg-muted/20">
+        <p className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wide">نسبة الإنجاز المحققة</p>
+        {editing ? (
+          <div className="flex items-center gap-2">
+            <Input
+              autoFocus
+              type="number"
+              min={0}
+              max={100}
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              onBlur={() => {
+                if (inputVal !== '') {
+                  upsert.mutate(parseFloat(inputVal))
+                } else {
+                  setEditing(false)
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                if (e.key === 'Escape') setEditing(false)
+              }}
+              className="h-8 text-sm w-32 text-center"
+              placeholder="0 – 100"
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setEditing(true); setInputVal(hasValue ? String(achieved) : '') }}
+            className="flex items-center gap-2 group"
+            title="انقر لتعديل نسبة الإنجاز"
+          >
+            {hasValue ? (
+              <>
+                <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color }} />
+                <span className="text-2xl font-black tabular-nums" style={{ color }}>{achieved.toFixed(1)}%</span>
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
+                انقر لإدخال نسبة الإنجاز
+              </span>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function KPICard({ kpi, year, onEdit, onDelete }: {
   kpi: CompanyKPI; year: number;
   onEdit: () => void; onDelete: () => void;
@@ -99,6 +192,8 @@ function KPICard({ kpi, year, onEdit, onDelete }: {
   const qc = useQueryClient()
   const [editingMonth, setEditingMonth] = useState<number | null>(null)
   const [monthValue, setMonthValue] = useState('')
+
+  const isNonFinancial = NON_FINANCIAL_CATEGORIES.includes(kpi.category)
 
   const upsertMonthly = useMutation({
     mutationFn: ({ month, actual }: { month: number; actual: number }) =>
@@ -109,10 +204,21 @@ function KPICard({ kpi, year, onEdit, onDelete }: {
     },
   })
 
-  const enteredMonths = kpi.monthlyData?.filter(m => m.actual > 0) ?? []
-  const totalActual = enteredMonths.reduce((s, m) => s + m.actual, 0)
-  // Cumulative achievement: always measure against the full annual target
-  const achievement = calcAchievement(totalActual, kpi.target)
+  // For non-financial: achievement comes from the single sentinel entry (month=0)
+  // For financial: cumulative sum of monthly actuals vs annual target
+  let achievement: number
+  let totalActual: number
+
+  if (isNonFinancial) {
+    const sentinelEntry = kpi.monthlyData?.find((m: CompanyKPIMonthly) => m.month === 0)
+    achievement = sentinelEntry?.actual ?? 0
+    totalActual = achievement
+  } else {
+    const enteredMonths = kpi.monthlyData?.filter(m => m.actual > 0 && m.month > 0) ?? []
+    totalActual = enteredMonths.reduce((s, m) => s + m.actual, 0)
+    achievement = calcAchievement(totalActual, kpi.target)
+  }
+
   const { hex: color, bg: colorBg } = getColor(achievement)
 
   const getMonthActual = (month: number) =>
@@ -145,77 +251,88 @@ function KPICard({ kpi, year, onEdit, onDelete }: {
       </CardHeader>
 
       <CardContent className="px-4 pb-4 space-y-3">
-        {/* Achievement row */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-muted-foreground">
-                الفعلي: <span className="font-medium text-foreground">{totalActual.toLocaleString('ar-SA')}</span>
-                {' / '}
-                هدف: <span className="font-medium text-foreground">{kpi.target.toLocaleString('ar-SA')}</span>
-              </span>
-              <span className="font-bold tabular-nums" style={{ color }}>{achievement.toFixed(1)}%</span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-700 ${colorBg}`}
-                style={{ width: `${Math.min(achievement, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Sparkline */}
-        {(kpi.monthlyData?.length ?? 0) > 1 && (
-          <MiniSparkline data={kpi.monthlyData ?? []} target={kpi.target} />
-        )}
-
-        {/* Monthly grid — 2 rows × 6 cols */}
-        <div className="border rounded-lg overflow-hidden">
-          <div className="grid grid-cols-6 divide-x divide-y divide-border">
-            {MONTHS_SHORT.map((m, i) => {
-              const month = i + 1
-              const actual = getMonthActual(month)
-              const isEditing = editingMonth === month
-              const hasValue = actual > 0
-              return (
-                <div key={month} className={`text-center p-1 ${hasValue ? 'bg-muted/30' : ''}`}>
-                  <p className="text-[10px] text-muted-foreground font-medium">{m.slice(0, 3)}</p>
-                  {isEditing ? (
-                    <Input
-                      autoFocus
-                      type="number"
-                      value={monthValue}
-                      onChange={(e) => setMonthValue(e.target.value)}
-                      onBlur={() => {
-                        if (monthValue !== '') {
-                          upsertMonthly.mutate({ month, actual: parseFloat(monthValue) })
-                        } else {
-                          setEditingMonth(null)
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                        if (e.key === 'Escape') { setEditingMonth(null) }
-                      }}
-                      className="h-6 text-[11px] text-center px-0.5 mt-0.5"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => { setEditingMonth(month); setMonthValue(actual > 0 ? String(actual) : '') }}
-                      className={`w-full text-[11px] py-0.5 rounded hover:bg-primary/10 transition-colors tabular-nums ${
-                        hasValue ? 'font-semibold text-foreground' : 'text-muted-foreground/50'
-                      }`}
-                      title="انقر للتعديل"
-                    >
-                      {hasValue ? actual.toLocaleString('ar-SA', { notation: 'compact', maximumFractionDigits: 1 }) : '—'}
-                    </button>
-                  )}
+        {isNonFinancial ? (
+          /* ── Non-financial KPI: single percentage achievement ── */
+          <SingleAchievementInput kpi={kpi} year={year} />
+        ) : (
+          /* ── Financial KPI: monthly grid + cumulative progress ── */
+          <>
+            {/* Achievement row */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">
+                    الفعلي: <span className="font-medium text-foreground">{totalActual.toLocaleString('ar-SA')}</span>
+                    {' / '}
+                    هدف: <span className="font-medium text-foreground">{kpi.target.toLocaleString('ar-SA')}</span>
+                  </span>
+                  <span className="font-bold tabular-nums" style={{ color }}>{achievement.toFixed(1)}%</span>
                 </div>
-              )
-            })}
-          </div>
-        </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${colorBg}`}
+                    style={{ width: `${Math.min(achievement, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Sparkline */}
+            {(kpi.monthlyData?.filter(m => m.month > 0).length ?? 0) > 1 && (
+              <MiniSparkline
+                data={(kpi.monthlyData ?? []).filter(m => m.month > 0)}
+                target={kpi.target}
+              />
+            )}
+
+            {/* Monthly grid — 2 rows × 6 cols */}
+            <div className="border rounded-lg overflow-hidden">
+              <div className="grid grid-cols-6 divide-x divide-y divide-border">
+                {MONTHS_SHORT.map((m, i) => {
+                  const month = i + 1
+                  const actual = getMonthActual(month)
+                  const isEditing = editingMonth === month
+                  const hasValue = actual > 0
+                  return (
+                    <div key={month} className={`text-center p-1 ${hasValue ? 'bg-muted/30' : ''}`}>
+                      <p className="text-[10px] text-muted-foreground font-medium">{m.slice(0, 3)}</p>
+                      {isEditing ? (
+                        <Input
+                          autoFocus
+                          type="number"
+                          value={monthValue}
+                          onChange={(e) => setMonthValue(e.target.value)}
+                          onBlur={() => {
+                            if (monthValue !== '') {
+                              upsertMonthly.mutate({ month, actual: parseFloat(monthValue) })
+                            } else {
+                              setEditingMonth(null)
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                            if (e.key === 'Escape') { setEditingMonth(null) }
+                          }}
+                          className="h-6 text-[11px] text-center px-0.5 mt-0.5"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => { setEditingMonth(month); setMonthValue(actual > 0 ? String(actual) : '') }}
+                          className={`w-full text-[11px] py-0.5 rounded hover:bg-primary/10 transition-colors tabular-nums ${
+                            hasValue ? 'font-semibold text-foreground' : 'text-muted-foreground/50'
+                          }`}
+                          title="انقر للتعديل"
+                        >
+                          {hasValue ? actual.toLocaleString('ar-SA', { notation: 'compact', maximumFractionDigits: 1 }) : '—'}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   )
@@ -266,15 +383,27 @@ export default function CompanyKpisSection() {
 
   const filtered = categoryFilter === 'all' ? kpis : kpis.filter((k: CompanyKPI) => k.category === categoryFilter)
 
-  // Overall weighted achievement — cumulative against full annual targets
-  const kpisWithData = kpis.filter((k: CompanyKPI) => (k.monthlyData?.some(m => m.actual > 0)))
+  // Overall weighted achievement
+  const kpisWithData = kpis.filter((k: CompanyKPI) => {
+    if (NON_FINANCIAL_CATEGORIES.includes(k.category)) {
+      return (k.monthlyData?.some((m: CompanyKPIMonthly) => m.month === 0 && m.actual > 0))
+    }
+    return k.monthlyData?.some((m: CompanyKPIMonthly) => m.actual > 0 && m.month > 0)
+  })
+
   const totalWeight = kpis.reduce((s: number, k: CompanyKPI) => s + k.weight, 0)
   const weightOk = Math.abs(totalWeight - 100) < 0.1
 
   const overallAchievement = kpis.reduce((acc: number, kpi: CompanyKPI) => {
-    const entered = kpi.monthlyData?.filter(m => m.actual > 0) ?? []
-    const totalActual = entered.reduce((s, m) => s + m.actual, 0)
-    const ach = calcAchievement(totalActual, kpi.target)
+    let ach: number
+    if (NON_FINANCIAL_CATEGORIES.includes(kpi.category)) {
+      const sentinelEntry = kpi.monthlyData?.find((m: CompanyKPIMonthly) => m.month === 0)
+      ach = sentinelEntry?.actual ?? 0
+    } else {
+      const entered = kpi.monthlyData?.filter((m: CompanyKPIMonthly) => m.actual > 0 && m.month > 0) ?? []
+      const totalActual = entered.reduce((s: number, m: CompanyKPIMonthly) => s + m.actual, 0)
+      ach = calcAchievement(totalActual, kpi.target)
+    }
     return acc + (ach * (kpi.weight / 100))
   }, 0)
   const { hex: overallColor, bg: overallBg } = getColor(overallAchievement)
@@ -284,9 +413,15 @@ export default function CompanyKpisSection() {
     const catKpis = kpis.filter((k: CompanyKPI) => k.category === cat)
     if (!catKpis.length) return null
     const catAch = catKpis.reduce((acc: number, kpi: CompanyKPI) => {
-      const entered = kpi.monthlyData?.filter((m: CompanyKPIMonthly) => m.actual > 0) ?? []
-      const totalActual = entered.reduce((s: number, m: CompanyKPIMonthly) => s + m.actual, 0)
-      const ach = calcAchievement(totalActual, kpi.target)
+      let ach: number
+      if (NON_FINANCIAL_CATEGORIES.includes(kpi.category)) {
+        const sentinelEntry = kpi.monthlyData?.find((m: CompanyKPIMonthly) => m.month === 0)
+        ach = sentinelEntry?.actual ?? 0
+      } else {
+        const entered = kpi.monthlyData?.filter((m: CompanyKPIMonthly) => m.actual > 0 && m.month > 0) ?? []
+        const totalActual = entered.reduce((s: number, m: CompanyKPIMonthly) => s + m.actual, 0)
+        ach = calcAchievement(totalActual, kpi.target)
+      }
       return acc + ach
     }, 0) / catKpis.length
     return { cat, label: CATEGORIES[cat], count: catKpis.length, ach: catAch }
@@ -442,10 +577,18 @@ export default function CompanyKpisSection() {
               <Label className="text-xs">الوزن (%)</Label>
               <Input type="number" min={0} max={100} value={form.weight} onChange={(e) => setForm((p) => ({ ...p, weight: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">الهدف السنوي</Label>
-              <Input type="number" min={0} value={form.target} onChange={(e) => setForm((p) => ({ ...p, target: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
-            </div>
+            {/* Target field only shown for financial KPIs — non-financial always target 100% */}
+            {!NON_FINANCIAL_CATEGORIES.includes(form.category) && (
+              <div className="space-y-1">
+                <Label className="text-xs">الهدف السنوي</Label>
+                <Input type="number" min={0} value={form.target} onChange={(e) => setForm((p) => ({ ...p, target: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
+              </div>
+            )}
+            {NON_FINANCIAL_CATEGORIES.includes(form.category) && (
+              <div className="space-y-1 flex items-end">
+                <p className="text-xs text-muted-foreground pb-1">الهدف: 100% (نسبة مئوية)</p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowForm(false)}>إلغاء</Button>
