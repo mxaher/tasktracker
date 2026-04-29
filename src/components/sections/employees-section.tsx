@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/lib/store'
 import { employeesApi, kpiApi } from '@/lib/api'
-import type { Employee } from '@/lib/types'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { Employee, KPICategory } from '@/lib/types'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,12 +42,6 @@ interface EmployeeDetail extends Omit<Employee, 'properties'> {
     weight: number
   }[]
   properties?: Array<{ propertyId: string; property?: { nameAr: string } }>
-}
-
-function getAchColor(pct: number) {
-  if (pct >= 90) return 'text-green-600 bg-green-50 border-green-200 dark:bg-green-950/30'
-  if (pct >= 70) return 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30'
-  return 'text-red-600 bg-red-50 border-red-200 dark:bg-red-950/30'
 }
 
 function AchievementBar({ label, value, isCustom }: { label: string; value: number; isCustom?: boolean }) {
@@ -90,7 +84,9 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
   const [showAdd, setShowAdd] = useState(false)
   const [showAddCustom, setShowAddCustom] = useState(false)
   const [newTarget, setNewTarget] = useState({ kpiId: '', target: 0, weight: 0 })
-  const [newCustom, setNewCustom] = useState({ nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 })
+  const [newCustom, setNewCustom] = useState<{ nameAr: string; category: KPICategory; target: number; actual: number; weight: number }>(
+    { nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 }
+  )
 
   const { data: allKpis = [] } = useQuery({
     queryKey: ['kpis'],
@@ -127,13 +123,11 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
     onSuccess: () => { invalidate(); toast({ title: 'تم حذف المؤشر الخاص' }) },
   })
 
-  // total weights
   const totalWeight = [...currentTargets.map(t => t.weight), ...customKpis.map(k => k.weight)].reduce((s, w) => s + w, 0)
   const weightOk = Math.abs(totalWeight - 100) < 0.1
 
   return (
     <div className="space-y-5 mt-3">
-      {/* Weight indicator */}
       <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs border ${
         totalWeight === 0 ? 'bg-muted text-muted-foreground border-border'
         : weightOk ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20'
@@ -188,7 +182,7 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
 
         {showAdd && (
           <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="pt-4 space-y-3">
+            <div className="pt-4 px-4 pb-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label className="text-xs">اختر المؤشر</Label>
@@ -214,7 +208,7 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
                 <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>إلغاء</Button>
                 <Button size="sm" onClick={() => upsertMutation.mutate(newTarget)} disabled={!newTarget.kpiId || upsertMutation.isPending}>إسناد</Button>
               </div>
-            </CardContent>
+            </div>
           </Card>
         )}
       </section>
@@ -266,7 +260,7 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
 
         {showAddCustom && (
           <Card className="border-orange-400/40 bg-orange-50/30 dark:bg-orange-950/10">
-            <CardContent className="pt-4 space-y-3">
+            <div className="pt-4 px-4 pb-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label className="text-xs">اسم المؤشر</Label>
@@ -274,7 +268,7 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">الفئة</Label>
-                  <Select value={newCustom.category} onValueChange={(v) => setNewCustom(p => ({ ...p, category: v }))}>
+                  <Select value={newCustom.category} onValueChange={(v) => setNewCustom(p => ({ ...p, category: v as KPICategory }))}>
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="financial">مالي</SelectItem>
@@ -299,7 +293,7 @@ function KpiManagementTab({ employeeId, year, currentTargets, customKpis }: {
                 <Button variant="ghost" size="sm" onClick={() => setShowAddCustom(false)}>إلغاء</Button>
                 <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => addCustomMutation.mutate(newCustom)} disabled={!newCustom.nameAr || addCustomMutation.isPending}>إضافة</Button>
               </div>
-            </CardContent>
+            </div>
           </Card>
         )}
       </section>
@@ -362,17 +356,14 @@ export default function EmployeesSection() {
     return e.nameAr.includes(q) || (e.nameEn ?? '').toLowerCase().includes(q) || (e.department ?? '').toLowerCase().includes(q)
   })
 
-  // Department grouping for summary
   const departments = [...new Set(employees.map((e: Employee) => e.department).filter(Boolean))]
   const avgOverall = employees.length
-    ? employees.reduce((s: number, e: Employee) => s + (e.overallAchievement ?? 0), 0) / employees.length
-    : 0
+    ? employees.reduce((s: number, e: Employee) => s + (e.overallAchievement ?? 0), 0) / employees.length : 0
   const topPerformers = [...employees].sort((a: Employee, b: Employee) => (b.overallAchievement ?? 0) - (a.overallAchievement ?? 0)).slice(0, 3)
   const atRisk = employees.filter((e: Employee) => (e.overallAchievement ?? 0) < 70)
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -385,46 +376,41 @@ export default function EmployeesSection() {
         </Button>
       </div>
 
-      {/* Summary cards */}
       {employees.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card className="bg-muted/30">
-            <CardContent className="pt-4 pb-3">
+            <div className="pt-4 pb-3 px-4">
               <p className="text-xs text-muted-foreground">متوسط الإنجاز</p>
-              <p className={`text-2xl font-bold tabular-nums ${
-                avgOverall >= 90 ? 'text-green-600' : avgOverall >= 70 ? 'text-yellow-600' : 'text-red-600'
-              }`}>{avgOverall.toFixed(1)}%</p>
-            </CardContent>
+              <p className={`text-2xl font-bold tabular-nums ${avgOverall >= 90 ? 'text-green-600' : avgOverall >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>{avgOverall.toFixed(1)}%</p>
+            </div>
           </Card>
           <Card className="bg-muted/30">
-            <CardContent className="pt-4 pb-3">
+            <div className="pt-4 pb-3 px-4">
               <p className="text-xs text-muted-foreground">في خطر (أقل من 70%)</p>
               <p className="text-2xl font-bold text-red-600">{atRisk.length}</p>
-            </CardContent>
+            </div>
           </Card>
           <Card className="bg-muted/30">
-            <CardContent className="pt-4 pb-3">
+            <div className="pt-4 pb-3 px-4">
               <p className="text-xs text-muted-foreground">الأقسام</p>
               <p className="text-2xl font-bold">{departments.length}</p>
-            </CardContent>
+            </div>
           </Card>
           <Card className="bg-muted/30">
-            <CardContent className="pt-4 pb-3">
+            <div className="pt-4 pb-3 px-4">
               <p className="text-xs text-muted-foreground">الأعلى أداءً</p>
               <p className="text-sm font-semibold truncate">{topPerformers[0]?.nameAr ?? '—'}</p>
               <p className="text-xs text-green-600 font-medium">{(topPerformers[0]?.overallAchievement ?? 0).toFixed(1)}%</p>
-            </CardContent>
+            </div>
           </Card>
         </div>
       )}
 
-      {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث بالاسم أو القسم..." className="ps-9 h-9" />
       </div>
 
-      {/* Table */}
       {isLoading ? (
         <div className="space-y-2">
           {[1,2,3,4,5].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-lg" />)}
@@ -454,59 +440,33 @@ export default function EmployeesSection() {
                 const financial = emp.financialAchievement ?? 0
                 const org = emp.orgAchievement ?? 0
                 return (
-                  <tr
-                    key={emp.id}
-                    className="hover:bg-muted/30 transition-colors cursor-pointer"
-                    onClick={() => setSelectedEmployee(emp)}
-                  >
+                  <tr key={emp.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setSelectedEmployee(emp)}>
                     <td className="px-4 py-3">
                       <p className="font-medium">{emp.nameAr}</p>
                       {emp.position && <p className="text-xs text-muted-foreground">{emp.position.nameAr}</p>}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell text-xs text-muted-foreground">{emp.department ?? '—'}</td>
                     <td className="px-3 py-3 text-center">
-                      <span className={`text-xs font-semibold tabular-nums ${
-                        financial >= 90 ? 'text-green-600' : financial >= 70 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>{financial.toFixed(1)}%</span>
+                      <span className={`text-xs font-semibold tabular-nums ${financial >= 90 ? 'text-green-600' : financial >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>{financial.toFixed(1)}%</span>
                     </td>
                     <td className="px-3 py-3 text-center hidden md:table-cell">
-                      <span className={`text-xs font-semibold tabular-nums ${
-                        org >= 90 ? 'text-green-600' : org >= 70 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>{org.toFixed(1)}%</span>
+                      <span className={`text-xs font-semibold tabular-nums ${org >= 90 ? 'text-green-600' : org >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>{org.toFixed(1)}%</span>
                     </td>
                     <td className="px-3 py-3 text-center">
                       <div className="flex flex-col items-center gap-1">
-                        <span className={`text-sm font-bold tabular-nums ${
-                          overall >= 90 ? 'text-green-600' : overall >= 70 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>{overall.toFixed(1)}%</span>
+                        <span className={`text-sm font-bold tabular-nums ${overall >= 90 ? 'text-green-600' : overall >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>{overall.toFixed(1)}%</span>
                         <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              overall >= 90 ? 'bg-green-500' : overall >= 70 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}
-                            style={{ width: `${Math.min(overall, 100)}%` }}
-                          />
+                          <div className={`h-full rounded-full ${overall >= 90 ? 'bg-green-500' : overall >= 70 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${Math.min(overall, 100)}%` }} />
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-end">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${
-                          overall >= 90 ? 'text-green-600 border-green-200 bg-green-50 dark:bg-green-950/20'
-                          : overall >= 70 ? 'text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20'
-                          : 'text-red-600 border-red-200 bg-red-50 dark:bg-red-950/20'
-                        }`}
-                      >
+                      <Badge variant="outline" className={`text-xs ${overall >= 90 ? 'text-green-600 border-green-200 bg-green-50 dark:bg-green-950/20' : overall >= 70 ? 'text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20' : 'text-red-600 border-red-200 bg-red-50 dark:bg-red-950/20'}`}>
                         {overall >= 90 ? 'ممتاز' : overall >= 70 ? 'جيد' : 'يحتاج تحسين'}
                       </Badge>
                     </td>
                     <td className="px-2 py-3">
-                      <Button
-                        variant="ghost" size="sm"
-                        className="h-7 w-7 p-0 text-destructive opacity-0 group-hover:opacity-100"
-                        onClick={(e) => { e.stopPropagation(); if (confirm(`حذف ${emp.nameAr}؟`)) deleteMutation.mutate(emp.id) }}
-                      >
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={(e) => { e.stopPropagation(); if (confirm(`حذف ${emp.nameAr}؟`)) deleteMutation.mutate(emp.id) }}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </td>
@@ -524,12 +484,9 @@ export default function EmployeesSection() {
           <DialogHeader>
             <div>
               <DialogTitle className="text-lg">{selectedEmployee?.nameAr}</DialogTitle>
-              {selectedEmployee?.position && (
-                <p className="text-sm text-muted-foreground mt-0.5">{selectedEmployee.position.nameAr}</p>
-              )}
+              {selectedEmployee?.position && <p className="text-sm text-muted-foreground mt-0.5">{selectedEmployee.position.nameAr}</p>}
             </div>
           </DialogHeader>
-
           <Tabs defaultValue="overview">
             <TabsList className="w-full grid grid-cols-4">
               <TabsTrigger value="overview" className="text-xs">نظرة عامة</TabsTrigger>
@@ -554,8 +511,6 @@ export default function EmployeesSection() {
                       </div>
                     ))}
                   </div>
-
-                  {/* Achievement summary */}
                   <div className="space-y-3">
                     <p className="text-sm font-semibold">ملخص الأداء</p>
                     <AchievementBar label="الأداء المالي" value={selectedEmployee?.financialAchievement ?? 0} />
@@ -564,7 +519,6 @@ export default function EmployeesSection() {
                       <AchievementBar label="الأداء الإجمالي" value={selectedEmployee?.overallAchievement ?? 0} />
                     </div>
                   </div>
-
                   {(employeeDetail?.properties?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-sm font-semibold mb-2">العقارات المسندة</p>
@@ -594,9 +548,7 @@ export default function EmployeesSection() {
                       const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
                       items.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
                     })
-                    return items.length > 0 ? items : (
-                      <p className="text-center text-muted-foreground py-8 text-sm">لا توجد مؤشرات مالية مسندة</p>
-                    )
+                    return items.length > 0 ? items : <p className="text-center text-muted-foreground py-8 text-sm">لا توجد مؤشرات مالية مسندة</p>
                   })()}
                 </div>
               )}
@@ -617,9 +569,7 @@ export default function EmployeesSection() {
                       const val = k.target > 0 ? (k.actual / k.target) * 100 : 0
                       items.push(<AchievementBar key={k.id} label={k.nameAr} value={val} isCustom />)
                     })
-                    return items.length > 0 ? items : (
-                      <p className="text-center text-muted-foreground py-8 text-sm">لا توجد مؤشرات تنظيمية مسندة</p>
-                    )
+                    return items.length > 0 ? items : <p className="text-center text-muted-foreground py-8 text-sm">لا توجد مؤشرات تنظيمية مسندة</p>
                   })()}
                 </div>
               )}
@@ -665,12 +615,7 @@ export default function EmployeesSection() {
             ] as [keyof typeof form, string, string][]).map(([field, label, type]) => (
               <div key={field} className="space-y-1">
                 <Label className="text-xs">{label}</Label>
-                <Input
-                  type={type}
-                  value={form[field]}
-                  onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
-                  className="h-8 text-sm"
-                />
+                <Input type={type} value={form[field]} onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))} className="h-8 text-sm" />
               </div>
             ))}
           </div>
