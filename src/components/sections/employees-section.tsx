@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/lib/store'
 import { employeesApi, kpiApi } from '@/lib/api'
-import type { Employee } from '@/lib/types'
+import type { Employee, KPICategory } from '@/lib/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -264,8 +264,14 @@ function EditEmployeeDialog({
     onSuccess: () => { invalidate(); toast({ title: 'تم الحذف' }) },
   })
 
-  // Custom KPI
-  const [newCustom, setNewCustom] = useState({ nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 })
+  // Custom KPI — category typed as KPICategory to match the API contract
+  const [newCustom, setNewCustom] = useState<{
+    nameAr: string
+    category: KPICategory
+    target: number
+    actual: number
+    weight: number
+  }>({ nameAr: '', category: 'financial', target: 0, actual: 0, weight: 0 })
   const [showAddCustom, setShowAddCustom] = useState(false)
 
   const addCustomMutation = useMutation({
@@ -396,8 +402,7 @@ function EditEmployeeDialog({
                       <Select value={newTarget.kpiId} onValueChange={v => setNewTarget(p => ({ ...p, kpiId: v }))}>
                         <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="اختر مؤشرًا..." /></SelectTrigger>
                         <SelectContent>
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                          {(allKpis as any[]).map(k => (
+                          {(allKpis as Array<{ id: string; nameAr: string; category: string }>).map(k => (
                             <SelectItem key={k.id} value={k.id}>
                               <span className="flex items-center gap-2">
                                 {k.nameAr}
@@ -486,7 +491,7 @@ function EditEmployeeDialog({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label className="text-xs">الفئة</Label>
-                        <Select value={newCustom.category} onValueChange={v => setNewCustom(p => ({ ...p, category: v }))}>
+                        <Select value={newCustom.category} onValueChange={v => setNewCustom(p => ({ ...p, category: v as KPICategory }))}>
                           <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {Object.entries(CATEGORIES).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
@@ -603,7 +608,11 @@ export default function EmployeesSection() {
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }
